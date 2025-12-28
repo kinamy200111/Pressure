@@ -28,7 +28,15 @@ local Settings = {
     rescanInterval = 300,
     refreshKeybind = "None",
     lastKeycardScanTime = 0,
-    rescanActive = false
+    rescanActive = false,
+    
+    -- Новые тогглы
+    currencyESPEnabled = false,
+    itemsESPEnabled = false,
+    
+    -- Авто-рескан для новых ESP
+    autoRescanCurrency = true,
+    autoRescanItemsESP = true
 }
 
 local detectedMobs = {}
@@ -37,6 +45,14 @@ local scanThread = nil
 local keycardESPThread = nil
 local keycardESPItems = {}
 local rescanThread = nil
+
+-- Новые переменные для предметов
+local currencyESPThread = nil
+local currencyItems = {}
+local itemsESPThread = nil
+local otherItems = {}
+local currencyRescanThread = nil
+local itemsRescanThread = nil
 
 local NotificationSystem = {
     activeNotifications = {},
@@ -401,6 +417,54 @@ local function cleanupKeycardESP()
     print("[CLEANUP] Keycard ESP cleaned up")
 end
 
+local function cleanupCurrencyESP()
+    print("[CLEANUP] Cleaning up Currency ESP...")
+    
+    Settings.currencyESPEnabled = false
+    Settings.autoRescanCurrency = false
+    
+    wait(0.1)
+    
+    for _, item in ipairs(currencyItems) do
+        if item.box then 
+            item.box:Remove() 
+        end
+        if item.text then 
+            item.text:Remove() 
+        end
+    end
+    
+    currencyItems = {}
+    currencyESPThread = nil
+    currencyRescanThread = nil
+    
+    print("[CLEANUP] Currency ESP cleaned up")
+end
+
+local function cleanupItemsESP()
+    print("[CLEANUP] Cleaning up Items ESP...")
+    
+    Settings.itemsESPEnabled = false
+    Settings.autoRescanItemsESP = false
+    
+    wait(0.1)
+    
+    for _, item in ipairs(otherItems) do
+        if item.box then 
+            item.box:Remove() 
+        end
+        if item.text then 
+            item.text:Remove() 
+        end
+    end
+    
+    otherItems = {}
+    itemsESPThread = nil
+    itemsRescanThread = nil
+    
+    print("[CLEANUP] Items ESP cleaned up")
+end
+
 local function performAutoRescan()
     if not Settings.keycardESPEnabled then
         print("[AUTO-RESCAN] ESP disabled, skipping rescan")
@@ -522,6 +586,164 @@ local function performAutoRescan()
     Settings.rescanActive = false
 end
 
+local function performCurrencyAutoRescan()
+    if not Settings.currencyESPEnabled then
+        return
+    end
+    
+    print("[CURRENCY AUTO-RESCAN] Starting...")
+    
+    local oldItems = currencyItems
+    currencyItems = {}
+    
+    local Rooms = workspace:WaitForChild("GameplayFolder"):WaitForChild("Rooms")
+    
+    print("[CURRENCY AUTO-RESCAN] Searching for Currency...")
+    
+    for _, obj in ipairs(Rooms:GetDescendants()) do
+        if obj:IsA("Model") then
+            local name = obj.Name:lower()
+            
+            if name:find("currency") and not name:find("crate") then
+                local hasNumbers = name:find("%d+%-%d+") or name:find("%d+%-?%d*")
+                
+                if hasNumbers then
+                    local mainPart = obj.PrimaryPart or obj:FindFirstChildWhichIsA("BasePart")
+                    local meshPart = obj:FindFirstChildWhichIsA("MeshPart")
+                    local union = obj:FindFirstChildWhichIsA("UnionOperation")
+                    
+                    if mainPart or meshPart or union then
+                        local box = Drawing.new("Square")
+                        box.Filled = false
+                        box.Color = Color3.fromRGB(255, 215, 0)
+                        box.Size = Vector2.new(40, 40)
+                        box.Visible = false
+                        
+                        local text = Drawing.new("Text")
+                        text.Color = Color3.fromRGB(255, 255, 255)
+                        text.Center = true
+                        text.Size = 14
+                        text.Outline = true
+                        text.Visible = false
+                        
+                        local amount = obj.Name:match("(%d+%-%d+)") or obj.Name:match("(%d+)") or "?"
+                        
+                        table.insert(currencyItems, {
+                            model = obj,
+                            part = mainPart or meshPart or union,
+                            name = obj.Name,
+                            amount = amount,
+                            box = box,
+                            text = text
+                        })
+                    end
+                end
+            end
+        end
+    end
+    
+    print("[CURRENCY AUTO-RESCAN] Found: " .. #currencyItems)
+    
+    if #currencyItems > 0 then
+        for _, item in ipairs(oldItems) do
+            if item.box then
+                item.box:Remove()
+            end
+            if item.text then
+                item.text:Remove()
+            end
+        end
+    end
+end
+
+local function performItemsAutoRescan()
+    if not Settings.itemsESPEnabled then
+        return
+    end
+    
+    wait(2)
+    
+    print("[ITEMS AUTO-RESCAN] Starting...")
+    
+    local oldItems = otherItems
+    otherItems = {}
+    
+    local GameplayFolder = workspace:FindFirstChild("GameplayFolder")
+    if not GameplayFolder then 
+        print("[ITEMS AUTO-RESCAN] GameplayFolder not found")
+        return 
+    end
+    
+    local Rooms = GameplayFolder:FindFirstChild("Rooms")
+    if not Rooms then 
+        print("[ITEMS AUTO-RESCAN] Rooms not found")
+        return 
+    end
+    
+    print("[ITEMS AUTO-RESCAN] Loading ESP for items...")
+    
+    for _, obj in ipairs(Rooms:GetDescendants()) do
+        if obj:IsA("Model") then
+            local name = obj.Name:lower()
+            local mainPart = obj.PrimaryPart or obj:FindFirstChildWhichIsA("BasePart")
+            
+            if mainPart then
+                local color, displayName = nil, nil
+                
+                if name:find("defib") and not name:find("crate") then
+                    color, displayName = Color3.fromRGB(0, 255, 255), "Defib"
+                elseif name:find("medkit") and not name:find("crate") then
+                    color, displayName = Color3.fromRGB(0, 255, 0), "Medkit"
+                elseif name:find("flashlight") then
+                    color, displayName = Color3.fromRGB(255, 255, 255), "Flashlight"
+                elseif name:find("lantern") then
+                    color, displayName = Color3.fromRGB(255, 165, 0), "Lantern"
+                elseif name:find("bigflashbeacon") or name:find("beacon") then
+                    color, displayName = Color3.fromRGB(255, 0, 255), "Beacon"
+                elseif name:find("codebreacher") then
+                    color, displayName = Color3.fromRGB(255, 50, 50), "CodeBreacher"
+                end
+                
+                if color then
+                    local box = Drawing.new("Square")
+                    box.Filled = false
+                    box.Color = color
+                    box.Size = Vector2.new(40, 40)
+                    box.Visible = false
+                    
+                    local text = Drawing.new("Text")
+                    text.Color = Color3.fromRGB(255, 255, 255)
+                    text.Center = true
+                    text.Size = 14
+                    text.Outline = true
+                    text.Visible = false
+                    
+                    table.insert(otherItems, {
+                        model = obj,
+                        part = mainPart,
+                        name = displayName,
+                        box = box,
+                        text = text
+                    })
+                end
+            end
+        end
+    end
+    
+    print("[ITEMS AUTO-RESCAN] Found: " .. #otherItems)
+    
+    if #otherItems > 0 then
+        for _, item in ipairs(oldItems) do
+            if item.box then
+                item.box:Remove()
+            end
+            if item.text then
+                item.text:Remove()
+            end
+        end
+    end
+end
+
 local function startAutoRescan()
     if rescanThread then
         Settings.autoRescanKeycards = false
@@ -554,6 +776,76 @@ local function startAutoRescan()
         
         print("[AUTO-RESCAN] Thread stopped")
         rescanThread = nil
+    end)
+end
+
+local function startCurrencyAutoRescan()
+    if currencyRescanThread then
+        Settings.autoRescanCurrency = false
+        wait(0.1)
+        currencyRescanThread = nil
+    end
+    
+    if not Settings.autoRescanCurrency then
+        return
+    end
+    
+    currencyRescanThread = spawn(function()
+        print("[CURRENCY AUTO-RESCAN] Thread started")
+        
+        local lastAutoRescanTime = os.clock()
+        
+        while Settings.autoRescanCurrency and Settings.currencyESPEnabled do
+            wait(1)
+            
+            local currentTime = os.clock()
+            
+            if currentTime - lastAutoRescanTime >= Settings.autoRescanInterval then
+                print("[CURRENCY AUTO-RESCAN] Time to rescan!")
+                
+                performCurrencyAutoRescan()
+                
+                lastAutoRescanTime = currentTime
+            end
+        end
+        
+        print("[CURRENCY AUTO-RESCAN] Thread stopped")
+        currencyRescanThread = nil
+    end)
+end
+
+local function startItemsAutoRescan()
+    if itemsRescanThread then
+        Settings.autoRescanItemsESP = false
+        wait(0.1)
+        itemsRescanThread = nil
+    end
+    
+    if not Settings.autoRescanItemsESP then
+        return
+    end
+    
+    itemsRescanThread = spawn(function()
+        print("[ITEMS AUTO-RESCAN] Thread started")
+        
+        local lastAutoRescanTime = os.clock()
+        
+        while Settings.autoRescanItemsESP and Settings.itemsESPEnabled do
+            wait(1)
+            
+            local currentTime = os.clock()
+            
+            if currentTime - lastAutoRescanTime >= Settings.autoRescanInterval then
+                print("[ITEMS AUTO-RESCAN] Time to rescan!")
+                
+                performItemsAutoRescan()
+                
+                lastAutoRescanTime = currentTime
+            end
+        end
+        
+        print("[ITEMS AUTO-RESCAN] Thread stopped")
+        itemsRescanThread = nil
     end)
 end
 
@@ -643,6 +935,233 @@ local function startKeycardESP()
     end
 end
 
+local function startCurrencyESP()
+    if currencyESPThread then
+        cleanupCurrencyESP()
+    end
+    
+    Settings.currencyESPEnabled = true
+    
+    print("[CURRENCY ESP] Starting...")
+    
+    local Rooms = workspace:WaitForChild("GameplayFolder"):WaitForChild("Rooms")
+    
+    print("[CURRENCY ESP] Searching for Currency...")
+    
+    for _, obj in ipairs(Rooms:GetDescendants()) do
+        if obj:IsA("Model") then
+            local name = obj.Name:lower()
+            
+            if name:find("currency") and not name:find("crate") then
+                local hasNumbers = name:find("%d+%-%d+") or name:find("%d+%-?%d*")
+                
+                if hasNumbers then
+                    local mainPart = obj.PrimaryPart or obj:FindFirstChildWhichIsA("BasePart")
+                    local meshPart = obj:FindFirstChildWhichIsA("MeshPart")
+                    local union = obj:FindFirstChildWhichIsA("UnionOperation")
+                    
+                    if mainPart or meshPart or union then
+                        print("Найден Currency: " .. obj.Name)
+                        
+                        local box = Drawing.new("Square")
+                        box.Filled = false
+                        box.Color = Color3.fromRGB(255, 215, 0)
+                        box.Size = Vector2.new(40, 40)
+                        box.Visible = false
+                        
+                        local text = Drawing.new("Text")
+                        text.Color = Color3.fromRGB(255, 255, 255)
+                        text.Center = true
+                        text.Size = 14
+                        text.Outline = true
+                        text.Visible = false
+                        
+                        local amount = obj.Name:match("(%d+%-%d+)") or obj.Name:match("(%d+)") or "?"
+                        
+                        table.insert(currencyItems, {
+                            model = obj,
+                            part = mainPart or meshPart or union,
+                            name = obj.Name,
+                            amount = amount,
+                            box = box,
+                            text = text
+                        })
+                    end
+                end
+            end
+        end
+    end
+    
+    print("[CURRENCY ESP] Found: " .. #currencyItems)
+    
+    if #currencyItems == 0 then
+        SafeNotify("Currency ESP", "No items found", 3)
+        return
+    end
+    
+    SafeNotify("Currency ESP", "Found " .. #currencyItems .. " Currency items", 3)
+    
+    currencyESPThread = spawn(function()
+        print("[CURRENCY ESP] Drawing thread started")
+        
+        while Settings.currencyESPEnabled do
+            for i = #currencyItems, 1, -1 do
+                local item = currencyItems[i]
+                
+                if item.model and item.model.Parent and item.part and item.part.Parent then
+                    local pos, onScreen = WorldToScreen(item.part.Position)
+                    
+                    if onScreen then
+                        item.box.Position = Vector2.new(pos.X - 20, pos.Y - 20)
+                        item.text.Position = Vector2.new(pos.X, pos.Y + 25)
+                        item.text.Text = "Currency " .. item.amount
+                        item.box.Visible = true
+                        item.text.Visible = true
+                    else
+                        item.box.Visible = false
+                        item.text.Visible = false
+                    end
+                else
+                    print("Удален Currency: " .. item.name)
+                    item.box:Remove()
+                    item.text:Remove()
+                    table.remove(currencyItems, i)
+                end
+            end
+            
+            wait(0)
+        end
+        
+        print("[CURRENCY ESP] Drawing thread stopped")
+        cleanupCurrencyESP()
+    end)
+    
+    if Settings.autoRescanCurrency then
+        startCurrencyAutoRescan()
+    end
+end
+
+local function startItemsESP()
+    if itemsESPThread then
+        cleanupItemsESP()
+    end
+    
+    Settings.itemsESPEnabled = true
+    
+    wait(2)
+    
+    print("[ITEMS ESP] Starting...")
+    
+    local GameplayFolder = workspace:FindFirstChild("GameplayFolder")
+    if not GameplayFolder then 
+        SafeNotify("Items ESP", "GameplayFolder not found", 3)
+        return 
+    end
+    
+    local Rooms = GameplayFolder:FindFirstChild("Rooms")
+    if not Rooms then 
+        SafeNotify("Items ESP", "Rooms not found", 3)
+        return 
+    end
+    
+    print("[ITEMS ESP] Loading ESP for items...")
+    
+    for _, obj in ipairs(Rooms:GetDescendants()) do
+        if obj:IsA("Model") then
+            local name = obj.Name:lower()
+            local mainPart = obj.PrimaryPart or obj:FindFirstChildWhichIsA("BasePart")
+            
+            if mainPart then
+                local color, displayName = nil, nil
+                
+                if name:find("defib") and not name:find("crate") then
+                    color, displayName = Color3.fromRGB(0, 255, 255), "Defib"
+                elseif name:find("medkit") and not name:find("crate") then
+                    color, displayName = Color3.fromRGB(0, 255, 0), "Medkit"
+                elseif name:find("flashlight") then
+                    color, displayName = Color3.fromRGB(255, 255, 255), "Flashlight"
+                elseif name:find("lantern") then
+                    color, displayName = Color3.fromRGB(255, 165, 0), "Lantern"
+                elseif name:find("bigflashbeacon") or name:find("beacon") then
+                    color, displayName = Color3.fromRGB(255, 0, 255), "Beacon"
+                elseif name:find("codebreacher") then
+                    color, displayName = Color3.fromRGB(255, 50, 50), "CodeBreacher"
+                end
+                
+                if color then
+                    local box = Drawing.new("Square")
+                    box.Filled = false
+                    box.Color = color
+                    box.Size = Vector2.new(40, 40)
+                    box.Visible = false
+                    
+                    local text = Drawing.new("Text")
+                    text.Color = Color3.fromRGB(255, 255, 255)
+                    text.Center = true
+                    text.Size = 14
+                    text.Outline = true
+                    text.Visible = false
+                    
+                    table.insert(otherItems, {
+                        model = obj,
+                        part = mainPart,
+                        name = displayName,
+                        box = box,
+                        text = text
+                    })
+                end
+            end
+        end
+    end
+    
+    print("[ITEMS ESP] Found: " .. #otherItems)
+    
+    if #otherItems == 0 then
+        SafeNotify("Items ESP", "No items found", 3)
+        return
+    end
+    
+    SafeNotify("Items ESP", "Found " .. #otherItems .. " items", 3)
+    
+    itemsESPThread = spawn(function()
+        print("[ITEMS ESP] Drawing thread started")
+        
+        while Settings.itemsESPEnabled do
+            for i = #otherItems, 1, -1 do
+                local item = otherItems[i]
+                
+                if item.model and item.model.Parent and item.part and item.part.Parent then
+                    local pos, onScreen = WorldToScreen(item.part.Position)
+                    
+                    if onScreen then
+                        item.box.Position = Vector2.new(pos.X - 20, pos.Y - 20)
+                        item.text.Position = Vector2.new(pos.X, pos.Y + 25)
+                        item.text.Text = item.name
+                        item.box.Visible = true
+                        item.text.Visible = true
+                    else
+                        item.box.Visible = false
+                        item.text.Visible = false
+                    end
+                else
+                    item.box:Remove()
+                    item.text:Remove()
+                    table.remove(otherItems, i)
+                end
+            end
+            
+            wait(0)
+        end
+        
+        print("[ITEMS ESP] Drawing thread stopped")
+        cleanupItemsESP()
+    end)
+    
+    if Settings.autoRescanItemsESP then
+        startItemsAutoRescan()
+    end
+end
+
 local function forceRescanKeycards()
     print("[FORCE RESCAN] Manual rescan triggered")
     
@@ -652,6 +1171,30 @@ local function forceRescanKeycards()
         print("[FORCE RESCAN] ESP not enabled, enabling first...")
         Settings.keycardESPEnabled = true
         startKeycardESP()
+    end
+end
+
+local function forceRescanCurrency()
+    print("[CURRENCY FORCE RESCAN] Manual rescan triggered")
+    
+    if Settings.currencyESPEnabled then
+        performCurrencyAutoRescan()
+    else
+        print("[CURRENCY FORCE RESCAN] ESP not enabled, enabling first...")
+        Settings.currencyESPEnabled = true
+        startCurrencyESP()
+    end
+end
+
+local function forceRescanItems()
+    print("[ITEMS FORCE RESCAN] Manual rescan triggered")
+    
+    if Settings.itemsESPEnabled then
+        performItemsAutoRescan()
+    else
+        print("[ITEMS FORCE RESCAN] ESP not enabled, enabling first...")
+        Settings.itemsESPEnabled = true
+        startItemsESP()
     end
 end
 
@@ -713,6 +1256,13 @@ end)
 
 local ItemESPSection = Window:CreateSection("ItemESP", "Visuals")
 
+
+ItemESPSection:AddLabel("Still can be bugged or make some mistakes")
+ItemESPSection:AddLabel("KeycardESP is good working")
+ItemESPSection:AddLabel("Cleaning the ESP can break the autoscan")
+ItemESPSection:AddLabel("Not all items have been added")
+ItemESPSection:AddLabel("Auto-Rescan maybe didn't work, use binds")
+
 ItemESPSection:AddToggle("ESP Keycard", false, function(value)
     Settings.keycardESPEnabled = value
     print("[UI] Keycard ESP: " .. (value and "ENABLED" or "DISABLED"))
@@ -739,7 +1289,7 @@ end)
 
 ItemESPSection:AddToggle("Auto Rescan Keycards", true, function(value)
     Settings.autoRescanKeycards = value
-    print("[UI] Auto-rescan: " .. (value and "ENABLED" or "DISABLED"))
+    print("[UI] Auto-rescan Keycards: " .. (value and "ENABLED" or "DISABLED"))
     
     if value and Settings.keycardESPEnabled then
         startAutoRescan()
@@ -748,10 +1298,55 @@ ItemESPSection:AddToggle("Auto Rescan Keycards", true, function(value)
     end
 end)
 
+
+ItemESPSection:AddToggle("ESP Currency", false, function(value)
+    Settings.currencyESPEnabled = value
+    print("[UI] Currency ESP: " .. (value and "ENABLED" or "DISABLED"))
+    
+    if value then
+        startCurrencyESP()
+    else
+        cleanupCurrencyESP()
+    end
+end)
+
+ItemESPSection:AddToggle("Auto Rescan Currency", true, function(value)
+    Settings.autoRescanCurrency = value
+    print("[UI] Auto-rescan Currency: " .. (value and "ENABLED" or "DISABLED"))
+    
+    if value and Settings.currencyESPEnabled then
+        startCurrencyAutoRescan()
+    elseif not value and currencyRescanThread then
+        currencyRescanThread = nil
+    end
+end)
+
+ItemESPSection:AddToggle("ESP Items (Defib, Medkit, etc)", false, function(value)
+    Settings.itemsESPEnabled = value
+    print("[UI] Items ESP: " .. (value and "ENABLED" or "DISABLED"))
+    
+    if value then
+        startItemsESP()
+    else
+        cleanupItemsESP()
+    end
+end)
+
+ItemESPSection:AddToggle("Auto Rescan Items", true, function(value)
+    Settings.autoRescanItemsESP = value
+    print("[UI] Auto-rescan Items: " .. (value and "ENABLED" or "DISABLED"))
+    
+    if value and Settings.itemsESPEnabled then
+        startItemsAutoRescan()
+    elseif not value and itemsRescanThread then
+        itemsRescanThread = nil
+    end
+end)
+
 ItemESPSection:AddSlider("Auto Rescan Interval", {
     Min = 1,
     Max = 60,
-    Default = 1,
+    Default = 10,
     Callback = function(value)
         Settings.autoRescanInterval = value
         print("[UI] Auto rescan interval: " .. value .. " seconds")
@@ -760,18 +1355,20 @@ ItemESPSection:AddSlider("Auto Rescan Interval", {
             rescanThread = nil
             startAutoRescan()
         end
+        
+        if Settings.autoRescanCurrency and Settings.currencyESPEnabled and currencyRescanThread then
+            currencyRescanThread = nil
+            startCurrencyAutoRescan()
+        end
+        
+        if Settings.autoRescanItemsESP and Settings.itemsESPEnabled and itemsRescanThread then
+            itemsRescanThread = nil
+            startItemsAutoRescan()
+        end
     end
 })
 
-ItemESPSection:AddSlider("Rescan Interval", {
-    Min = 10,
-    Max = 600,
-    Default = 300,
-    Callback = function(value)
-        Settings.rescanInterval = value
-        print("[UI] Rescan interval: " .. value .. "s")
-    end
-})
+
 
 ItemESPSection:AddKeybind("Refresh Keybind", "None", function()
     if Settings.keycardESPEnabled then
@@ -784,9 +1381,144 @@ ItemESPSection:AddKeybind("Refresh Keybind", "None", function()
     end
 end, false)
 
-ItemESPSection:AddButton("Force Rescan Now", function()
+ItemESPSection:AddKeybind("Refresh Currency Keybind", "None", function()
+    if Settings.currencyESPEnabled then
+        forceRescanCurrency()
+        SafeNotify("Currency ESP", "Currency refreshed", 2)
+    end
+end, false)
+
+ItemESPSection:AddKeybind("Refresh Items Keybind", "None", function()
+    if Settings.itemsESPEnabled then
+        forceRescanItems()
+        SafeNotify("Items ESP", "Items refreshed", 2)
+    end
+end, false)
+
+ItemESPSection:AddButton("Force Rescan Keycards", function()
     forceRescanKeycards()
 end)
+
+ItemESPSection:AddButton("Force Rescan Currency", function()
+    forceRescanCurrency()
+end)
+
+ItemESPSection:AddButton("Force Rescan Items", function()
+    forceRescanItems()
+end)
+
+
+
+ItemESPSection:AddButton("Clear All ESP", function()
+    print("[CLEAN ALL ESP] Cleaning all ESP...")
+    
+
+    local savedAutoRescanKeycards = Settings.autoRescanKeycards
+    local savedAutoRescanCurrency = Settings.autoRescanCurrency
+    local savedAutoRescanItemsESP = Settings.autoRescanItemsESP
+    
+
+    if keycardESPThread then
+        Settings.keycardESPEnabled = false
+        wait(0.1)
+        keycardESPThread = nil
+    end
+    
+    for _, esp in ipairs(keycardESPItems) do
+        if esp.box then esp.box:Remove() end
+        if esp.text then esp.text:Remove() end
+    end
+    keycardESPItems = {}
+    
+    if currencyESPThread then
+        Settings.currencyESPEnabled = false
+        wait(0.1)
+        currencyESPThread = nil
+    end
+    
+    for _, item in ipairs(currencyItems) do
+        if item.box then item.box:Remove() end
+        if item.text then item.text:Remove() end
+    end
+    currencyItems = {}
+    
+
+    if itemsESPThread then
+        Settings.itemsESPEnabled = false
+        wait(0.1)
+        itemsESPThread = nil
+    end
+    
+    for _, item in ipairs(otherItems) do
+        if item.box then item.box:Remove() end
+        if item.text then item.text:Remove() end
+    end
+    otherItems = {}
+    
+
+    Settings.autoRescanKeycards = savedAutoRescanKeycards
+    Settings.autoRescanCurrency = savedAutoRescanCurrency
+    Settings.autoRescanItemsESP = savedAutoRescanItemsESP
+    
+    SafeNotify("ESP", "All ESP cleared (auto-rescan preserved)", 2)
+end)
+
+
+ItemESPSection:AddKeybind("Clear ESP Keybind", "None", function()
+    print("[CLEAN ALL ESP KEYBIND] Cleaning all ESP...")
+    
+
+    local savedAutoRescanKeycards = Settings.autoRescanKeycards
+    local savedAutoRescanCurrency = Settings.autoRescanCurrency
+    local savedAutoRescanItemsESP = Settings.autoRescanItemsESP
+    
+
+    if keycardESPThread then
+        Settings.keycardESPEnabled = false
+        wait(0.1)
+        keycardESPThread = nil
+    end
+    
+    for _, esp in ipairs(keycardESPItems) do
+        if esp.box then esp.box:Remove() end
+        if esp.text then esp.text:Remove() end
+    end
+    keycardESPItems = {}
+    
+
+    if currencyESPThread then
+        Settings.currencyESPEnabled = false
+        wait(0.1)
+        currencyESPThread = nil
+    end
+    
+    for _, item in ipairs(currencyItems) do
+        if item.box then item.box:Remove() end
+        if item.text then item.text:Remove() end
+    end
+    currencyItems = {}
+    
+
+    if itemsESPThread then
+        Settings.itemsESPEnabled = false
+        wait(0.1)
+        itemsESPThread = nil
+    end
+    
+    for _, item in ipairs(otherItems) do
+        if item.box then item.box:Remove() end
+        if item.text then item.text:Remove() end
+    end
+    otherItems = {}
+    
+
+    Settings.autoRescanKeycards = savedAutoRescanKeycards
+    Settings.autoRescanCurrency = savedAutoRescanCurrency
+    Settings.autoRescanItemsESP = savedAutoRescanItemsESP
+    
+    SafeNotify("ESP", "All ESP cleared (auto-rescan preserved)", 2)
+end, false)
+
 
 local ColorsSection = Window:CreateSection("Mob Colors", "Visuals")
 
@@ -895,40 +1627,7 @@ DebugSection:AddButton("Scanner Status", function()
         "\nDelay: " .. (Settings.scanCooldown * 1000) .. "ms", 5)
 end)
 
-DebugSection:AddButton("Print Detected Mobs", function()
-    print("[DEBUG] Currently detected mobs:")
-    if next(detectedMobs) == nil then
-        print("  No mobs detected")
-        SafeNotify("Debug", "No mobs detected", 2)
-    else
-        for mobId, data in pairs(detectedMobs) do
-            print("  - " .. data.type .. " (ID: " .. mobId .. ")")
-        end
-        SafeNotify("Debug", "Printed mobs to console", 2)
-    end
-end)
-
-DebugSection:AddButton("Keycard ESP Status", function()
-    print("[DEBUG] Keycard ESP Status:")
-    print("  Enabled: " .. tostring(Settings.keycardESPEnabled))
-    print("  Auto-rescan: " .. tostring(Settings.autoRescanKeycards))
-    print("  Auto rescan interval: " .. Settings.autoRescanInterval .. "s")
-    print("  Rescan interval: " .. Settings.rescanInterval .. "s")
-    print("  Found items: " .. #keycardESPItems)
-    print("  Last scan: " .. (os.clock() - Settings.lastKeycardScanTime) .. " seconds ago")
-    
-    if Settings.rescanActive then
-        print("  Rescan status: ACTIVE")
-    else
-        print("  Rescan status: INACTIVE")
-    end
-    
-    if rescanThread then
-        print("  Rescan thread: ACTIVE")
-    else
-        print("  Rescan thread: INACTIVE")
-    end
-    
+DebugSection:AddButton("ESP Status", function()
     local keycardCount = 0
     local passwordCount = 0
     local innerKeyCount = 0
@@ -943,17 +1642,15 @@ DebugSection:AddButton("Keycard ESP Status", function()
         end
     end
     
-    if #keycardESPItems > 0 then
-        SafeNotify("Keycard ESP", 
-            "ESP: " .. (Settings.keycardESPEnabled and "ON" or "OFF") ..
-            "\nAuto-rescan: " .. (Settings.autoRescanKeycards and "ON" or "OFF") ..
-            "\nKeycards: " .. keycardCount .. 
-            "\nPasswords: " .. passwordCount .. 
-            "\nInner Keys: " .. innerKeyCount ..
-            "\nTotal: " .. #keycardESPItems .. " items", 5)
-    else
-        SafeNotify("Keycard ESP", "No items found", 3)
-    end
+    SafeNotify("ESP Status", 
+        "Keycard ESP: " .. (Settings.keycardESPEnabled and "ON" or "OFF") ..
+        "\nCurrency ESP: " .. (Settings.currencyESPEnabled and "ON" or "OFF") ..
+        "\nItems ESP: " .. (Settings.itemsESPEnabled and "ON" or "OFF") ..
+        "\nKeycards: " .. keycardCount .. 
+        "\nPasswords: " .. passwordCount .. 
+        "\nInner Keys: " .. innerKeyCount ..
+        "\nCurrency: " .. #currencyItems ..
+        "\nOther Items: " .. #otherItems, 5)
 end)
 
 print("[MOB SCANNER] =================================")
@@ -975,13 +1672,3 @@ spawn(function()
         wait(0.033)
     end
 end)
-
-return {
-    start = startScanner,
-    stop = stopScanner,
-    scan = scanWorkspace,
-    SafeNotify = SafeNotify,
-    cleanupKeycardESP = cleanupKeycardESP,
-    settings = Settings,
-    getDetectedMobs = function() return detectedMobs end
-}
