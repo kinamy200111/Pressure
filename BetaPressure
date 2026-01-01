@@ -1,59 +1,133 @@
+-- ========== ЗАГРУЗКА БИБЛИОТЕК ==========
 loadstring(game:HttpGet("https://arcanecheats.xyz/api/matcha/uilib"))()
 repeat wait() until Arcane
 
+loadstring(game:HttpGet("https://www.arcanecheats.xyz/api/matcha/esplib"))()
+
+-- ========== НАСТРОЙКИ ==========
 local Settings = {
+    -- MobNotificator settings
     targetMobs = {
-        Angler = true, Blitz = true, Pinkie = true, Pandemonium = true,
-        Froger = true, Chainsmoker = true, RidgeAngler = true,
-        RidgeBlitz = true, RidgePinkie = true, RidgePandemonium = true,
-        RidgeFroger = true, RidgeChainsmoker = true, A60 = true
+        ["Angler"] = true, ["Blitz"] = true, ["Pinkie"] = true,
+        ["Pandemonium"] = true, ["Froger"] = true, ["Chainsmoker"] = true,
+        ["RidgeAngler"] = true, ["RidgeBlitz"] = true, ["RidgePinkie"] = true,
+        ["RidgePandemonium"] = true, ["RidgeFroger"] = true, ["RidgeChainsmoker"] = true,
+        ["A-60"] = true
+    },
+    targetRooms = {
+        ["HeavyPainter"] = true  -- Новое обнаружение комнат
     },
     mobColors = {
-        Angler = Color3.new(0, 1, 0), Blitz = Color3.new(1, 0, 0),
-        Pinkie = Color3.new(1, 0.5, 0.8), Pandemonium = Color3.new(0.5, 0, 1),
-        Froger = Color3.new(0, 1, 1), Chainsmoker = Color3.new(0.5, 0.5, 0.5),
-        RidgeAngler = Color3.new(0, 0.8, 0), RidgeBlitz = Color3.new(0.8, 0, 0),
-        RidgePinkie = Color3.new(0.8, 0.4, 0.6), RidgePandemonium = Color3.new(0.4, 0, 0.8),
-        RidgeFroger = Color3.new(0, 0.8, 0.8), RidgeChainsmoker = Color3.new(0.4, 0.4, 0.4),
-        A60 = Color3.new(1, 1, 0)
+        ["Angler"] = Color3.new(0, 1, 0),
+        ["Blitz"] = Color3.new(1, 0, 0),
+        ["Pinkie"] = Color3.new(1, 0.5, 0.8),
+        ["Pandemonium"] = Color3.new(0.5, 0, 1),
+        ["Froger"] = Color3.new(0, 1, 1),
+        ["Chainsmoker"] = Color3.new(0.5, 0.5, 0.5),
+        ["RidgeAngler"] = Color3.new(0, 0.8, 0),
+        ["RidgeBlitz"] = Color3.new(0.8, 0, 0),
+        ["RidgePinkie"] = Color3.new(0.8, 0.4, 0.6),
+        ["RidgePandemonium"] = Color3.new(0.4, 0, 0.8),
+        ["RidgeFroger"] = Color3.new(0, 0.8, 0.8),
+        ["RidgeChainsmoker"] = Color3.new(0.4, 0.4, 0.4),
+        ["A-60"] = Color3.new(1, 1, 0),
+        ["HeavyPainter"] = Color3.new(0.8, 0.3, 0)  -- Оранжевый для комнаты
     },
     scanCooldown = 0.1,
     enabled = true,
     showNotifications = true,
     notificationColor = Color3.fromRGB(210, 50, 50),
     uiThemeColor = Color3.fromRGB(210, 50, 50),
-    keycardESPEnabled = false,
-    autoRescanKeycards = true,
-    autoRescanInterval = 1,
-    rescanInterval = 300,
-    refreshKeybind = "None",
-    lastKeycardScanTime = 0,
-    rescanActive = false,
     
-    -- Новые тогглы
+    -- ESP настройки
+    keycardESPEnabled = false,
     currencyESPEnabled = false,
     itemsESPEnabled = false,
+    autoRescan = true,
+    autoRescanInterval = 1,
     
-    -- Авто-рескан для новых ESP
-    autoRescanCurrency = true,
-    autoRescanItemsESP = true
+    -- НОВЫЕ настройки
+    espRenderDistance = 1000,  -- Дистанция показа ESP
+    espGlowEnabled = true      -- Неоновое свечение
 }
 
 local detectedMobs = {}
+local detectedRooms = {}  -- Для отслеживания комнат
 local lastScanTime = 0
 local scanThread = nil
-local keycardESPThread = nil
-local keycardESPItems = {}
-local rescanThread = nil
 
--- Новые переменные для предметов
-local currencyESPThread = nil
-local currencyItems = {}
-local itemsESPThread = nil
-local otherItems = {}
-local currencyRescanThread = nil
-local itemsRescanThread = nil
+-- ESP хранилища
+local activeESPs = {
+    keycards = {},
+    currency = {},
+    items = {}
+}
 
+local rescanThreads = {
+    keycards = nil,
+    currency = nil,
+    items = nil
+}
+
+-- Настройки для разных типов предметов
+local espConfigs = {
+    ["KeyCard"] = {
+        color = Color3.fromRGB(0, 255, 0),
+        name = "KeyCard",
+        glow = true,
+        glowIntensity = 8
+    },
+    ["PasswordPaper"] = {
+        color = Color3.fromRGB(0, 150, 255),
+        name = "Password",
+        glow = true,
+        glowIntensity = 8
+    },
+    ["InnerKeyCard"] = {
+        color = Color3.fromRGB(255, 255, 0),
+        name = "InnerKey",
+        glow = true,
+        glowIntensity = 8
+    },
+    ["Currency"] = {
+        color = Color3.fromRGB(255, 215, 0),
+        name = "Currency",
+        glow = true,
+        glowIntensity = 6
+    },
+    ["Medkit"] = {
+        color = Color3.fromRGB(0, 255, 0),
+        name = "Medkit",
+        glow = false
+    },
+    ["Defib"] = {
+        color = Color3.fromRGB(0, 255, 255),
+        name = "Defib",
+        glow = false
+    },
+    ["Flashlight"] = {
+        color = Color3.fromRGB(255, 255, 255),
+        name = "Flashlight",
+        glow = false
+    },
+    ["Lantern"] = {
+        color = Color3.fromRGB(255, 165, 0),
+        name = "Lantern",
+        glow = false
+    },
+    ["Beacon"] = {
+        color = Color3.fromRGB(255, 0, 255),
+        name = "Beacon",
+        glow = false
+    },
+    ["CodeBreacher"] = {
+        color = Color3.fromRGB(255, 50, 50),
+        name = "CodeBreacher",
+        glow = false
+    }
+}
+
+-- ========== NOTIFICATION SYSTEM ==========
 local NotificationSystem = {
     activeNotifications = {},
     nextYPosition = 0,
@@ -77,8 +151,7 @@ function NotificationSystem:CreateNotification(title, text, duration, customColo
         end
     end
     
-    local viewportSize = workspace.CurrentCamera and workspace.CurrentCamera.ViewportSize or Vector2.new(1920, 1080)
-    
+    local viewportSize = (workspace.CurrentCamera and workspace.CurrentCamera.ViewportSize) or Vector2.new(1920, 1080)
     local startX = viewportSize.X - 320
     local startY = viewportSize.Y - 100 - self.nextYPosition
     
@@ -161,13 +234,11 @@ function NotificationSystem:Update()
     for i, notif in ipairs(self.activeNotifications) do
         local elapsed = currentTime - notif.startTime
         local progress = math.min(elapsed / notif.duration, 1)
-        
         notif.progress.Size = Vector2.new(300 * (1 - progress), 3)
         
         if elapsed >= notif.duration then
             local fadeProgress = math.min((elapsed - notif.duration) / 0.5, 1)
             local alpha = 1 - fadeProgress
-            
             notif.background.Transparency = 0.3 + (0.7 * fadeProgress)
             notif.accent.Transparency = 0.7 + (0.3 * fadeProgress)
             notif.title.Transparency = alpha
@@ -195,18 +266,14 @@ function NotificationSystem:Update()
     if #toRemove > 0 then
         self.nextYPosition = 0
         for i, notif in ipairs(self.activeNotifications) do
-            local viewportSize = workspace.CurrentCamera and workspace.CurrentCamera.ViewportSize or Vector2.new(1920, 1080)
+            local viewportSize = (workspace.CurrentCamera and workspace.CurrentCamera.ViewportSize) or Vector2.new(1920, 1080)
             local targetY = viewportSize.Y - 100 - self.nextYPosition
-            
-            local deltaY = targetY - notif.targetY
             notif.targetY = targetY
-            
             notif.background.Position = Vector2.new(notif.background.Position.X, targetY)
             notif.accent.Position = Vector2.new(notif.accent.Position.X, targetY)
             notif.title.Position = Vector2.new(notif.title.Position.X, targetY + 10)
             notif.text.Position = Vector2.new(notif.text.Position.X, targetY + 35)
             notif.progress.Position = Vector2.new(notif.progress.Position.X, targetY + NotificationSystem.notificationHeight - 3)
-            
             self.nextYPosition = self.nextYPosition + (NotificationSystem.notificationHeight + NotificationSystem.spacing)
         end
     end
@@ -214,15 +281,14 @@ end
 
 local function SafeNotify(title, text, duration, mobType)
     local colorToUse = Settings.notificationColor
-    
     if mobType and Settings.mobColors[mobType] then
         colorToUse = Settings.mobColors[mobType]
     end
-    
     NotificationSystem:CreateNotification(title, text, duration or 5, colorToUse)
     Arcane:Log(title .. ": " .. text, 2)
 end
 
+-- ========== MOB SCANNER ==========
 local function setMouseLock(locked)
     if setrobloxinput then
         setrobloxinput(not locked)
@@ -230,26 +296,21 @@ local function setMouseLock(locked)
 end
 
 local function scanWorkspace()
-    if not Settings.enabled then 
-        return 
-    end
+    if not Settings.enabled then return end
     
     local currentTime = os.clock()
-    if currentTime - lastScanTime < Settings.scanCooldown then 
-        return 
+    if (currentTime - lastScanTime) < Settings.scanCooldown then
+        return
     end
     lastScanTime = currentTime
-
+    
     local success, children = pcall(function()
         return workspace:GetChildren()
     end)
     
-    if not success or not children then
-        return
-    end
+    if not success or not children then return end
     
     local currentFrameMobs = {}
-
     for i = 1, #children do
         local obj = children[i]
         local objName = obj.Name
@@ -261,14 +322,15 @@ local function scanWorkspace()
                 
                 if not detectedMobs[mobId] then
                     detectedMobs[mobId] = {
-                        type = mobType, 
+                        type = mobType,
                         time = currentTime
                     }
                     
                     if Settings.showNotifications then
                         SafeNotify("MOB DETECTED!", mobType .. " detected", 3, mobType)
                     end
-                    print("[MOB SCANNER] Found new: " .. mobType)
+                    
+                    print("MOB SCANNER: Found new " .. mobType)
                 end
                 break
             end
@@ -280,39 +342,63 @@ local function scanWorkspace()
             detectedMobs[mobId] = nil
         end
     end
+    
+    -- НОВОЕ: Сканирование комнат HeavyPainter
+    local success2, gameplayFolder = pcall(function()
+        return workspace:FindFirstChild("GameplayFolder")
+    end)
+    
+    if success2 and gameplayFolder then
+        local rooms = gameplayFolder:FindFirstChild("Rooms")
+        if rooms then
+            for roomType, enabled in pairs(Settings.targetRooms) do
+                if enabled then
+                    local room = rooms:FindFirstChild(roomType)
+                    if room and not detectedRooms[roomType] then
+                        detectedRooms[roomType] = true
+                        
+                        if Settings.showNotifications then
+                            SafeNotify("ROOM DETECTED!", roomType .. " room found", 5, roomType)
+                        end
+                        
+                        print("ROOM SCANNER: Found " .. roomType)
+                    elseif not room and detectedRooms[roomType] then
+                        detectedRooms[roomType] = nil
+                    end
+                end
+            end
+        end
+    end
 end
 
 local function startScanner()
-    if scanThread then 
-        return 
-    end
+    if scanThread then return end
     
     Settings.enabled = true
     scanThread = spawn(function()
-        print("[MOB SCANNER] Scanner started")
-        
+        print("MOB SCANNER: Scanner started")
         while Settings.enabled do
             pcall(scanWorkspace)
-            
             pcall(function()
                 NotificationSystem:Update()
             end)
-            
             wait(Settings.scanCooldown)
         end
-        
-        print("[MOB SCANNER] Scanner stopped")
+        print("MOB SCANNER: Scanner stopped")
         scanThread = nil
     end)
 end
 
 local function stopScanner()
     Settings.enabled = false
-    print("[SCANNER] Stop signal sent")
+    print("SCANNER: Stop signal sent")
 end
 
+-- ========== ESP SYSTEM С ARCANE ESP ==========
+
+-- Функция поиска Keycards/Passwords с улучшенным паттерном
 local function findKeycards()
-    local foundKeycards = {}
+    local foundItems = {}
     
     local success, rooms = pcall(function()
         local gameplayFolder = workspace:WaitForChild("GameplayFolder", 2)
@@ -323,8 +409,7 @@ local function findKeycards()
     end)
     
     if not success or not rooms then
-        print("[KEYCARD FINDER] Rooms not found")
-        return foundKeycards
+        return foundItems
     end
     
     local success2, descendants = pcall(function()
@@ -332,8 +417,7 @@ local function findKeycards()
     end)
     
     if not success2 or not descendants then
-        print("[KEYCARD FINDER] Failed to get descendants")
-        return foundKeycards
+        return foundItems
     end
     
     for _, obj in ipairs(descendants) do
@@ -342,861 +426,440 @@ local function findKeycards()
         end)
         
         if success3 and (interactionType == "KeyCard" or interactionType == "PasswordPaper" or interactionType == "InnerKeyCard") then
-            local success4, proxyPart = pcall(function()
-                return obj:FindFirstChild("ProxyPart")
-            end)
-            
-            if success4 and proxyPart then
-                local displayName = "KeyCard"
-                if interactionType == "PasswordPaper" then
-                    displayName = "Password"
-                elseif interactionType == "InnerKeyCard" then
-                    displayName = "InnerKey"
-                end
-                
-                local boxColor = Color3.fromRGB(0, 255, 0)
-                if interactionType == "PasswordPaper" then
-                    boxColor = Color3.fromRGB(0, 150, 255)
-                elseif interactionType == "InnerKeyCard" then
-                    boxColor = Color3.fromRGB(255, 255, 0)
-                end
-                
-                local box = Drawing.new("Square")
-                box.Filled = false
-                box.Color = boxColor
-                box.Size = Vector2.new(40, 40)
-                box.Visible = false
-                box.Thickness = 2
-                
-                local text = Drawing.new("Text")
-                text.Color = Color3.fromRGB(255, 255, 255)
-                text.Center = true
-                text.Size = 16
-                text.Outline = true
-                text.Visible = false
-                
-                table.insert(foundKeycards, {
+            local config = espConfigs[interactionType]
+            if config then
+                table.insert(foundItems, {
                     model = obj,
-                    part = proxyPart,
-                    box = box,
-                    text = text,
                     type = interactionType,
-                    displayName = displayName,
-                    boxColor = boxColor
+                    config = config
                 })
             end
         end
     end
     
-    print("[KEYCARD FINDER] Found " .. #foundKeycards .. " items")
-    return foundKeycards
+    print("KEYCARD ESP: Found " .. #foundItems .. " items")
+    return foundItems
 end
 
-local function cleanupKeycardESP()
-    print("[CLEANUP] Cleaning up Keycard ESP...")
+-- Функция поиска Currency с паттернами
+local function findCurrency()
+    local foundItems = {}
     
-    Settings.keycardESPEnabled = false
-    Settings.autoRescanKeycards = false
-    Settings.rescanActive = false
+    local success, rooms = pcall(function()
+        return workspace:WaitForChild("GameplayFolder"):WaitForChild("Rooms")
+    end)
     
-    wait(0.1)
-    
-    for _, esp in ipairs(keycardESPItems) do
-        if esp.box then 
-            esp.box:Remove() 
-        end
-        if esp.text then 
-            esp.text:Remove() 
-        end
+    if not success or not rooms then
+        return foundItems
     end
     
-    keycardESPItems = {}
-    keycardESPThread = nil
-    rescanThread = nil
-    
-    print("[CLEANUP] Keycard ESP cleaned up")
-end
-
-local function cleanupCurrencyESP()
-    print("[CLEANUP] Cleaning up Currency ESP...")
-    
-    Settings.currencyESPEnabled = false
-    Settings.autoRescanCurrency = false
-    
-    wait(0.1)
-    
-    for _, item in ipairs(currencyItems) do
-        if item.box then 
-            item.box:Remove() 
-        end
-        if item.text then 
-            item.text:Remove() 
-        end
-    end
-    
-    currencyItems = {}
-    currencyESPThread = nil
-    currencyRescanThread = nil
-    
-    print("[CLEANUP] Currency ESP cleaned up")
-end
-
-local function cleanupItemsESP()
-    print("[CLEANUP] Cleaning up Items ESP...")
-    
-    Settings.itemsESPEnabled = false
-    Settings.autoRescanItemsESP = false
-    
-    wait(0.1)
-    
-    for _, item in ipairs(otherItems) do
-        if item.box then 
-            item.box:Remove() 
-        end
-        if item.text then 
-            item.text:Remove() 
-        end
-    end
-    
-    otherItems = {}
-    itemsESPThread = nil
-    itemsRescanThread = nil
-    
-    print("[CLEANUP] Items ESP cleaned up")
-end
-
-local function performAutoRescan()
-    if not Settings.keycardESPEnabled then
-        print("[AUTO-RESCAN] ESP disabled, skipping rescan")
-        return
-    end
-    
-    if Settings.rescanActive then
-        print("[AUTO-RESCAN] Rescan already in progress")
-        return
-    end
-    
-    Settings.rescanActive = true
-    print("[AUTO-RESCAN] Starting auto-rescan...")
-    
-    local oldESP = keycardESPItems
-    keycardESPItems = {}
-    
-    local newKeycards = findKeycards()
-    
-    if #newKeycards > 0 then
-        print("[AUTO-RESCAN] Found " .. #newKeycards .. " items")
-        
-        for _, esp in ipairs(oldESP) do
-            if esp.box then
-                esp.box:Remove()
-            end
-            if esp.text then
-                esp.text:Remove()
-            end
-        end
-        
-        keycardESPItems = newKeycards
-        
-        local keycardCount = 0
-        local passwordCount = 0
-        local innerKeyCount = 0
-        
-        for _, esp in ipairs(keycardESPItems) do
-            if esp.type == "KeyCard" then
-                keycardCount = keycardCount + 1
-            elseif esp.type == "PasswordPaper" then
-                passwordCount = passwordCount + 1
-            elseif esp.type == "InnerKeyCard" then
-                innerKeyCount = innerKeyCount + 1
-            end
-        end
-        
-        SafeNotify("Auto-Rescan", 
-            "Completed successfully!\n" ..
-            "Keycards: " .. keycardCount .. 
-            "\nPasswords: " .. passwordCount .. 
-            "\nInner Keys: " .. innerKeyCount ..
-            "\nTotal: " .. #keycardESPItems .. " items", 3)
-            
-        print("[AUTO-RESCAN] Keycards: " .. keycardCount .. ", Passwords: " .. passwordCount .. ", Inner Keys: " .. innerKeyCount)
-        
-        if Settings.keycardESPEnabled then
-            if keycardESPThread then
-                Settings.keycardESPEnabled = false
-                wait(0.1)
-                keycardESPThread = nil
-            end
-            
-            Settings.keycardESPEnabled = true
-            
-            local function startDrawingThread()
-                if keycardESPThread then
-                    return
-                end
-                
-                keycardESPThread = spawn(function()
-                    print("[KEYCARD ESP] Drawing thread started")
-                    
-                    while Settings.keycardESPEnabled do
-                        wait(0)
-                        
-                        local activeCount = 0
-                        
-                        for i = #keycardESPItems, 1, -1 do
-                            local esp = keycardESPItems[i]
-                            
-                            if esp.model and esp.model.Parent and esp.part and esp.part.Parent then
-                                local pos, onScreen = WorldToScreen(esp.part.Position)
-                                
-                                if onScreen then
-                                    esp.box.Position = Vector2.new(pos.X - 20, pos.Y - 20)
-                                    esp.box.Visible = true
-                                    
-                                    esp.text.Position = Vector2.new(pos.X, pos.Y + 25)
-                                    esp.text.Text = esp.displayName
-                                    esp.text.Visible = true
-                                    
-                                    activeCount = activeCount + 1
-                                else
-                                    esp.box.Visible = false
-                                    esp.text.Visible = false
-                                end
-                            else
-                                esp.box:Remove()
-                                esp.text:Remove()
-                                table.remove(keycardESPItems, i)
-                                print("[KEYCARD ESP] Removed invalid item")
-                            end
-                        end
-                    end
-                    
-                    print("[KEYCARD ESP] Drawing thread stopped")
-                    cleanupKeycardESP()
-                end)
-            end
-            
-            startDrawingThread()
-        end
-    else
-        print("[AUTO-RESCAN] No items found")
-        SafeNotify("Auto-Rescan", "No items found", 2)
-    end
-    
-    Settings.rescanActive = false
-end
-
-local function performCurrencyAutoRescan()
-    if not Settings.currencyESPEnabled then
-        return
-    end
-    
-    print("[CURRENCY AUTO-RESCAN] Starting...")
-    
-    local oldItems = currencyItems
-    currencyItems = {}
-    
-    local Rooms = workspace:WaitForChild("GameplayFolder"):WaitForChild("Rooms")
-    
-    print("[CURRENCY AUTO-RESCAN] Searching for Currency...")
-    
-    for _, obj in ipairs(Rooms:GetDescendants()) do
+    for _, obj in ipairs(rooms:GetDescendants()) do
         if obj:IsA("Model") then
-            local name = obj.Name:lower()
+            local name = obj.Name
             
-            if name:find("currency") and not name:find("crate") then
-                local hasNumbers = name:find("%d+%-%d+") or name:find("%d+%-?%d*")
-                
-                if hasNumbers then
-                    local mainPart = obj.PrimaryPart or obj:FindFirstChildWhichIsA("BasePart")
-                    local meshPart = obj:FindFirstChildWhichIsA("MeshPart")
-                    local union = obj:FindFirstChildWhichIsA("UnionOperation")
-                    
-                    if mainPart or meshPart or union then
-                        local box = Drawing.new("Square")
-                        box.Filled = false
-                        box.Color = Color3.fromRGB(255, 215, 0)
-                        box.Size = Vector2.new(40, 40)
-                        box.Visible = false
-                        
-                        local text = Drawing.new("Text")
-                        text.Color = Color3.fromRGB(255, 255, 255)
-                        text.Center = true
-                        text.Size = 14
-                        text.Outline = true
-                        text.Visible = false
-                        
-                        local amount = obj.Name:match("(%d+%-%d+)") or obj.Name:match("(%d+)") or "?"
-                        
-                        table.insert(currencyItems, {
-                            model = obj,
-                            part = mainPart or meshPart or union,
-                            name = obj.Name,
-                            amount = amount,
-                            box = box,
-                            text = text
-                        })
-                    end
+            -- Проверяем паттерны Currency
+            local patterns = {
+                "^Currency%d+%-%d+$",      -- CurrencyXX-XX, CurrencyXXX-XX, CurrencyXX-XXX
+                "^Currency%d%-%d$"         -- CurrencyX-X, CurrencyXX-X, CurrencyX-XX
+            }
+            
+            local isCurrency = false
+            for _, pattern in ipairs(patterns) do
+                if name:match(pattern) then
+                    isCurrency = true
+                    break
                 end
             end
+            
+            if isCurrency then
+                -- Извлекаем числа для отображения
+                local amount = name:match("(%d+%-%d+)")
+                
+                print("Found Currency: " .. name .. " (Amount: " .. (amount or "?") .. ")")
+                
+                table.insert(foundItems, {
+                    model = obj,
+                    type = "Currency",
+                    config = espConfigs["Currency"],
+                    amount = amount or "?"
+                })
+            end
         end
     end
     
-    print("[CURRENCY AUTO-RESCAN] Found: " .. #currencyItems)
-    
-    if #currencyItems > 0 then
-        for _, item in ipairs(oldItems) do
-            if item.box then
-                item.box:Remove()
-            end
-            if item.text then
-                item.text:Remove()
-            end
-        end
-    end
+    print("CURRENCY ESP: Found " .. #foundItems)
+    return foundItems
 end
 
-local function performItemsAutoRescan()
-    if not Settings.itemsESPEnabled then
-        return
-    end
-    
-    wait(2)
-    
-    print("[ITEMS AUTO-RESCAN] Starting...")
-    
-    local oldItems = otherItems
-    otherItems = {}
+-- Функция поиска Items
+local function findItems()
+    local foundItems = {}
     
     local GameplayFolder = workspace:FindFirstChild("GameplayFolder")
-    if not GameplayFolder then 
-        print("[ITEMS AUTO-RESCAN] GameplayFolder not found")
-        return 
-    end
+    if not GameplayFolder then return foundItems end
     
     local Rooms = GameplayFolder:FindFirstChild("Rooms")
-    if not Rooms then 
-        print("[ITEMS AUTO-RESCAN] Rooms not found")
-        return 
-    end
-    
-    print("[ITEMS AUTO-RESCAN] Loading ESP for items...")
+    if not Rooms then return foundItems end
     
     for _, obj in ipairs(Rooms:GetDescendants()) do
         if obj:IsA("Model") then
             local name = obj.Name:lower()
-            local mainPart = obj.PrimaryPart or obj:FindFirstChildWhichIsA("BasePart")
+            local itemType = nil
             
-            if mainPart then
-                local color, displayName = nil, nil
-                
-                if name:find("defib") and not name:find("crate") then
-                    color, displayName = Color3.fromRGB(0, 255, 255), "Defib"
-                elseif name:find("medkit") and not name:find("crate") then
-                    color, displayName = Color3.fromRGB(0, 255, 0), "Medkit"
-                elseif name:find("flashlight") then
-                    color, displayName = Color3.fromRGB(255, 255, 255), "Flashlight"
-                elseif name:find("lantern") then
-                    color, displayName = Color3.fromRGB(255, 165, 0), "Lantern"
-                elseif name:find("bigflashbeacon") or name:find("beacon") then
-                    color, displayName = Color3.fromRGB(255, 0, 255), "Beacon"
-                elseif name:find("codebreacher") then
-                    color, displayName = Color3.fromRGB(255, 50, 50), "CodeBreacher"
-                end
-                
-                if color then
-                    local box = Drawing.new("Square")
-                    box.Filled = false
-                    box.Color = color
-                    box.Size = Vector2.new(40, 40)
-                    box.Visible = false
-                    
-                    local text = Drawing.new("Text")
-                    text.Color = Color3.fromRGB(255, 255, 255)
-                    text.Center = true
-                    text.Size = 14
-                    text.Outline = true
-                    text.Visible = false
-                    
-                    table.insert(otherItems, {
-                        model = obj,
-                        part = mainPart,
-                        name = displayName,
-                        box = box,
-                        text = text
-                    })
-                end
+            if name:find("defib") and not name:find("crate") then
+                itemType = "Defib"
+            elseif name:find("medkit") and not name:find("crate") then
+                itemType = "Medkit"
+            elseif name:find("flashlight") then
+                itemType = "Flashlight"
+            elseif name:find("lantern") then
+                itemType = "Lantern"
+            elseif name:find("bigflashbeacon") or name:find("beacon") then
+                itemType = "Beacon"
+            elseif name:find("codebreacher") then
+                itemType = "CodeBreacher"
+            end
+            
+            if itemType and espConfigs[itemType] then
+                table.insert(foundItems, {
+                    model = obj,
+                    type = itemType,
+                    config = espConfigs[itemType]
+                })
             end
         end
     end
     
-    print("[ITEMS AUTO-RESCAN] Found: " .. #otherItems)
-    
-    if #otherItems > 0 then
-        for _, item in ipairs(oldItems) do
-            if item.box then
-                item.box:Remove()
-            end
-            if item.text then
-                item.text:Remove()
-            end
-        end
-    end
+    print("ITEMS ESP: Found " .. #foundItems)
+    return foundItems
 end
 
-local function startAutoRescan()
-    if rescanThread then
-        Settings.autoRescanKeycards = false
-        wait(0.1)
-        rescanThread = nil
+-- Создание ESP с Arcane ESP Library (с учетом дистанции и свечения)
+local function createESP(item)
+    local key = item.model.Address
+    local config = item.config
+    
+    -- Создаем ESP используя Arcane ESP
+    local esp = ArcaneEsp.new(item.model)
+        :AddEsp(config.color)
+        :AddTitle(Color3.new(1, 1, 1), config.name)
+        :AddDistance(Color3.new(1, 1, 1))
+        :SetFont(0)
+    
+    -- Добавляем свечение только если включено в настройках И в конфиге
+    if Settings.espGlowEnabled and config.glow then
+        esp:AddGlow(config.color, config.glowIntensity or 8)
     end
     
-    if not Settings.autoRescanKeycards then
-        return
-    end
-    
-    rescanThread = spawn(function()
-        print("[AUTO-RESCAN] Thread started with interval: " .. Settings.autoRescanInterval .. " seconds")
-        
-        local lastAutoRescanTime = os.clock()
-        
-        while Settings.autoRescanKeycards and Settings.keycardESPEnabled do
-            wait(1)
-            
-            local currentTime = os.clock()
-            
-            if currentTime - lastAutoRescanTime >= Settings.autoRescanInterval then
-                print("[AUTO-RESCAN] Time to rescan! Last auto scan was " .. (currentTime - lastAutoRescanTime) .. " seconds ago")
-                
-                performAutoRescan()
-                
-                lastAutoRescanTime = currentTime
-            end
-        end
-        
-        print("[AUTO-RESCAN] Thread stopped")
-        rescanThread = nil
-    end)
+    return {
+        esp = esp,
+        model = item.model,
+        key = key
+    }
 end
-
-local function startCurrencyAutoRescan()
-    if currencyRescanThread then
-        Settings.autoRescanCurrency = false
-        wait(0.1)
-        currencyRescanThread = nil
-    end
-    
-    if not Settings.autoRescanCurrency then
-        return
-    end
-    
-    currencyRescanThread = spawn(function()
-        print("[CURRENCY AUTO-RESCAN] Thread started")
-        
-        local lastAutoRescanTime = os.clock()
-        
-        while Settings.autoRescanCurrency and Settings.currencyESPEnabled do
-            wait(1)
-            
-            local currentTime = os.clock()
-            
-            if currentTime - lastAutoRescanTime >= Settings.autoRescanInterval then
-                print("[CURRENCY AUTO-RESCAN] Time to rescan!")
-                
-                performCurrencyAutoRescan()
-                
-                lastAutoRescanTime = currentTime
-            end
-        end
-        
-        print("[CURRENCY AUTO-RESCAN] Thread stopped")
-        currencyRescanThread = nil
-    end)
-end
-
-local function startItemsAutoRescan()
-    if itemsRescanThread then
-        Settings.autoRescanItemsESP = false
-        wait(0.1)
-        itemsRescanThread = nil
-    end
-    
-    if not Settings.autoRescanItemsESP then
-        return
-    end
-    
-    itemsRescanThread = spawn(function()
-        print("[ITEMS AUTO-RESCAN] Thread started")
-        
-        local lastAutoRescanTime = os.clock()
-        
-        while Settings.autoRescanItemsESP and Settings.itemsESPEnabled do
-            wait(1)
-            
-            local currentTime = os.clock()
-            
-            if currentTime - lastAutoRescanTime >= Settings.autoRescanInterval then
-                print("[ITEMS AUTO-RESCAN] Time to rescan!")
-                
-                performItemsAutoRescan()
-                
-                lastAutoRescanTime = currentTime
-            end
-        end
-        
-        print("[ITEMS AUTO-RESCAN] Thread stopped")
-        itemsRescanThread = nil
-    end)
-end
-
+-- Запуск Keycard ESP
 local function startKeycardESP()
-    if keycardESPThread then
-        Settings.keycardESPEnabled = false
-        wait(0.1)
-        keycardESPThread = nil
-    end
+    if Settings.keycardESPEnabled then return end
     
     Settings.keycardESPEnabled = true
-    Settings.lastKeycardScanTime = os.clock()
+    print("KEYCARD ESP: Starting...")
     
-    keycardESPItems = findKeycards()
+    local items = findKeycards()
     
-    if #keycardESPItems == 0 then
+    if #items == 0 then
         SafeNotify("Keycard ESP", "No items found", 3)
-        print("[KEYCARD ESP] No items found on initial scan")
         return
     end
     
-    print("[KEYCARD ESP] Starting with " .. #keycardESPItems .. " items")
+    -- Создаем ESP для каждого предмета
+    for _, item in ipairs(items) do
+        local espData = createESP(item)
+        activeESPs.keycards[espData.key] = espData
+    end
     
     local keycardCount = 0
     local passwordCount = 0
     local innerKeyCount = 0
     
-    for _, esp in ipairs(keycardESPItems) do
-        if esp.type == "KeyCard" then
-            keycardCount = keycardCount + 1
-        elseif esp.type == "PasswordPaper" then
-            passwordCount = passwordCount + 1
-        elseif esp.type == "InnerKeyCard" then
-            innerKeyCount = innerKeyCount + 1
+    for _, item in ipairs(items) do
+        if item.type == "KeyCard" then keycardCount = keycardCount + 1
+        elseif item.type == "PasswordPaper" then passwordCount = passwordCount + 1
+        elseif item.type == "InnerKeyCard" then innerKeyCount = innerKeyCount + 1
         end
     end
     
-    SafeNotify("Keycard ESP", 
-        "ESP Activated!\n" ..
-        "Keycards: " .. keycardCount .. 
-        "\nPasswords: " .. passwordCount .. 
-        "\nInner Keys: " .. innerKeyCount ..
-        "\nTotal: " .. #keycardESPItems .. " items", 3)
+    SafeNotify("Keycard ESP", "Activated! KC:" .. keycardCount .. " PW:" .. passwordCount .. " IK:" .. innerKeyCount, 3)
     
-    keycardESPThread = spawn(function()
-        print("[KEYCARD ESP] Drawing thread started")
-        
-        while Settings.keycardESPEnabled do
-            wait(0)
-            
-            local activeCount = 0
-            
-            for i = #keycardESPItems, 1, -1 do
-                local esp = keycardESPItems[i]
-                
-                if esp.model and esp.model.Parent and esp.part and esp.part.Parent then
-                    local pos, onScreen = WorldToScreen(esp.part.Position)
-                    
-                    if onScreen then
-                        esp.box.Position = Vector2.new(pos.X - 20, pos.Y - 20)
-                        esp.box.Visible = true
-                        
-                        esp.text.Position = Vector2.new(pos.X, pos.Y + 25)
-                        esp.text.Text = esp.displayName
-                        esp.text.Visible = true
-                        
-                        activeCount = activeCount + 1
-                    else
-                        esp.box.Visible = false
-                        esp.text.Visible = false
-                    end
-                else
-                    esp.box:Remove()
-                    esp.text:Remove()
-                    table.remove(keycardESPItems, i)
-                    print("[KEYCARD ESP] Removed invalid item")
-                end
-            end
+    -- Запускаем авторесканирование
+    if Settings.autoRescan then
+        if rescanThreads.keycards then
+            rescanThreads.keycards = nil
         end
         
-        print("[KEYCARD ESP] Drawing thread stopped")
-        cleanupKeycardESP()
-    end)
-    
-    if Settings.autoRescanKeycards then
-        startAutoRescan()
+        rescanThreads.keycards = spawn(function()
+            while Settings.keycardESPEnabled and Settings.autoRescan do
+                wait(Settings.autoRescanInterval)
+                
+                -- Находим новые предметы
+                local newItems = findKeycards()
+                local newKeys = {}
+                
+                for _, item in ipairs(newItems) do
+                    newKeys[item.model.Address] = item
+                end
+                
+                -- Удаляем старые ESP
+                for key, espData in pairs(activeESPs.keycards) do
+                    if not newKeys[key] then
+                        espData.esp:Destroy()
+                        activeESPs.keycards[key] = nil
+                    end
+                end
+                
+                -- Добавляем новые ESP
+                for key, item in pairs(newKeys) do
+                    if not activeESPs.keycards[key] then
+                        local espData = createESP(item)
+                        activeESPs.keycards[espData.key] = espData
+                    end
+                end
+            end
+        end)
     end
 end
 
-local function startCurrencyESP()
-    if currencyESPThread then
-        cleanupCurrencyESP()
+-- Очистка Keycard ESP
+local function cleanupKeycardESP()
+    Settings.keycardESPEnabled = false
+    
+    if rescanThreads.keycards then
+        rescanThreads.keycards = nil
     end
+    
+    for key, espData in pairs(activeESPs.keycards) do
+        espData.esp:Destroy()
+    end
+    
+    activeESPs.keycards = {}
+    print("KEYCARD ESP: Cleaned up")
+end
+
+-- Запуск Currency ESP
+local function startCurrencyESP()
+    if Settings.currencyESPEnabled then return end
     
     Settings.currencyESPEnabled = true
+    print("CURRENCY ESP: Starting...")
     
-    print("[CURRENCY ESP] Starting...")
+    local items = findCurrency()
     
-    local Rooms = workspace:WaitForChild("GameplayFolder"):WaitForChild("Rooms")
-    
-    print("[CURRENCY ESP] Searching for Currency...")
-    
-    for _, obj in ipairs(Rooms:GetDescendants()) do
-        if obj:IsA("Model") then
-            local name = obj.Name:lower()
-            
-            if name:find("currency") and not name:find("crate") then
-                local hasNumbers = name:find("%d+%-%d+") or name:find("%d+%-?%d*")
-                
-                if hasNumbers then
-                    local mainPart = obj.PrimaryPart or obj:FindFirstChildWhichIsA("BasePart")
-                    local meshPart = obj:FindFirstChildWhichIsA("MeshPart")
-                    local union = obj:FindFirstChildWhichIsA("UnionOperation")
-                    
-                    if mainPart or meshPart or union then
-                        print("Найден Currency: " .. obj.Name)
-                        
-                        local box = Drawing.new("Square")
-                        box.Filled = false
-                        box.Color = Color3.fromRGB(255, 215, 0)
-                        box.Size = Vector2.new(40, 40)
-                        box.Visible = false
-                        
-                        local text = Drawing.new("Text")
-                        text.Color = Color3.fromRGB(255, 255, 255)
-                        text.Center = true
-                        text.Size = 14
-                        text.Outline = true
-                        text.Visible = false
-                        
-                        local amount = obj.Name:match("(%d+%-%d+)") or obj.Name:match("(%d+)") or "?"
-                        
-                        table.insert(currencyItems, {
-                            model = obj,
-                            part = mainPart or meshPart or union,
-                            name = obj.Name,
-                            amount = amount,
-                            box = box,
-                            text = text
-                        })
-                    end
-                end
-            end
-        end
-    end
-    
-    print("[CURRENCY ESP] Found: " .. #currencyItems)
-    
-    if #currencyItems == 0 then
+    if #items == 0 then
         SafeNotify("Currency ESP", "No items found", 3)
         return
     end
     
-    SafeNotify("Currency ESP", "Found " .. #currencyItems .. " Currency items", 3)
+    for _, item in ipairs(items) do
+        local espData = createESP(item)
+        activeESPs.currency[espData.key] = espData
+    end
     
-    currencyESPThread = spawn(function()
-        print("[CURRENCY ESP] Drawing thread started")
-        
-        while Settings.currencyESPEnabled do
-            for i = #currencyItems, 1, -1 do
-                local item = currencyItems[i]
-                
-                if item.model and item.model.Parent and item.part and item.part.Parent then
-                    local pos, onScreen = WorldToScreen(item.part.Position)
-                    
-                    if onScreen then
-                        item.box.Position = Vector2.new(pos.X - 20, pos.Y - 20)
-                        item.text.Position = Vector2.new(pos.X, pos.Y + 25)
-                        item.text.Text = "Currency " .. item.amount
-                        item.box.Visible = true
-                        item.text.Visible = true
-                    else
-                        item.box.Visible = false
-                        item.text.Visible = false
-                    end
-                else
-                    print("Удален Currency: " .. item.name)
-                    item.box:Remove()
-                    item.text:Remove()
-                    table.remove(currencyItems, i)
-                end
-            end
-            
-            wait(0)
+    SafeNotify("Currency ESP", "Found " .. #items .. " Currency", 3)
+    
+    if Settings.autoRescan then
+        if rescanThreads.currency then
+            rescanThreads.currency = nil
         end
         
-        print("[CURRENCY ESP] Drawing thread stopped")
-        cleanupCurrencyESP()
-    end)
-    
-    if Settings.autoRescanCurrency then
-        startCurrencyAutoRescan()
+        rescanThreads.currency = spawn(function()
+            while Settings.currencyESPEnabled and Settings.autoRescan do
+                wait(Settings.autoRescanInterval)
+                
+                local newItems = findCurrency()
+                local newKeys = {}
+                
+                for _, item in ipairs(newItems) do
+                    newKeys[item.model.Address] = item
+                end
+                
+                for key, espData in pairs(activeESPs.currency) do
+                    if not newKeys[key] then
+                        espData.esp:Destroy()
+                        activeESPs.currency[key] = nil
+                    end
+                end
+                
+                for key, item in pairs(newKeys) do
+                    if not activeESPs.currency[key] then
+                        local espData = createESP(item)
+                        activeESPs.currency[espData.key] = espData
+                    end
+                end
+            end
+        end)
     end
 end
 
-local function startItemsESP()
-    if itemsESPThread then
-        cleanupItemsESP()
+-- Очистка Currency ESP
+local function cleanupCurrencyESP()
+    Settings.currencyESPEnabled = false
+    
+    if rescanThreads.currency then
+        rescanThreads.currency = nil
     end
+    
+    for key, espData in pairs(activeESPs.currency) do
+        espData.esp:Destroy()
+    end
+    
+    activeESPs.currency = {}
+    print("CURRENCY ESP: Cleaned up")
+end
+
+-- Запуск Items ESP
+local function startItemsESP()
+    if Settings.itemsESPEnabled then return end
     
     Settings.itemsESPEnabled = true
-    
     wait(2)
+    print("ITEMS ESP: Starting...")
     
-    print("[ITEMS ESP] Starting...")
+    local items = findItems()
     
-    local GameplayFolder = workspace:FindFirstChild("GameplayFolder")
-    if not GameplayFolder then 
-        SafeNotify("Items ESP", "GameplayFolder not found", 3)
-        return 
-    end
-    
-    local Rooms = GameplayFolder:FindFirstChild("Rooms")
-    if not Rooms then 
-        SafeNotify("Items ESP", "Rooms not found", 3)
-        return 
-    end
-    
-    print("[ITEMS ESP] Loading ESP for items...")
-    
-    for _, obj in ipairs(Rooms:GetDescendants()) do
-        if obj:IsA("Model") then
-            local name = obj.Name:lower()
-            local mainPart = obj.PrimaryPart or obj:FindFirstChildWhichIsA("BasePart")
-            
-            if mainPart then
-                local color, displayName = nil, nil
-                
-                if name:find("defib") and not name:find("crate") then
-                    color, displayName = Color3.fromRGB(0, 255, 255), "Defib"
-                elseif name:find("medkit") and not name:find("crate") then
-                    color, displayName = Color3.fromRGB(0, 255, 0), "Medkit"
-                elseif name:find("flashlight") then
-                    color, displayName = Color3.fromRGB(255, 255, 255), "Flashlight"
-                elseif name:find("lantern") then
-                    color, displayName = Color3.fromRGB(255, 165, 0), "Lantern"
-                elseif name:find("bigflashbeacon") or name:find("beacon") then
-                    color, displayName = Color3.fromRGB(255, 0, 255), "Beacon"
-                elseif name:find("codebreacher") then
-                    color, displayName = Color3.fromRGB(255, 50, 50), "CodeBreacher"
-                end
-                
-                if color then
-                    local box = Drawing.new("Square")
-                    box.Filled = false
-                    box.Color = color
-                    box.Size = Vector2.new(40, 40)
-                    box.Visible = false
-                    
-                    local text = Drawing.new("Text")
-                    text.Color = Color3.fromRGB(255, 255, 255)
-                    text.Center = true
-                    text.Size = 14
-                    text.Outline = true
-                    text.Visible = false
-                    
-                    table.insert(otherItems, {
-                        model = obj,
-                        part = mainPart,
-                        name = displayName,
-                        box = box,
-                        text = text
-                    })
-                end
-            end
-        end
-    end
-    
-    print("[ITEMS ESP] Found: " .. #otherItems)
-    
-    if #otherItems == 0 then
+    if #items == 0 then
         SafeNotify("Items ESP", "No items found", 3)
         return
     end
     
-    SafeNotify("Items ESP", "Found " .. #otherItems .. " items", 3)
+    for _, item in ipairs(items) do
+        local espData = createESP(item)
+        activeESPs.items[espData.key] = espData
+    end
     
-    itemsESPThread = spawn(function()
-        print("[ITEMS ESP] Drawing thread started")
-        
-        while Settings.itemsESPEnabled do
-            for i = #otherItems, 1, -1 do
-                local item = otherItems[i]
-                
-                if item.model and item.model.Parent and item.part and item.part.Parent then
-                    local pos, onScreen = WorldToScreen(item.part.Position)
-                    
-                    if onScreen then
-                        item.box.Position = Vector2.new(pos.X - 20, pos.Y - 20)
-                        item.text.Position = Vector2.new(pos.X, pos.Y + 25)
-                        item.text.Text = item.name
-                        item.box.Visible = true
-                        item.text.Visible = true
-                    else
-                        item.box.Visible = false
-                        item.text.Visible = false
-                    end
-                else
-                    item.box:Remove()
-                    item.text:Remove()
-                    table.remove(otherItems, i)
-                end
-            end
-            
-            wait(0)
+    SafeNotify("Items ESP", "Found " .. #items .. " items", 3)
+    
+    if Settings.autoRescan then
+        if rescanThreads.items then
+            rescanThreads.items = nil
         end
         
-        print("[ITEMS ESP] Drawing thread stopped")
-        cleanupItemsESP()
-    end)
-    
-    if Settings.autoRescanItemsESP then
-        startItemsAutoRescan()
+        rescanThreads.items = spawn(function()
+            while Settings.itemsESPEnabled and Settings.autoRescan do
+                wait(Settings.autoRescanInterval)
+                
+                local newItems = findItems()
+                local newKeys = {}
+                
+                for _, item in ipairs(newItems) do
+                    newKeys[item.model.Address] = item
+                end
+                
+                for key, espData in pairs(activeESPs.items) do
+                    if not newKeys[key] then
+                        espData.esp:Destroy()
+                        activeESPs.items[key] = nil
+                    end
+                end
+                
+                for key, item in pairs(newKeys) do
+                    if not activeESPs.items[key] then
+                        local espData = createESP(item)
+                        activeESPs.items[espData.key] = espData
+                    end
+                end
+            end
+        end)
     end
 end
 
-local function forceRescanKeycards()
-    print("[FORCE RESCAN] Manual rescan triggered")
+-- Очистка Items ESP
+local function cleanupItemsESP()
+    Settings.itemsESPEnabled = false
     
+    if rescanThreads.items then
+        rescanThreads.items = nil
+    end
+    
+    for key, espData in pairs(activeESPs.items) do
+        espData.esp:Destroy()
+    end
+    
+    activeESPs.items = {}
+    print("ITEMS ESP: Cleaned up")
+end
+
+-- Очистка всех ESP
+local function cleanupAllESP()
+    cleanupKeycardESP()
+    cleanupCurrencyESP()
+    cleanupItemsESP()
+    SafeNotify("ESP", "All ESP cleared", 2)
+end
+
+-- Функция обновления свечения для всех активных ESP
+local function updateAllESPGlow()
+    print("Updating ESP Glow: " .. tostring(Settings.espGlowEnabled))
+    
+    -- Пересоздаем все активные ESP с новыми настройками свечения
     if Settings.keycardESPEnabled then
-        performAutoRescan()
-    else
-        print("[FORCE RESCAN] ESP not enabled, enabling first...")
-        Settings.keycardESPEnabled = true
+        cleanupKeycardESP()
+        wait(0.1)
         startKeycardESP()
     end
-end
-
-local function forceRescanCurrency()
-    print("[CURRENCY FORCE RESCAN] Manual rescan triggered")
     
     if Settings.currencyESPEnabled then
-        performCurrencyAutoRescan()
-    else
-        print("[CURRENCY FORCE RESCAN] ESP not enabled, enabling first...")
-        Settings.currencyESPEnabled = true
+        cleanupCurrencyESP()
+        wait(0.1)
         startCurrencyESP()
     end
-end
-
-local function forceRescanItems()
-    print("[ITEMS FORCE RESCAN] Manual rescan triggered")
     
     if Settings.itemsESPEnabled then
-        performItemsAutoRescan()
-    else
-        print("[ITEMS FORCE RESCAN] ESP not enabled, enabling first...")
-        Settings.itemsESPEnabled = true
+        cleanupItemsESP()
+        wait(0.1)
         startItemsESP()
     end
 end
+
+-- Force Rescan функции
+local function forceRescanKeycards()
+    if not Settings.keycardESPEnabled then
+        SafeNotify("Keycard ESP", "Enable ESP first", 2)
+        return
+    end
+    
+    print("FORCE RESCAN: Keycards")
+    cleanupKeycardESP()
+    wait(0.1)
+    startKeycardESP()
+    SafeNotify("Keycard ESP", "Keycards refreshed", 2)
+end
+
+local function forceRescanCurrency()
+    if not Settings.currencyESPEnabled then
+        SafeNotify("Currency ESP", "Enable ESP first", 2)
+        return
+    end
+    
+    print("FORCE RESCAN: Currency")
+    cleanupCurrencyESP()
+    wait(0.1)
+    startCurrencyESP()
+    SafeNotify("Currency ESP", "Currency refreshed", 2)
+end
+
+local function forceRescanItems()
+    if not Settings.itemsESPEnabled then
+        SafeNotify("Items ESP", "Enable ESP first", 2)
+        return
+    end
+    
+    print("FORCE RESCAN: Items")
+    cleanupItemsESP()
+    wait(0.1)
+    startItemsESP()
+    SafeNotify("Items ESP", "Items refreshed", 2)
+end
+
+-- ========== UI SETUP ==========
 
 Arcane:AddTheme("RatHubCustom", {
     Background = Color3.fromRGB(15, 15, 15),
@@ -1209,24 +872,21 @@ Arcane:AddTheme("RatHubCustom", {
 })
 
 local Window = Arcane:CreateWindow("RatHub - Mob Scanner", Vector2.new(900, 700), "RatHubCustom")
+
 Window:CreateTabSection("Scanner Tabs")
-
 local VisualsTab = Window:CreateTab("Visuals")
-
 local VisualsSection = Window:CreateSection("Entities Detection", "Visuals")
 
-local mobOptions = {
-    "Angler", "Blitz", "Pinkie", "Pandemonium", "Froger", "Chainsmoker",
-    "RidgeAngler", "RidgeBlitz", "RidgePinkie", "RidgePandemonium",
-    "RidgeFroger", "RidgeChainsmoker", "A60"
-}
+-- Mob Detection Settings
+local mobOptions = {"Angler", "Blitz", "Pinkie", "Pandemonium", "Froger", "Chainsmoker", 
+                    "RidgeAngler", "RidgeBlitz", "RidgePinkie", "RidgePandemonium", 
+                    "RidgeFroger", "RidgeChainsmoker", "A-60"}
 local defaultSelected = {}
 for _, mob in ipairs(mobOptions) do
     table.insert(defaultSelected, mob)
 end
 
 VisualsSection:AddMultipleDropdown("Detect Mobs", mobOptions, defaultSelected, function(selected)
-    print("[UI] Updated mob selection:")
     for _, mob in ipairs(mobOptions) do
         local isFound = false
         for _, selMob in ipairs(selected) do
@@ -1245,64 +905,32 @@ VisualsSection:AddSlider("Scan Speed", {
     Default = 100,
     Callback = function(value)
         Settings.scanCooldown = value / 1000
-        print("[UI] Scan cooldown: " .. value .. "ms")
     end
 })
 
 VisualsSection:AddToggle("Show Notifications", true, function(value)
     Settings.showNotifications = value
-    print("[UI] Notifications: " .. (value and "ENABLED" or "DISABLED"))
 end)
 
-local ItemESPSection = Window:CreateSection("ItemESP", "Visuals")
+VisualsSection:AddToggle("Detect HeavyPainter Room", true, function(value)
+    Settings.targetRooms["HeavyPainter"] = value
+end)
 
+-- ESP Section
+local ItemESPSection = Window:CreateSection("Item ESP", "Visuals")
 
-ItemESPSection:AddLabel("Still can be bugged or make some mistakes")
-ItemESPSection:AddLabel("KeycardESP is good working")
-ItemESPSection:AddLabel("Cleaning the ESP can break the autoscan")
-ItemESPSection:AddLabel("Not all items have been added")
-ItemESPSection:AddLabel("Auto-Rescan maybe didn't work, use binds")
+ItemESPSection:AddLabel("Using Arcane ESP Library")
+ItemESPSection:AddLabel("Auto-Rescan enabled by default")
 
 ItemESPSection:AddToggle("ESP Keycard", false, function(value)
-    Settings.keycardESPEnabled = value
-    print("[UI] Keycard ESP: " .. (value and "ENABLED" or "DISABLED"))
-    
     if value then
         startKeycardESP()
     else
-        Settings.keycardESPEnabled = false
-        
-        if keycardESPThread then
-            wait(0.1)
-            keycardESPThread = nil
-        end
-        
-        if rescanThread then
-            Settings.autoRescanKeycards = false
-            wait(0.1)
-            rescanThread = nil
-        end
-        
         cleanupKeycardESP()
     end
 end)
 
-ItemESPSection:AddToggle("Auto Rescan Keycards", true, function(value)
-    Settings.autoRescanKeycards = value
-    print("[UI] Auto-rescan Keycards: " .. (value and "ENABLED" or "DISABLED"))
-    
-    if value and Settings.keycardESPEnabled then
-        startAutoRescan()
-    elseif not value and rescanThread then
-        rescanThread = nil
-    end
-end)
-
-
 ItemESPSection:AddToggle("ESP Currency", false, function(value)
-    Settings.currencyESPEnabled = value
-    print("[UI] Currency ESP: " .. (value and "ENABLED" or "DISABLED"))
-    
     if value then
         startCurrencyESP()
     else
@@ -1310,21 +938,9 @@ ItemESPSection:AddToggle("ESP Currency", false, function(value)
     end
 end)
 
-ItemESPSection:AddToggle("Auto Rescan Currency", true, function(value)
-    Settings.autoRescanCurrency = value
-    print("[UI] Auto-rescan Currency: " .. (value and "ENABLED" or "DISABLED"))
-    
-    if value and Settings.currencyESPEnabled then
-        startCurrencyAutoRescan()
-    elseif not value and currencyRescanThread then
-        currencyRescanThread = nil
-    end
-end)
+ItemESPSection:AddLabel("Still bad, can make errors and wrong box")
 
 ItemESPSection:AddToggle("ESP Items (Defib, Medkit, etc)", false, function(value)
-    Settings.itemsESPEnabled = value
-    print("[UI] Items ESP: " .. (value and "ENABLED" or "DISABLED"))
-    
     if value then
         startItemsESP()
     else
@@ -1332,67 +948,47 @@ ItemESPSection:AddToggle("ESP Items (Defib, Medkit, etc)", false, function(value
     end
 end)
 
-ItemESPSection:AddToggle("Auto Rescan Items", true, function(value)
-    Settings.autoRescanItemsESP = value
-    print("[UI] Auto-rescan Items: " .. (value and "ENABLED" or "DISABLED"))
-    
-    if value and Settings.itemsESPEnabled then
-        startItemsAutoRescan()
-    elseif not value and itemsRescanThread then
-        itemsRescanThread = nil
-    end
+ItemESPSection:AddToggle("Auto Rescan", true, function(value)
+    Settings.autoRescan = value
 end)
 
 ItemESPSection:AddSlider("Auto Rescan Interval", {
     Min = 1,
     Max = 60,
-    Default = 10,
+    Default = 1,
     Callback = function(value)
         Settings.autoRescanInterval = value
-        print("[UI] Auto rescan interval: " .. value .. " seconds")
-        
-        if Settings.autoRescanKeycards and Settings.keycardESPEnabled and rescanThread then
-            rescanThread = nil
-            startAutoRescan()
-        end
-        
-        if Settings.autoRescanCurrency and Settings.currencyESPEnabled and currencyRescanThread then
-            currencyRescanThread = nil
-            startCurrencyAutoRescan()
-        end
-        
-        if Settings.autoRescanItemsESP and Settings.itemsESPEnabled and itemsRescanThread then
-            itemsRescanThread = nil
-            startItemsAutoRescan()
-        end
     end
 })
 
-
-
-ItemESPSection:AddKeybind("Refresh Keybind", "None", function()
-    if Settings.keycardESPEnabled then
-        cleanupKeycardESP()
-        wait(0.1)
-        startKeycardESP()
-        SafeNotify("Keycard ESP", "Keycards refreshed", 2)
-    else
-        print("[KEYBIND] Enable ESP first to refresh")
+-- НОВЫЕ НАСТРОЙКИ ESP
+ItemESPSection:AddSlider("ESP Render Distance", {
+    Min = 100,
+    Max = 5000,
+    Default = 1000,
+    Callback = function(value)
+        Settings.espRenderDistance = value
+        print("ESP Render Distance set to: " .. value)
+        -- Примечание: Arcane ESP библиотека может автоматически учитывать дистанцию
     end
+})
+
+ItemESPSection:AddToggle("ESP Glow Effect", true, function(value)
+    Settings.espGlowEnabled = value
+    updateAllESPGlow()
+    SafeNotify("ESP Glow", value and "Enabled" or "Disabled", 2)
+end)
+
+ItemESPSection:AddKeybind("Refresh Keycards", "None", function()
+    forceRescanKeycards()
 end, false)
 
-ItemESPSection:AddKeybind("Refresh Currency Keybind", "None", function()
-    if Settings.currencyESPEnabled then
-        forceRescanCurrency()
-        SafeNotify("Currency ESP", "Currency refreshed", 2)
-    end
+ItemESPSection:AddKeybind("Refresh Currency", "None", function()
+    forceRescanCurrency()
 end, false)
 
-ItemESPSection:AddKeybind("Refresh Items Keybind", "None", function()
-    if Settings.itemsESPEnabled then
-        forceRescanItems()
-        SafeNotify("Items ESP", "Items refreshed", 2)
-    end
+ItemESPSection:AddKeybind("Refresh Items", "None", function()
+    forceRescanItems()
 end, false)
 
 ItemESPSection:AddButton("Force Rescan Keycards", function()
@@ -1407,189 +1003,86 @@ ItemESPSection:AddButton("Force Rescan Items", function()
     forceRescanItems()
 end)
 
-
-
 ItemESPSection:AddButton("Clear All ESP", function()
-    print("[CLEAN ALL ESP] Cleaning all ESP...")
-    
-
-    local savedAutoRescanKeycards = Settings.autoRescanKeycards
-    local savedAutoRescanCurrency = Settings.autoRescanCurrency
-    local savedAutoRescanItemsESP = Settings.autoRescanItemsESP
-    
-
-    if keycardESPThread then
-        Settings.keycardESPEnabled = false
-        wait(0.1)
-        keycardESPThread = nil
-    end
-    
-    for _, esp in ipairs(keycardESPItems) do
-        if esp.box then esp.box:Remove() end
-        if esp.text then esp.text:Remove() end
-    end
-    keycardESPItems = {}
-    
-    if currencyESPThread then
-        Settings.currencyESPEnabled = false
-        wait(0.1)
-        currencyESPThread = nil
-    end
-    
-    for _, item in ipairs(currencyItems) do
-        if item.box then item.box:Remove() end
-        if item.text then item.text:Remove() end
-    end
-    currencyItems = {}
-    
-
-    if itemsESPThread then
-        Settings.itemsESPEnabled = false
-        wait(0.1)
-        itemsESPThread = nil
-    end
-    
-    for _, item in ipairs(otherItems) do
-        if item.box then item.box:Remove() end
-        if item.text then item.text:Remove() end
-    end
-    otherItems = {}
-    
-
-    Settings.autoRescanKeycards = savedAutoRescanKeycards
-    Settings.autoRescanCurrency = savedAutoRescanCurrency
-    Settings.autoRescanItemsESP = savedAutoRescanItemsESP
-    
-    SafeNotify("ESP", "All ESP cleared (auto-rescan preserved)", 2)
+    cleanupAllESP()
 end)
 
-
 ItemESPSection:AddKeybind("Clear ESP Keybind", "None", function()
-    print("[CLEAN ALL ESP KEYBIND] Cleaning all ESP...")
-    
-
-    local savedAutoRescanKeycards = Settings.autoRescanKeycards
-    local savedAutoRescanCurrency = Settings.autoRescanCurrency
-    local savedAutoRescanItemsESP = Settings.autoRescanItemsESP
-    
-
-    if keycardESPThread then
-        Settings.keycardESPEnabled = false
-        wait(0.1)
-        keycardESPThread = nil
-    end
-    
-    for _, esp in ipairs(keycardESPItems) do
-        if esp.box then esp.box:Remove() end
-        if esp.text then esp.text:Remove() end
-    end
-    keycardESPItems = {}
-    
-
-    if currencyESPThread then
-        Settings.currencyESPEnabled = false
-        wait(0.1)
-        currencyESPThread = nil
-    end
-    
-    for _, item in ipairs(currencyItems) do
-        if item.box then item.box:Remove() end
-        if item.text then item.text:Remove() end
-    end
-    currencyItems = {}
-    
-
-    if itemsESPThread then
-        Settings.itemsESPEnabled = false
-        wait(0.1)
-        itemsESPThread = nil
-    end
-    
-    for _, item in ipairs(otherItems) do
-        if item.box then item.box:Remove() end
-        if item.text then item.text:Remove() end
-    end
-    otherItems = {}
-    
-
-    Settings.autoRescanKeycards = savedAutoRescanKeycards
-    Settings.autoRescanCurrency = savedAutoRescanCurrency
-    Settings.autoRescanItemsESP = savedAutoRescanItemsESP
-    
-    SafeNotify("ESP", "All ESP cleared (auto-rescan preserved)", 2)
+    cleanupAllESP()
 end, false)
 
-
+-- Mob Colors Section
 local ColorsSection = Window:CreateSection("Mob Colors", "Visuals")
 
 for _, mob in ipairs(mobOptions) do
     ColorsSection:AddColorPicker(mob .. " Color", Settings.mobColors[mob], function(color)
         Settings.mobColors[mob] = color
-        print("[UI] " .. mob .. " color updated")
     end)
 end
 
+-- Добавляем цвет для HeavyPainter
+ColorsSection:AddColorPicker("HeavyPainter Color", Settings.mobColors["HeavyPainter"], function(color)
+    Settings.mobColors["HeavyPainter"] = color
+end)
+
 ColorsSection:AddButton("Reset All Colors", function()
     local defaultColors = {
-        Angler = Color3.new(0, 1, 0), Blitz = Color3.new(1, 0, 0),
-        Pinkie = Color3.new(1, 0.5, 0.8), Pandemonium = Color3.new(0.5, 0, 1),
-        Froger = Color3.new(0, 1, 1), Chainsmoker = Color3.new(0.5, 0.5, 0.5),
-        RidgeAngler = Color3.new(0, 0.8, 0), RidgeBlitz = Color3.new(0.8, 0, 0),
-        RidgePinkie = Color3.new(0.8, 0.4, 0.6), RidgePandemonium = Color3.new(0.4, 0, 0.8),
-        RidgeFroger = Color3.new(0, 0.8, 0.8), RidgeChainsmoker = Color3.new(0.4, 0.4, 0.4),
-        A60 = Color3.new(1, 1, 0)
+        ["Angler"] = Color3.new(0, 1, 0),
+        ["Blitz"] = Color3.new(1, 0, 0),
+        ["Pinkie"] = Color3.new(1, 0.5, 0.8),
+        ["Pandemonium"] = Color3.new(0.5, 0, 1),
+        ["Froger"] = Color3.new(0, 1, 1),
+        ["Chainsmoker"] = Color3.new(0.5, 0.5, 0.5),
+        ["RidgeAngler"] = Color3.new(0, 0.8, 0),
+        ["RidgeBlitz"] = Color3.new(0.8, 0, 0),
+        ["RidgePinkie"] = Color3.new(0.8, 0.4, 0.6),
+        ["RidgePandemonium"] = Color3.new(0.4, 0, 0.8),
+        ["RidgeFroger"] = Color3.new(0, 0.8, 0.8),
+        ["RidgeChainsmoker"] = Color3.new(0.4, 0.4, 0.4),
+        ["A-60"] = Color3.new(1, 1, 0),
+        ["HeavyPainter"] = Color3.new(0.8, 0.3, 0)
     }
     
     for mob, color in pairs(defaultColors) do
         Settings.mobColors[mob] = color
     end
-    print("[UI] All colors reset to default")
 end)
-
-local MiscTab = Window:CreateTab("Settings")
-
-local SystemSection = Window:CreateSection("System", "Settings")
+-- System Section (заменил Settings tab)
+local SystemSection = Window:CreateSection("System", "Visuals")
 
 SystemSection:AddToggle("Enable Scanner", true, function(value)
     Settings.enabled = value
     if value then
-        print("[UI] Scanner ENABLED")
         startScanner()
     else
-        print("[UI] Scanner DISABLED")
         stopScanner()
     end
 end)
 
 SystemSection:AddButton("Force Re-enable Scanner", function()
-    print("[UI] Scanner FORCE RE-ENABLED")
     startScanner()
     SafeNotify("Scanner", "Scanner force re-enabled", 2)
 end)
 
-local UISection = Window:CreateSection("UI Customization", "Settings")
-
-UISection:AddColorPicker("Notification Color", Settings.notificationColor, function(color)
+-- UI Customization (в System)
+SystemSection:AddColorPicker("Notification Color", Settings.notificationColor, function(color)
     Settings.notificationColor = color
     NotificationSystem:UpdateNotificationColors()
-    print("[UI] Notification color updated")
 end)
 
-UISection:AddButton("Reset Notification Color", function()
+SystemSection:AddButton("Reset Notification Color", function()
     Settings.notificationColor = Color3.fromRGB(210, 50, 50)
     NotificationSystem:UpdateNotificationColors()
-    print("[UI] Notification color reset")
 end)
 
-local DebugSection = Window:CreateSection("Debug", "Settings")
+-- Debug Section (в System)
+local DebugSection = Window:CreateSection("Debug", "Visuals")
 
 DebugSection:AddButton("Test Notification", function()
-    print("[DEBUG] Testing notification...")
     SafeNotify("Test", "Test notification from RatHub", 5)
 end)
 
 DebugSection:AddButton("Manual Scan", function()
-    print("[DEBUG] Manual scan triggered")
     local countBefore = 0
     for _ in pairs(detectedMobs) do
         countBefore = countBefore + 1
@@ -1616,54 +1109,38 @@ DebugSection:AddButton("Scanner Status", function()
         count = count + 1
     end
     
-    print("[DEBUG] Scanner Status:")
-    print("  Enabled: " .. tostring(Settings.enabled))
-    print("  Detected mobs: " .. count)
-    print("  Scan delay: " .. (Settings.scanCooldown * 1000) .. "ms")
-    
-    SafeNotify("Status", 
-        "Scanner: " .. (Settings.enabled and "ON" or "OFF") ..
-        "\nMobs: " .. count .. " detected" ..
-        "\nDelay: " .. (Settings.scanCooldown * 1000) .. "ms", 5)
+    SafeNotify("Status", "Scanner " .. (Settings.enabled and "ON" or "OFF") .. " | " .. count .. " detected | " .. (Settings.scanCooldown * 1000) .. "ms", 5)
 end)
 
 DebugSection:AddButton("ESP Status", function()
     local keycardCount = 0
-    local passwordCount = 0
-    local innerKeyCount = 0
+    local currencyCount = 0
+    local itemsCount = 0
     
-    for _, esp in ipairs(keycardESPItems) do
-        if esp.type == "KeyCard" then
-            keycardCount = keycardCount + 1
-        elseif esp.type == "PasswordPaper" then
-            passwordCount = passwordCount + 1
-        elseif esp.type == "InnerKeyCard" then
-            innerKeyCount = innerKeyCount + 1
-        end
-    end
+    for _ in pairs(activeESPs.keycards) do keycardCount = keycardCount + 1 end
+    for _ in pairs(activeESPs.currency) do currencyCount = currencyCount + 1 end
+    for _ in pairs(activeESPs.items) do itemsCount = itemsCount + 1 end
     
     SafeNotify("ESP Status", 
-        "Keycard ESP: " .. (Settings.keycardESPEnabled and "ON" or "OFF") ..
-        "\nCurrency ESP: " .. (Settings.currencyESPEnabled and "ON" or "OFF") ..
-        "\nItems ESP: " .. (Settings.itemsESPEnabled and "ON" or "OFF") ..
-        "\nKeycards: " .. keycardCount .. 
-        "\nPasswords: " .. passwordCount .. 
-        "\nInner Keys: " .. innerKeyCount ..
-        "\nCurrency: " .. #currencyItems ..
-        "\nOther Items: " .. #otherItems, 5)
+        "KC ESP: " .. (Settings.keycardESPEnabled and "ON" or "OFF") .. 
+        " | Currency ESP: " .. (Settings.currencyESPEnabled and "ON" or "OFF") .. 
+        " | Items ESP: " .. (Settings.itemsESPEnabled and "ON" or "OFF") ..
+        " | KC:" .. keycardCount .. " $:" .. currencyCount .. " I:" .. itemsCount, 5)
 end)
 
-print("[MOB SCANNER] =================================")
-print("[MOB SCANNER] RatHub Mob Scanner Initialized")
-print("[MOB SCANNER] Press F1 to open/close UI")
-print("[MOB SCANNER] =================================")
+-- ========== ИНИЦИАЛИЗАЦИЯ ==========
+print("==================================================")
+print("RATHUB MOB SCANNER v2.0")
+print("Enhanced with Arcane ESP Library")
+print("Press F1 to open/close UI")
+print("==================================================")
 
-SafeNotify("RatHub Mob Scanner", "Successfully initialized!", 5)
+SafeNotify("RatHub Mob Scanner", "Successfully initialized! Arcane ESP Active", 5)
 
 startScanner()
-
 Window:Finalize()
 
+-- Notification Update Loop
 spawn(function()
     while true do
         pcall(function()
@@ -1672,3 +1149,5 @@ spawn(function()
         wait(0.033)
     end
 end)
+
+print("SCRIPT FULLY LOADED!")
