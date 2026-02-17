@@ -1688,6 +1688,7 @@ ForceRescanLabel.Position = KeybindForceRescan.Position + Vector2.new(-100, 4)
 ForceRescanLabel.ZIndex = 310
 
 local sliderDragging = false
+local currentTab = "Home" 
 
 -- KeyNames
 local KeyNames = {
@@ -1739,6 +1740,106 @@ local AllGUIElements = {
 }
 
 -- Functions
+local function TabHomeContainerSetVisible(visible)
+    TabHomeContainer1.Visible = visible
+    WorkGames1.Visible = visible
+    PressureWORK.Visible = visible
+end
+
+local function TabTabVisualsContainerSetVisible(visible)
+    TabVisualsContainer.Visible = visible
+    
+    if Angler then Angler.Visible = visible end
+    if AnglerBg then AnglerBg.Visible = visible end
+    if AnglerIndBorder then AnglerIndBorder.Visible = visible end
+    if AnglerInd then AnglerInd.Visible = visible and AnglerIsChecked end
+    if AnglerLabel then AnglerLabel.Visible = visible end
+    
+    if Froger then Froger.Visible = visible end
+    if FrogerBg then FrogerBg.Visible = visible end
+    if FrogerIndBorder then FrogerIndBorder.Visible = visible end
+    if FrogerInd then FrogerInd.Visible = visible and FrogerIsChecked end
+    if FrogerLabel then FrogerLabel.Visible = visible end
+    
+    if Pinkie then Pinkie.Visible = visible end
+    if PinkieBg then PinkieBg.Visible = visible end
+    if PinkieIndBorder then PinkieIndBorder.Visible = visible end
+    if PinkieInd then PinkieInd.Visible = visible and PinkieIsChecked end
+    if PinkieLabel then PinkieLabel.Visible = visible end
+    
+    if Blitz then Blitz.Visible = visible end
+    if BlitzBg then BlitzBg.Visible = visible end
+    if BlitzIndBorder then BlitzIndBorder.Visible = visible end
+    if BlitzInd then BlitzInd.Visible = visible and BlitzIsChecked end
+    if BlitzLabel then BlitzLabel.Visible = visible end
+    
+    if Pandemonium then Pandemonium.Visible = visible end
+    if PandemoniumBg then PandemoniumBg.Visible = visible end
+    if PandemoniumIndBorder then PandemoniumIndBorder.Visible = visible end
+    if PandemoniumInd then PandemoniumInd.Visible = visible and PandemoniumIsChecked end
+    if PandemoniumLabel then PandemoniumLabel.Visible = visible end
+    
+    if Harbrinder then Harbrinder.Visible = visible end
+    if HarbrinderBg then HarbrinderBg.Visible = visible end
+    if HarbrinderIndBorder then HarbrinderIndBorder.Visible = visible end
+    if HarbrinderInd then HarbrinderInd.Visible = visible and HarbrinderIsChecked end
+    if HarbrinderLabel then HarbrinderLabel.Visible = visible end
+    
+    if A60 then A60.Visible = visible end
+    if A60Bg then A60Bg.Visible = visible end
+    if A60IndBorder then A60IndBorder.Visible = visible end
+    if A60Ind then A60Ind.Visible = visible and A60IsChecked end
+    if A60Label then A60Label.Visible = visible end
+    
+    if Painter then Painter.Visible = visible end
+    if PainterBg then PainterBg.Visible = visible end
+    if PainterIndBorder then PainterIndBorder.Visible = visible end
+    if PainterInd then PainterInd.Visible = visible and PainterIsChecked end
+    if PainterLabel then PainterLabel.Visible = visible end
+    
+    if Keycard then Keycard.Visible = visible end
+    if KeycardBg then KeycardBg.Visible = visible end
+    if KeycardIndBorder then KeycardIndBorder.Visible = visible end
+    if KeycardInd then KeycardInd.Visible = visible and KeycardIsChecked end
+    if KeycardLabel then KeycardLabel.Visible = visible end
+    
+    if Line5 then Line5.Visible = visible end
+    if Line5Border then Line5Border.Visible = visible end
+    if EspText then EspText.Visible = visible end
+    if ESPitems then ESPitems.Visible = visible end
+    
+    if AutoRescanButton then 
+        AutoRescanButton.Visible = visible
+        if AutoRescanButtonInner then AutoRescanButtonInner.Visible = visible and AutoRescanButtonIsChecked end
+        if AutoRescanButtonLabel then AutoRescanButtonLabel.Visible = visible end
+    end
+    
+    if AutoRescanSlider then 
+        AutoRescanSlider.Visible = visible
+        if AutoRescanSliderKnob then AutoRescanSliderKnob.Visible = visible end
+        if AutoRescanValueText then AutoRescanValueText.Visible = visible end
+    end
+    
+    if KeybindForceRescan then
+        KeybindForceRescan.Visible = visible
+        if KeybindForceRescanBorder then KeybindForceRescanBorder.Visible = visible end
+        if KeybindForceRescanText then KeybindForceRescanText.Visible = visible end
+        if ForceRescanLabel then ForceRescanLabel.Visible = visible end
+    end
+end
+
+local function TabMiscTABcontainer1SetVisible(visible)
+    MiscTABcontainer1.Visible = visible
+    
+    if AutoHideGUI then AutoHideGUI.Visible = visible end
+    if AutoHideGUIInner then AutoHideGUIInner.Visible = visible and AutoHideGUIIsChecked end
+    if AutoHideGUILabel then AutoHideGUILabel.Visible = visible end
+    
+    if WatermarkButton then WatermarkButton.Visible = visible end
+    if WatermarkButtonInner then WatermarkButtonInner.Visible = visible and WatermarkButtonIsChecked end
+    if WatermarkButtonLabel then WatermarkButtonLabel.Visible = visible end
+end
+
 local function ToggleGUI()
     Settings.guiVisible = not Settings.guiVisible
     for _, element in ipairs(AllGUIElements) do
@@ -1748,13 +1849,26 @@ local function ToggleGUI()
     end
     
     if not Settings.guiVisible then
-        TabHomeContainer1.Visible = false
-        TabVisualsContainer.Visible = false
-        MiscTABcontainer1.Visible = false
-        WorkGames1.Visible = false
-        PressureWORK.Visible = false
+        TabHomeContainerSetVisible(false)
+        TabTabVisualsContainerSetVisible(false)
+        TabMiscTABcontainer1SetVisible(false)
+    else
+        if currentTab == "Home" then
+            TabHomeContainerSetVisible(true)
+            TabTabVisualsContainerSetVisible(false)
+            TabMiscTABcontainer1SetVisible(false)
+        elseif currentTab == "Visuals" then
+            TabHomeContainerSetVisible(false)
+            TabTabVisualsContainerSetVisible(true)
+            TabMiscTABcontainer1SetVisible(false)
+        elseif currentTab == "Misc" then
+            TabHomeContainerSetVisible(false)
+            TabTabVisualsContainerSetVisible(false)
+            TabMiscTABcontainer1SetVisible(true)
+        end
     end
 end
+
 
 local function TabHomeContainerSetVisible(visible)
     TabHomeContainer1.Visible = visible
@@ -1898,19 +2012,25 @@ spawn(function()
             
             if mouse1 and not lastMouse1 then
                 if clickedOn(HOMEtabB, mPos) then
+                    currentTab = "Home"
                     TabHomeContainerSetVisible(true)
                     TabTabVisualsContainerSetVisible(false)
                     TabMiscTABcontainer1SetVisible(false)
+
                     
                 elseif clickedOn(TabVisualsB, mPos) then
+                    currentTab = "Visuals"
                     TabHomeContainerSetVisible(false)
                     TabTabVisualsContainerSetVisible(true)
                     TabMiscTABcontainer1SetVisible(false)
+
                     
                 elseif clickedOn(MiscTAB, mPos) then
+                    currentTab = "Misc"
                     TabHomeContainerSetVisible(false)
                     TabTabVisualsContainerSetVisible(false)
                     TabMiscTABcontainer1SetVisible(true)
+
                     
                 elseif clickedOn(MainUIsystem, mPos) and mPos.Y <= MainUIsystem.Position.Y + 43 then
                     dragging = MainUIsystem
@@ -2122,10 +2242,15 @@ spawn(function()
                 
                 MiscTAB.Position = newPos + Vector2.new(9.5, 154)
                 MiscTABText.Position = MiscTAB.Position + Vector2.new(172/2, 43/2)
-                
+
+                        
                 SettingsTAB.Position = newPos + Vector2.new(9.5, 369)
                 SettingsTABText.Position = SettingsTAB.Position + Vector2.new(172/2, 43/2)
                 
+                TabHomeContainerSetVisible(true)
+                TabTabVisualsContainerSetVisible(false)
+                TabMiscTABcontainer1SetVisible(false)
+
                 TabHomeContainer1.Position = newPos + Vector2.new(476.5, 57.5)
                 WorkGames1.Position = TabHomeContainer1.Position + Vector2.new(21, 23.5)
                 PressureWORK.Position = TabHomeContainer1.Position + Vector2.new(39, 14.5)
