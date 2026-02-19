@@ -10,7 +10,7 @@ local Settings = {
         Blitz = false,
         Pandemonium = false,
         Chainsmoker = false,
-        ["A-60"] = false,
+        ["A60"] = false,
         Harbinger = false,
         Painter = false
     },
@@ -29,7 +29,7 @@ local NotificationSystem = {
 }
 
 local TrackedMobs = {"Angler", "Blitz", "Pinkie", "Pandemonium", "Froger", "Chainsmoker",
-    "RidgeAngler", "RidgeBlitz", "RidgePinkie", "RidgePandemonium", "RidgeFroger", "RidgeChainsmoker", "A-60", "Harbinger"}
+    "RidgeAngler", "RidgeBlitz", "RidgePinkie", "RidgePandemonium", "RidgeFroger", "RidgeChainsmoker", "A60", "Harbinger"}
 
 local detectedMobs = {}
 
@@ -224,7 +224,7 @@ local MobColors = {
     Pandemonium = Color3.fromHex("#8000ff"),
     Froger = Color3.fromHex("#00ffff"),
     Chainsmoker = Color3.fromHex("#808080"),
-    ["A-60"] = Color3.fromHex("#ffff00"),
+    ["A60"] = Color3.fromHex("#ffff00"),
     Harbinger = Color3.fromHex("#ff6600")
 }
 
@@ -2407,7 +2407,7 @@ local onSwitch = function(val)
     Settings.notificationsEnabled.Blitz       = NoffiticationBlitzSwitch_IsChecked
     Settings.notificationsEnabled.Chainsmoker = NoffiticationChainsmokerSwitch_IsChecked
     Settings.notificationsEnabled.Pandemonium = NoffiticationPandemoniumSwitch_IsChecked
-    Settings.notificationsEnabled["A-60"]     = NoffiticationA60Switch_IsChecked
+    Settings.notificationsEnabled["A60"]     = NoffiticationA60Switch_IsChecked
     Settings.notificationsEnabled.Harbinger   = NoffiticationHarbingerSwitch_IsChecked
     Settings.notificationsEnabled.Painter     = NoffiticationPainterRoomSwitch_IsChecked
     AutoHideSystem.enabled = AutoHideSwitch_IsChecked
