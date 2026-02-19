@@ -1,4 +1,4 @@
---UI maked by matcha builder
+
 
 local Mouse = game.Players.LocalPlayer:GetMouse()
 
@@ -607,6 +607,11 @@ local AutoHideSystem = {
     holdLoop = false
 }
 
+local TrackedMobsSet = {}
+for _, name in ipairs(TrackedMobs) do
+    TrackedMobsSet[name] = true
+end
+
 local getHRP
 getHRP = function()
     local player = Players.LocalPlayer
@@ -615,60 +620,50 @@ getHRP = function()
 end
 
 function AutoHideSystem:CheckForMobs()
-    local foundMobs = {}
     for _, obj in ipairs(workspace:GetChildren()) do
-        for _, targetMob in ipairs(TrackedMobs) do
-            if obj.Name == targetMob then
-                table.insert(foundMobs, targetMob)
-                break
-            end
+        if TrackedMobsSet[obj.Name] then
+            return true
         end
     end
-    return foundMobs
+    return false
 end
 
 function AutoHideSystem:Hide()
     if self.isHiding then return end
-    local success, err = pcall(function()
-        local hrp = getHRP()
-        if not hrp then return end
-        self.originalPosition = hrp.Position
-        self.isHiding = true
-        local newPos = self.originalPosition + Vector3.new(0, 1000, 0)
-        hrp.Position = newPos
-        hrp.Velocity = Vector3.new(0, 0, 0)
-        hrp.AssemblyLinearVelocity = Vector3.new(0, 0, 0)
-        self.holdLoop = true
-        spawn(function()
-            while self.holdLoop do
-                local currentHrp = getHRP()
-                if currentHrp then
-                    currentHrp.Velocity = Vector3.new(0, 0, 0)
-                    currentHrp.AssemblyLinearVelocity = Vector3.new(0, 0, 0)
-                end
-                wait(0.01)
+    local hrp = getHRP()
+    if not hrp then return end
+
+    self.originalPosition = hrp.Position
+    self.isHiding = true
+    self.holdLoop = true
+
+    hrp.Position = self.originalPosition + Vector3.new(0, 1000, 0)
+    hrp.AssemblyLinearVelocity = Vector3.new(0, 0, 0)
+
+    spawn(function()
+        while self.holdLoop do
+            local currentHrp = getHRP()
+            if currentHrp then
+                currentHrp.AssemblyLinearVelocity = Vector3.new(0, 0, 0)
             end
-        end)
+            wait()
+        end
     end)
-    if not success then
-        self.isHiding = false
-    end
 end
 
 function AutoHideSystem:Unhide()
     if not self.isHiding then return end
-    pcall(function()
-        local hrp = getHRP()
-        if not hrp then return end
-        self.holdLoop = false
-        if self.originalPosition then
-            hrp.Position = self.originalPosition
-            hrp.Velocity = Vector3.new(0, 0, 0)
-            hrp.AssemblyLinearVelocity = Vector3.new(0, 0, 0)
-        end
-        self.isHiding = false
-        self.originalPosition = nil
-    end)
+
+    self.holdLoop = false
+    self.isHiding = false
+
+    local hrp = getHRP()
+    if hrp and self.originalPosition then
+        hrp.Position = self.originalPosition
+        hrp.AssemblyLinearVelocity = Vector3.new(0, 0, 0)
+    end
+
+    self.originalPosition = nil
 end
 
 function AutoHideSystem:Update()
@@ -676,16 +671,29 @@ function AutoHideSystem:Update()
         if self.isHiding then self:Unhide() end
         return
     end
+
+    if self.isHiding and not self.originalPosition then
+        self.isHiding = false
+        self.holdLoop = false
+    end
+
     local currentTime = os.clock()
     if currentTime - self.lastCheckTime < self.checkInterval then return end
     self.lastCheckTime = currentTime
-    local foundMobs = self:CheckForMobs()
-    if #foundMobs > 0 then
+
+    if self:CheckForMobs() then
         if not self.isHiding then self:Hide() end
     else
         if self.isHiding then self:Unhide() end
     end
 end
+
+spawn(function()
+    while true do
+        AutoHideSystem:Update()
+        wait()
+    end
+end)
 
 spawn(function()
     while true do
@@ -707,13 +715,6 @@ spawn(function()
             pcall(function() WatermarkSystem:UpdateEntity() end)
         end
         wait(0.1)
-    end
-end)
-
-spawn(function()
-    while true do
-        pcall(function() AutoHideSystem:Update() end)
-        wait(0.01)
     end
 end)
 
@@ -3070,7 +3071,3 @@ while true do
         lastMouse1 = mouse1
     end
 end
-
--- Ye ye, i still chatgpt monster
--- Btw, this script in the future will get updated, but for now, i don't have permision to text in my tab, i don't know, how this get
--- Idk, why it's uploaded, maybe who needs in this bull-shit script
