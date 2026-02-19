@@ -3072,4 +3072,5 @@ while true do
 end
 
 -- Ye ye, i still chatgpt monster
-
+-- Btw, this script in the future will get updated, but for now, i don't have permision to text in my tab, i don't know, how this get
+-- Idk, why it's uploaded, maybe who needs in this bull-shit script
