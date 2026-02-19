@@ -619,6 +619,18 @@ getHRP = function()
     return player.Character:FindFirstChild("HumanoidRootPart")
 end
 
+local forceTeleport
+forceTeleport = function(targetPos)
+    for i = 1, 5 do
+        local hrp = getHRP()
+        if hrp then
+            hrp.AssemblyLinearVelocity = Vector3.new(0, 0, 0)
+            hrp.Position = targetPos
+        end
+        wait()
+    end
+end
+
 function AutoHideSystem:CheckForMobs()
     for _, obj in ipairs(workspace:GetChildren()) do
         if TrackedMobsSet[obj.Name] then
@@ -637,8 +649,9 @@ function AutoHideSystem:Hide()
     self.isHiding = true
     self.holdLoop = true
 
-    hrp.Position = self.originalPosition + Vector3.new(0, 1000, 0)
-    hrp.AssemblyLinearVelocity = Vector3.new(0, 0, 0)
+    spawn(function()
+        forceTeleport(self.originalPosition + Vector3.new(0, 1000, 0))
+    end)
 
     spawn(function()
         while self.holdLoop do
@@ -657,13 +670,14 @@ function AutoHideSystem:Unhide()
     self.holdLoop = false
     self.isHiding = false
 
-    local hrp = getHRP()
-    if hrp and self.originalPosition then
-        hrp.Position = self.originalPosition
-        hrp.AssemblyLinearVelocity = Vector3.new(0, 0, 0)
-    end
-
+    local savedPos = self.originalPosition
     self.originalPosition = nil
+
+    spawn(function()
+        if savedPos then
+            forceTeleport(savedPos)
+        end
+    end)
 end
 
 function AutoHideSystem:Update()
