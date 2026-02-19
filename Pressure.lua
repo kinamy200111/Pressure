@@ -3071,5 +3071,5 @@ while true do
     end
 end
 
-Print ("Press f1 to close/open menu")
-Print ("Script have bugs, like auto-hide can make error and not teleported you")
+-- Ye ye, i still chatgpt monster
+
