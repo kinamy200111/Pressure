@@ -3,8 +3,11 @@ do
 local Mouse = game.Players.LocalPlayer:GetMouse()
 
 Settings={
-    notificationsEnabled={Angler=false,Froger=false,Pinkie=false,Blitz=false,Pandemonium=false,Chainsmoker=false,["A60"]=false,Harbinger=false,Painter=false},
-    keycardESPEnabled=false,doorESPEnabled=false,autoRescanEnabled=false,autoRescanInterval=10
+    notificationsEnabled={Angler=false,Froger=false,Pinkie=false,Blitz=false,
+        Pandemonium=false,Chainsmoker=false,["A-60"]=false,Harbinger=false,Painter=false},
+    keycardESPEnabled=false,doorESPEnabled=false,
+    itemsESPEnabled=false,currencyESPEnabled=false,
+    autoRescanEnabled=false,espMaxDistance=150
 }
 
 NotificationSystem = {
@@ -16,22 +19,19 @@ NotificationSystem = {
 }
 
 TrackedMobs = {"Angler", "Blitz", "Pinkie", "Pandemonium", "Froger", "Chainsmoker",
-    "RidgeAngler","RidgeBlitz","RidgePinkie","RidgePandemonium","RidgeFroger","RidgeChainsmoker","A60","Harbinger"}
+    "RidgeAngler","RidgeBlitz","RidgePinkie","RidgePandemonium","RidgeFroger","RidgeChainsmoker","A-60","Harbinger"}
 
 detectedMobs = {}
 
 function NotificationSystem:CreateNotification(mobName,duration)
     if #self.activeNotifications>=self.maxNotifications then
         local oldest=table.remove(self.activeNotifications,1)
-        if oldest then
-            pcall(function()
-                oldest.bg1:Remove() oldest.bg2:Remove() oldest.bg3:Remove()
-                oldest.logo:Remove() oldest.ttl:Remove()
-                oldest.c1:Remove() oldest.c2:Remove() oldest.c3:Remove()
-                oldest.div:Remove() oldest.etxt:Remove() oldest.tbar:Remove()
-            end)
-            self.nextYPosition=self.nextYPosition-110
-        end
+        if oldest then pcall(function()
+            oldest.bg1:Remove() oldest.bg2:Remove() oldest.bg3:Remove()
+            oldest.logo:Remove() oldest.ttl:Remove()
+            oldest.c1:Remove() oldest.c2:Remove() oldest.c3:Remove()
+            oldest.div:Remove() oldest.etxt:Remove() oldest.tbar:Remove()
+        end) self.nextYPosition=self.nextYPosition-110 end
     end
     local cam=workspace.CurrentCamera
     local vp=(cam and cam.ViewportSize) or Vector2.new(1920,1080)
@@ -66,12 +66,10 @@ function NotificationSystem:CreateNotification(mobName,duration)
     self.nextYPosition=self.nextYPosition+110
 end
 function NotificationSystem:Update()
-    local now=os.clock()
-    local toRemove={}
+    local now=os.clock() local toRemove={}
     for i,n in ipairs(self.activeNotifications) do
         local el=now-n.startTime
-        local prog=math.min(el/n.duration,1)
-        n.tbar.Size=Vector2.new(n.fullWidth*(1-prog),1)
+        n.tbar.Size=Vector2.new(n.fullWidth*(1-math.min(el/n.duration,1)),1)
         if el>=n.duration then
             local fp=math.min((el-n.duration)/0.3,1)
             local a=1-math.pow(fp,2)
@@ -83,8 +81,7 @@ function NotificationSystem:Update()
         end
     end
     for i=#toRemove,1,-1 do
-        local idx=toRemove[i]
-        local n=table.remove(self.activeNotifications,idx)
+        local n=table.remove(self.activeNotifications,toRemove[i])
         if n then pcall(function()
             n.bg1:Remove() n.bg2:Remove() n.bg3:Remove() n.logo:Remove() n.ttl:Remove()
             n.c1:Remove() n.c2:Remove() n.c3:Remove() n.div:Remove() n.etxt:Remove() n.tbar:Remove()
@@ -92,7 +89,7 @@ function NotificationSystem:Update()
     end
     if #toRemove>0 then
         self.nextYPosition=0
-        for i,n in ipairs(self.activeNotifications) do
+        for _,n in ipairs(self.activeNotifications) do
             local cam=workspace.CurrentCamera
             local vp=(cam and cam.ViewportSize) or Vector2.new(1920,1080)
             local ty=vp.Y-130-self.nextYPosition
@@ -129,17 +126,15 @@ function NotificationSystem:CheckForMobs()
     end
         local painterKey="__Painter__"
     local gf=workspace:FindFirstChild("GameplayFolder")
-    local painterFound=false
-    if gf then local rooms=gf:FindFirstChild("Rooms")
-        if rooms then for _,room in ipairs(rooms:GetChildren()) do
-            if room:FindFirstChild("Painter") then painterFound=true break end end end
-    end
-    if painterFound then currentFrameMobs[painterKey]=true
-        if not detectedMobs[painterKey] then detectedMobs[painterKey]=true
-            if Settings.notificationsEnabled.Painter then self:CreateNotification("Painter",5) end
-            if WatermarkSystem then WatermarkSystem.currentEntity="Painter" end
-        end
-    end
+    if gf then local rooms=gf:FindFirstChild("Rooms") if rooms then
+        for _,room in ipairs(rooms:GetChildren()) do
+            if room:FindFirstChild("Painter") then
+                currentFrameMobs[painterKey]=true
+                if not detectedMobs[painterKey] then detectedMobs[painterKey]=true
+                    if Settings.notificationsEnabled.Painter then self:CreateNotification("Painter",5) end
+                    if WatermarkSystem then WatermarkSystem.currentEntity="Painter" end
+                end break end
+        end end end
     for mobName, _ in pairs(detectedMobs) do
         if not currentFrameMobs[mobName] then
             detectedMobs[mobName] = nil
@@ -234,187 +229,143 @@ end)
 
 loadstring(game:HttpGet("https://www.arcanecheats.xyz/api/matcha/esplib"))()
 
-activeESPs = {}
+activeChunkedESPs = { KeyCard={}, ItemBase={}, CurrencyBase={} }
+activeDoorESPs = {}
 
-local KeycardConfigs = {
-    KeyCard = {color = Color3.fromRGB(0, 255, 0), name = "KeyCard"},
-    RidgeKeyCard = {color = Color3.fromRGB(255, 255, 0), name = "RidgeKey"},
-    PasswordPaper = {color = Color3.fromRGB(0, 150, 255), name = "Password"},
-    InnerKeyCard = {color = Color3.fromRGB(138, 43, 226), name = "InnerKey"}
+local ChunkedColors = {
+    KeyCard      = Color3.fromRGB(0, 255, 100),
+    ItemBase     = Color3.fromRGB(0, 200, 255),
+    CurrencyBase = Color3.fromRGB(255, 215, 0),
 }
 
-local FindKeycards
-FindKeycards = function()
-    local foundItems = {}
-    local gameplayFolder = workspace:FindFirstChild("GameplayFolder")
-    if not gameplayFolder then return foundItems end
-    local rooms = gameplayFolder:FindFirstChild("Rooms")
-    if not rooms then return foundItems end
-    for _, obj in ipairs(rooms:GetDescendants()) do
-        local interactionType = obj:GetAttribute("InteractionType")
-        if KeycardConfigs[interactionType] then
-            table.insert(foundItems, {
-                model = obj,
-                type = interactionType,
-                config = KeycardConfigs[interactionType]
-            })
-        end
-    end
-    return foundItems
+local GetPlayerPos
+GetPlayerPos = function()
+    local p=game.Players.LocalPlayer
+    if not p or not p.Character then return nil end
+    local hrp=p.Character:FindFirstChild("HumanoidRootPart")
+    return hrp and hrp.Position or nil
 end
 
-local CreateESP
-CreateESP = function(item)
-    local key = item.model:GetFullName()
-    local config = item.config
-    local success, esp = pcall(function()
-        return ArcaneEsp.new(item.model)
-            :AddEsp(config.color)
-            :AddTitle(Color3.new(1, 1, 1), config.name)
-            :AddDistance(Color3.new(1, 1, 1))
-            :SetFont(0)
+local GetObjPos
+GetObjPos = function(obj)
+    if obj:IsA("BasePart") then return obj.Position end
+    local bp=obj:FindFirstChildWhichIsA("BasePart",true)
+    return bp and bp.Position or nil
+end
+
+local CreateChunkedESP
+CreateChunkedESP = function(obj,iType)
+    local tbl=activeChunkedESPs[iType] if not tbl then return end
+    local key=obj:GetFullName() if tbl[key] then return end
+    local pPos=GetPlayerPos()
+    if pPos then
+        local oPos=GetObjPos(obj)
+        if oPos and (oPos-pPos).Magnitude>Settings.espMaxDistance then return end
+    end
+    local ok,esp=pcall(function()
+        return ArcaneEsp.new(obj):AddTitle(ChunkedColors[iType],obj.Name):AddDistance(ChunkedColors[iType]):SetFont(0)
     end)
-    if not success or not esp then return nil end
-    return {esp = esp, model = item.model, key = key}
+    if ok and esp then tbl[key]={esp=esp,obj=obj} end
 end
 
-StartKeycardESP = function()
-    if Settings.keycardESPEnabled then return end
-    Settings.keycardESPEnabled = true
-    local items = FindKeycards()
-    for _, item in ipairs(items) do
-        local espData = CreateESP(item)
-        if espData then
-            activeESPs[espData.key] = espData
-        end
-    end
+local CleanupChunkedESP
+CleanupChunkedESP = function(iType)
+    local tbl=activeChunkedESPs[iType] if not tbl then return end
+    for _,data in pairs(tbl) do pcall(function() data.esp:Destroy() end) end
+    activeChunkedESPs[iType]={}
 end
 
-CleanupKeycardESP = function()
-    Settings.keycardESPEnabled = false
-    for key, espData in pairs(activeESPs) do
-        pcall(function() espData.esp:Destroy() end)
-    end
-    activeESPs = {}
-end
-
-lastRescanTime = 0
-
-ForceRescanESP = function()
-    if not Settings.keycardESPEnabled then return end
-    pcall(function()
-        local newItems = FindKeycards()
-        local newKeys = {}
-        for _, item in ipairs(newItems) do
-            newKeys[item.model:GetFullName()] = item
-        end
-        for key, espData in pairs(activeESPs) do
-            if not newKeys[key] then
-                pcall(function() espData.esp:Destroy() end)
-                activeESPs[key] = nil
+local CleanupDeadChunked
+CleanupDeadChunked = function()
+    for _,tbl in pairs(activeChunkedESPs) do
+        for key,data in pairs(tbl) do
+            if not data.obj or not data.obj.Parent then
+                pcall(function() data.esp:Destroy() end)
+                tbl[key]=nil
             end
         end
-        for key, item in pairs(newKeys) do
-            if not activeESPs[key] then
-                local espData = CreateESP(item)
-                if espData then
-                    activeESPs[espData.key] = espData
-                end
+    end
+end
+
+local FindDoors
+FindDoors = function()
+    local found={}
+    local rooms=(workspace:FindFirstChild("GameplayFolder") or {}):FindFirstChild and
+        (workspace:FindFirstChild("GameplayFolder")):FindFirstChild("Rooms")
+    if not rooms then return found end
+    for _,room in ipairs(rooms:GetChildren()) do
+        local exits=room:FindFirstChild("Exits")
+        if exits then for _,e in ipairs(exits:GetChildren()) do
+            local part=e:IsA("BasePart") and e or e:FindFirstChildWhichIsA("BasePart",true)
+            if part then table.insert(found,{part=part,key=e:GetFullName()}) end
+        end end
+    end
+    return found
+end
+
+local chunkedScanning=false
+local ChunkedScan
+ChunkedScan = function()
+    if chunkedScanning then return end chunkedScanning=true
+    local gf=workspace:FindFirstChild("GameplayFolder")
+    local root=(gf and gf:FindFirstChild("Rooms")) or gf or workspace
+    local desc=root:GetDescendants() local count=0
+    for _,obj in ipairs(desc) do
+        local iType=obj:GetAttribute("InteractionType")
+        if iType then
+            if     iType=="KeyCard"      and Settings.keycardESPEnabled  then CreateChunkedESP(obj,"KeyCard")
+            elseif iType=="ItemBase"     and Settings.itemsESPEnabled     then CreateChunkedESP(obj,"ItemBase")
+            elseif iType=="CurrencyBase" and Settings.currencyESPEnabled  then CreateChunkedESP(obj,"CurrencyBase")
             end
         end
-    end)
+        count=count+1 if count%30==0 then wait() end
+    end
+    CleanupDeadChunked() chunkedScanning=false
 end
+
+StartKeycardESP    = function() if Settings.keycardESPEnabled  then return end Settings.keycardESPEnabled=true  end
+CleanupKeycardESP  = function() Settings.keycardESPEnabled=false  CleanupChunkedESP("KeyCard")     end
+StartItemsESP      = function() if Settings.itemsESPEnabled    then return end Settings.itemsESPEnabled=true    end
+CleanupItemsESP    = function() Settings.itemsESPEnabled=false    CleanupChunkedESP("ItemBase")    end
+StartCurrencyESP   = function() if Settings.currencyESPEnabled then return end Settings.currencyESPEnabled=true end
+CleanupCurrencyESP = function() Settings.currencyESPEnabled=false CleanupChunkedESP("CurrencyBase") end
+
+StartDoorESP = function()
+    if Settings.doorESPEnabled then return end Settings.doorESPEnabled=true
+    for _,door in ipairs(FindDoors()) do
+        if not activeDoorESPs[door.key] then
+            local ok,esp=pcall(function()
+                return ArcaneEsp.new(door.part):AddEsp(Color3.fromRGB(255,165,0)):AddTitle(Color3.new(1,1,1),"Door"):AddDistance(Color3.new(1,1,1)):SetFont(0)
+            end)
+            if ok and esp then activeDoorESPs[door.key]=esp end
+        end
+    end
+end
+CleanupDoorESP = function()
+    Settings.doorESPEnabled=false
+    for key,esp in pairs(activeDoorESPs) do pcall(function() esp:Destroy() end) activeDoorESPs[key]=nil end
+end
+
+ForceRescanESP = function() ChunkedScan() end
 
 spawn(function()
     while true do
         wait(1)
-        if Settings.autoRescanEnabled and Settings.keycardESPEnabled then
-            local currentTime = os.clock()
-            if currentTime - lastRescanTime >= Settings.autoRescanInterval then
-                lastRescanTime = currentTime
-                ForceRescanESP()
-            end
+        if Settings.keycardESPEnabled or Settings.itemsESPEnabled or Settings.currencyESPEnabled then
+            if Settings.autoRescanEnabled then ChunkedScan() else CleanupDeadChunked() end
         end
-    end
-end)
-
-activeDoorESPs = {}
-
-local FindDoors
-FindDoors = function()
-    local foundDoors = {}
-    local gf = workspace:FindFirstChild("GameplayFolder")
-    if not gf then return foundDoors end
-    local rooms = gf:FindFirstChild("Rooms")
-    if not rooms then return foundDoors end
-    for _, room in ipairs(rooms:GetChildren()) do
-        local exits = room:FindFirstChild("Exits")
-        if exits then
-            for _, exitObj in ipairs(exits:GetChildren()) do
-                local part = nil
-                if exitObj:IsA("BasePart") then
-                    part = exitObj
-                else
-                    part = exitObj:FindFirstChildWhichIsA("BasePart", true)
-                end
-                if part then
-                    table.insert(foundDoors, {part = part, key = exitObj:GetFullName()})
-                end
-            end
-        end
-    end
-    return foundDoors
-end
-
-StartDoorESP = function()
-    if Settings.doorESPEnabled then return end
-    Settings.doorESPEnabled = true
-    local doors = FindDoors()
-    for _, door in ipairs(doors) do
-        if not activeDoorESPs[door.key] then
-            local ok, esp = pcall(function()
-                return ArcaneEsp.new(door.part)
-                    :AddEsp(Color3.fromRGB(255, 165, 0))
-                    :AddTitle(Color3.new(1,1,1), "Door")
-                    :AddDistance(Color3.new(1,1,1))
-                    :SetFont(0)
-            end)
-            if ok and esp then activeDoorESPs[door.key] = esp end
-        end
-    end
-end
-
-CleanupDoorESP = function()
-    Settings.doorESPEnabled = false
-    for key, esp in pairs(activeDoorESPs) do
-        pcall(function() esp:Destroy() end)
-        activeDoorESPs[key] = nil
-    end
-end
-
-spawn(function()
-    while true do
-        wait(3)
         if Settings.doorESPEnabled then
-            local doors = FindDoors()
-            local newKeys = {}
-            for _, d in ipairs(doors) do newKeys[d.key] = d end
-            for key, esp in pairs(activeDoorESPs) do
-                if not newKeys[key] then
-                    pcall(function() esp:Destroy() end)
-                    activeDoorESPs[key] = nil
-                end
+            local doors=FindDoors() local newKeys={}
+            for _,d in ipairs(doors) do newKeys[d.key]=d end
+            for key,esp in pairs(activeDoorESPs) do
+                if not newKeys[key] then pcall(function() esp:Destroy() end) activeDoorESPs[key]=nil end
             end
-            for key, d in pairs(newKeys) do
+            for key,d in pairs(newKeys) do
                 if not activeDoorESPs[key] then
-                    local ok, esp = pcall(function()
-                        return ArcaneEsp.new(d.part)
-                            :AddEsp(Color3.fromRGB(255, 165, 0))
-                            :AddTitle(Color3.new(1,1,1), "Door")
-                            :AddDistance(Color3.new(1,1,1))
-                            :SetFont(0)
+                    local ok,esp=pcall(function()
+                        return ArcaneEsp.new(d.part):AddEsp(Color3.fromRGB(255,165,0)):AddTitle(Color3.new(1,1,1),"Door"):AddDistance(Color3.new(1,1,1)):SetFont(0)
                     end)
-                    if ok and esp then activeDoorESPs[key] = esp end
+                    if ok and esp then activeDoorESPs[key]=esp end
                 end
             end
         end
@@ -429,8 +380,8 @@ local getHRP; getHRP=function()
     local p=_AHP.LocalPlayer if not p or not p.Character then return nil end
     return p.Character:FindFirstChild("HumanoidRootPart")
 end
-local forceTeleport; forceTeleport=function(targetPos)
-    for i=1,5 do local hrp=getHRP() if hrp then hrp.AssemblyLinearVelocity=Vector3.new(0,0,0) hrp.Position=targetPos end wait() end
+local forceTeleport; forceTeleport=function(pos)
+    for i=1,5 do local h=getHRP() if h then h.AssemblyLinearVelocity=Vector3.new(0,0,0) h.Position=pos end wait() end
 end
 function AutoHideSystem:CheckForMobs()
     for _,obj in ipairs(workspace:GetChildren()) do if TrackedMobsSet[obj.Name] then return true end end return false
@@ -481,8 +432,7 @@ end)
 
 spawn(function()
     local lF5=false while true do wait(0.01) if isrbxactive() then
-        local f5=iskeypressed(0x74) if f5 and not lF5 then
-            if Settings.keycardESPEnabled then ForceRescanESP() end end lF5=f5 end end
+        local f5=iskeypressed(0x74) if f5 and not lF5 then ForceRescanESP() end lF5=f5 end end
 end)
 end
 
@@ -729,7 +679,7 @@ ESPkeycardSwitch_Label.ZIndex = 151
 local EspKeycardtext = Drawing.new("Text")
 EspKeycardtext.Visible = false
 EspKeycardtext.Transparency = 1
-EspKeycardtext.ZIndex = 270
+EspKeycardtext.ZIndex = 290
 EspKeycardtext.Color = Color3.fromHex("#e5e4d3")
 EspKeycardtext.Position = ContentPageVisuals.Position + Vector2.new(9, 9)
 EspKeycardtext.Text = "ESP Keycard"
@@ -741,7 +691,7 @@ EspKeycardtext.Font = Drawing.Fonts.Monospace
 local EspDoorText = Drawing.new("Text")
 EspDoorText.Visible = false
 EspDoorText.Transparency = 1
-EspDoorText.ZIndex = 280
+EspDoorText.ZIndex = 300
 EspDoorText.Color = Color3.fromHex("#e5e4d3")
 EspDoorText.Position = ContentPageVisuals.Position + Vector2.new(9, 35)
 EspDoorText.Text = "ESP Doors"
@@ -835,7 +785,7 @@ ContentPageVisuals2_Border.Corner = 5
 local TextNofiticationAngler = Drawing.new("Text")
 TextNofiticationAngler.Visible = false
 TextNofiticationAngler.Transparency = 1
-TextNofiticationAngler.ZIndex = 290
+TextNofiticationAngler.ZIndex = 330
 TextNofiticationAngler.Color = Color3.fromHex("#e5e4d3")
 TextNofiticationAngler.Position = ContentPageVisuals.Position + Vector2.new(9, 161)
 TextNofiticationAngler.Text = "Nof Angler"
@@ -847,7 +797,7 @@ TextNofiticationAngler.Font = Drawing.Fonts.Monospace
 local NoffiticationAnglerSwitch = Drawing.new("Switch")
 NoffiticationAnglerSwitch.Visible = false
 NoffiticationAnglerSwitch.Transparency = 1
-NoffiticationAnglerSwitch.ZIndex = 170
+NoffiticationAnglerSwitch.ZIndex = 190
 NoffiticationAnglerSwitch.Color = Color3.fromHex("#212121")
 NoffiticationAnglerSwitch.Position = ContentPageVisuals.Position + Vector2.new(491, 161)
 
@@ -860,7 +810,7 @@ NoffiticationAnglerSwitch.Thickness = 1
 NoffiticationAnglerSwitch.Filled = false
 NoffiticationAnglerSwitch.Size = Vector2.new(30, 13)
 NoffiticationAnglerSwitch.Position = Vector2.new(614, 295)
-NoffiticationAnglerSwitch.ZIndex = 170
+NoffiticationAnglerSwitch.ZIndex = 190
 NoffiticationAnglerSwitch.Corner = 15
 local NoffiticationAnglerSwitch_Bg = Drawing.new("Square")
 NoffiticationAnglerSwitch_Bg.Visible = false
@@ -869,7 +819,7 @@ NoffiticationAnglerSwitch_Bg.Color = Color3.fromHex("#212121")
 NoffiticationAnglerSwitch_Bg.Filled = true
 NoffiticationAnglerSwitch_Bg.Size = NoffiticationAnglerSwitch.Size
 NoffiticationAnglerSwitch_Bg.Position = NoffiticationAnglerSwitch.Position
-NoffiticationAnglerSwitch_Bg.ZIndex = 170
+NoffiticationAnglerSwitch_Bg.ZIndex = 190
 NoffiticationAnglerSwitch_Bg.Corner = 15
 local NoffiticationAnglerSwitch_IndBorder = Drawing.new("Square")
 NoffiticationAnglerSwitch_IndBorder.Visible = false
@@ -878,7 +828,7 @@ NoffiticationAnglerSwitch_IndBorder.Color = Color3.fromHex("#000000")
 NoffiticationAnglerSwitch_IndBorder.Thickness = 1
 NoffiticationAnglerSwitch_IndBorder.Filled = false
 NoffiticationAnglerSwitch_IndBorder.Size = Vector2.new(11, 11)
-NoffiticationAnglerSwitch_IndBorder.ZIndex = 172
+NoffiticationAnglerSwitch_IndBorder.ZIndex = 192
 NoffiticationAnglerSwitch_IndBorder.Corner = 15
 local NoffiticationAnglerSwitch_Ind = Drawing.new("Square")
 NoffiticationAnglerSwitch_Ind.Visible = false
@@ -886,7 +836,7 @@ NoffiticationAnglerSwitch_Ind.Transparency = 1
 NoffiticationAnglerSwitch_Ind.Color = Color3.fromHex("#ffffff")
 NoffiticationAnglerSwitch_Ind.Filled = true
 NoffiticationAnglerSwitch_Ind.Size = Vector2.new(11, 11)
-NoffiticationAnglerSwitch_Ind.ZIndex = 172
+NoffiticationAnglerSwitch_Ind.ZIndex = 192
 NoffiticationAnglerSwitch_Ind.Corner = 15
 if NoffiticationAnglerSwitch_IsChecked then
     NoffiticationAnglerSwitch_IndBorder.Position = NoffiticationAnglerSwitch.Position + Vector2.new(18, 1)
@@ -903,12 +853,12 @@ NoffiticationAnglerSwitch_Label.Color = Color3.fromHex("#FFFFFF")
 NoffiticationAnglerSwitch_Label.Outline = true
 NoffiticationAnglerSwitch_Label.Font = Drawing.Fonts.UI
 NoffiticationAnglerSwitch_Label.Position = NoffiticationAnglerSwitch.Position + Vector2.new(40, 0.5)
-NoffiticationAnglerSwitch_Label.ZIndex = 171
+NoffiticationAnglerSwitch_Label.ZIndex = 191
 
 local NofFrogerText = Drawing.new("Text")
 NofFrogerText.Visible = false
 NofFrogerText.Transparency = 1
-NofFrogerText.ZIndex = 300
+NofFrogerText.ZIndex = 340
 NofFrogerText.Color = Color3.fromHex("#e5e4d3")
 NofFrogerText.Position = ContentPageVisuals.Position + Vector2.new(9, 181)
 NofFrogerText.Text = "Nof Froger"
@@ -920,7 +870,7 @@ NofFrogerText.Font = Drawing.Fonts.Monospace
 local NofPinkieText = Drawing.new("Text")
 NofPinkieText.Visible = false
 NofPinkieText.Transparency = 1
-NofPinkieText.ZIndex = 310
+NofPinkieText.ZIndex = 350
 NofPinkieText.Color = Color3.fromHex("#e5e4d3")
 NofPinkieText.Position = ContentPageVisuals.Position + Vector2.new(9, 201)
 NofPinkieText.Text = "Nof Pinkie"
@@ -932,7 +882,7 @@ NofPinkieText.Font = Drawing.Fonts.Monospace
 local NofBlitzText = Drawing.new("Text")
 NofBlitzText.Visible = false
 NofBlitzText.Transparency = 1
-NofBlitzText.ZIndex = 320
+NofBlitzText.ZIndex = 360
 NofBlitzText.Color = Color3.fromHex("#e5e4d3")
 NofBlitzText.Position = ContentPageVisuals.Position + Vector2.new(9, 221)
 NofBlitzText.Text = "Nof Blitz"
@@ -944,7 +894,7 @@ NofBlitzText.Font = Drawing.Fonts.Monospace
 local NofChainsmokerText = Drawing.new("Text")
 NofChainsmokerText.Visible = false
 NofChainsmokerText.Transparency = 1
-NofChainsmokerText.ZIndex = 330
+NofChainsmokerText.ZIndex = 370
 NofChainsmokerText.Color = Color3.fromHex("#e5e4d3")
 NofChainsmokerText.Position = ContentPageVisuals.Position + Vector2.new(9, 241)
 NofChainsmokerText.Text = "Nof Chainsmoker"
@@ -956,7 +906,7 @@ NofChainsmokerText.Font = Drawing.Fonts.Monospace
 local NofPandemoniumText = Drawing.new("Text")
 NofPandemoniumText.Visible = false
 NofPandemoniumText.Transparency = 1
-NofPandemoniumText.ZIndex = 340
+NofPandemoniumText.ZIndex = 380
 NofPandemoniumText.Color = Color3.fromHex("#e5e4d3")
 NofPandemoniumText.Position = ContentPageVisuals.Position + Vector2.new(9, 261)
 NofPandemoniumText.Text = "Nof Pandemonium"
@@ -968,7 +918,7 @@ NofPandemoniumText.Font = Drawing.Fonts.Monospace
 local NofA60text = Drawing.new("Text")
 NofA60text.Visible = false
 NofA60text.Transparency = 1
-NofA60text.ZIndex = 350
+NofA60text.ZIndex = 390
 NofA60text.Color = Color3.fromHex("#e5e4d3")
 NofA60text.Position = ContentPageVisuals.Position + Vector2.new(9, 281)
 NofA60text.Text = "Nof A60"
@@ -980,7 +930,7 @@ NofA60text.Font = Drawing.Fonts.Monospace
 local NofHarbingerText = Drawing.new("Text")
 NofHarbingerText.Visible = false
 NofHarbingerText.Transparency = 1
-NofHarbingerText.ZIndex = 360
+NofHarbingerText.ZIndex = 400
 NofHarbingerText.Color = Color3.fromHex("#e5e4d3")
 NofHarbingerText.Position = ContentPageVisuals.Position + Vector2.new(9, 301)
 NofHarbingerText.Text = "Nof Harbinger"
@@ -992,7 +942,7 @@ NofHarbingerText.Font = Drawing.Fonts.Monospace
 local NofPainterRoomText = Drawing.new("Text")
 NofPainterRoomText.Visible = false
 NofPainterRoomText.Transparency = 1
-NofPainterRoomText.ZIndex = 370
+NofPainterRoomText.ZIndex = 420
 NofPainterRoomText.Color = Color3.fromHex("#e5e4d3")
 NofPainterRoomText.Position = ContentPageVisuals.Position + Vector2.new(9, 321)
 NofPainterRoomText.Text = "Nof Painter Room"
@@ -1004,7 +954,7 @@ NofPainterRoomText.Font = Drawing.Fonts.Monospace
 local NoffiticationFrogerSwitch = Drawing.new("Switch")
 NoffiticationFrogerSwitch.Visible = false
 NoffiticationFrogerSwitch.Transparency = 1
-NoffiticationFrogerSwitch.ZIndex = 180
+NoffiticationFrogerSwitch.ZIndex = 200
 NoffiticationFrogerSwitch.Color = Color3.fromHex("#212121")
 NoffiticationFrogerSwitch.Position = ContentPageVisuals.Position + Vector2.new(491, 181)
 
@@ -1017,7 +967,7 @@ NoffiticationFrogerSwitch.Thickness = 1
 NoffiticationFrogerSwitch.Filled = false
 NoffiticationFrogerSwitch.Size = Vector2.new(30, 13)
 NoffiticationFrogerSwitch.Position = Vector2.new(614, 315)
-NoffiticationFrogerSwitch.ZIndex = 180
+NoffiticationFrogerSwitch.ZIndex = 200
 NoffiticationFrogerSwitch.Corner = 15
 local NoffiticationFrogerSwitch_Bg = Drawing.new("Square")
 NoffiticationFrogerSwitch_Bg.Visible = false
@@ -1026,7 +976,7 @@ NoffiticationFrogerSwitch_Bg.Color = Color3.fromHex("#212121")
 NoffiticationFrogerSwitch_Bg.Filled = true
 NoffiticationFrogerSwitch_Bg.Size = NoffiticationFrogerSwitch.Size
 NoffiticationFrogerSwitch_Bg.Position = NoffiticationFrogerSwitch.Position
-NoffiticationFrogerSwitch_Bg.ZIndex = 180
+NoffiticationFrogerSwitch_Bg.ZIndex = 200
 NoffiticationFrogerSwitch_Bg.Corner = 15
 local NoffiticationFrogerSwitch_IndBorder = Drawing.new("Square")
 NoffiticationFrogerSwitch_IndBorder.Visible = false
@@ -1035,7 +985,7 @@ NoffiticationFrogerSwitch_IndBorder.Color = Color3.fromHex("#000000")
 NoffiticationFrogerSwitch_IndBorder.Thickness = 1
 NoffiticationFrogerSwitch_IndBorder.Filled = false
 NoffiticationFrogerSwitch_IndBorder.Size = Vector2.new(11, 11)
-NoffiticationFrogerSwitch_IndBorder.ZIndex = 182
+NoffiticationFrogerSwitch_IndBorder.ZIndex = 202
 NoffiticationFrogerSwitch_IndBorder.Corner = 15
 local NoffiticationFrogerSwitch_Ind = Drawing.new("Square")
 NoffiticationFrogerSwitch_Ind.Visible = false
@@ -1043,7 +993,7 @@ NoffiticationFrogerSwitch_Ind.Transparency = 1
 NoffiticationFrogerSwitch_Ind.Color = Color3.fromHex("#ffffff")
 NoffiticationFrogerSwitch_Ind.Filled = true
 NoffiticationFrogerSwitch_Ind.Size = Vector2.new(11, 11)
-NoffiticationFrogerSwitch_Ind.ZIndex = 182
+NoffiticationFrogerSwitch_Ind.ZIndex = 202
 NoffiticationFrogerSwitch_Ind.Corner = 15
 if NoffiticationFrogerSwitch_IsChecked then
     NoffiticationFrogerSwitch_IndBorder.Position = NoffiticationFrogerSwitch.Position + Vector2.new(18, 1)
@@ -1060,12 +1010,12 @@ NoffiticationFrogerSwitch_Label.Color = Color3.fromHex("#FFFFFF")
 NoffiticationFrogerSwitch_Label.Outline = true
 NoffiticationFrogerSwitch_Label.Font = Drawing.Fonts.UI
 NoffiticationFrogerSwitch_Label.Position = NoffiticationFrogerSwitch.Position + Vector2.new(40, 0.5)
-NoffiticationFrogerSwitch_Label.ZIndex = 181
+NoffiticationFrogerSwitch_Label.ZIndex = 201
 
 local NoffiticationPinkieSwitch = Drawing.new("Switch")
 NoffiticationPinkieSwitch.Visible = false
 NoffiticationPinkieSwitch.Transparency = 1
-NoffiticationPinkieSwitch.ZIndex = 190
+NoffiticationPinkieSwitch.ZIndex = 210
 NoffiticationPinkieSwitch.Color = Color3.fromHex("#212121")
 NoffiticationPinkieSwitch.Position = ContentPageVisuals.Position + Vector2.new(491, 201)
 
@@ -1078,7 +1028,7 @@ NoffiticationPinkieSwitch.Thickness = 1
 NoffiticationPinkieSwitch.Filled = false
 NoffiticationPinkieSwitch.Size = Vector2.new(30, 13)
 NoffiticationPinkieSwitch.Position = Vector2.new(614, 335)
-NoffiticationPinkieSwitch.ZIndex = 190
+NoffiticationPinkieSwitch.ZIndex = 210
 NoffiticationPinkieSwitch.Corner = 15
 local NoffiticationPinkieSwitch_Bg = Drawing.new("Square")
 NoffiticationPinkieSwitch_Bg.Visible = false
@@ -1087,7 +1037,7 @@ NoffiticationPinkieSwitch_Bg.Color = Color3.fromHex("#212121")
 NoffiticationPinkieSwitch_Bg.Filled = true
 NoffiticationPinkieSwitch_Bg.Size = NoffiticationPinkieSwitch.Size
 NoffiticationPinkieSwitch_Bg.Position = NoffiticationPinkieSwitch.Position
-NoffiticationPinkieSwitch_Bg.ZIndex = 190
+NoffiticationPinkieSwitch_Bg.ZIndex = 210
 NoffiticationPinkieSwitch_Bg.Corner = 15
 local NoffiticationPinkieSwitch_IndBorder = Drawing.new("Square")
 NoffiticationPinkieSwitch_IndBorder.Visible = false
@@ -1096,7 +1046,7 @@ NoffiticationPinkieSwitch_IndBorder.Color = Color3.fromHex("#000000")
 NoffiticationPinkieSwitch_IndBorder.Thickness = 1
 NoffiticationPinkieSwitch_IndBorder.Filled = false
 NoffiticationPinkieSwitch_IndBorder.Size = Vector2.new(11, 11)
-NoffiticationPinkieSwitch_IndBorder.ZIndex = 192
+NoffiticationPinkieSwitch_IndBorder.ZIndex = 212
 NoffiticationPinkieSwitch_IndBorder.Corner = 15
 local NoffiticationPinkieSwitch_Ind = Drawing.new("Square")
 NoffiticationPinkieSwitch_Ind.Visible = false
@@ -1104,7 +1054,7 @@ NoffiticationPinkieSwitch_Ind.Transparency = 1
 NoffiticationPinkieSwitch_Ind.Color = Color3.fromHex("#ffffff")
 NoffiticationPinkieSwitch_Ind.Filled = true
 NoffiticationPinkieSwitch_Ind.Size = Vector2.new(11, 11)
-NoffiticationPinkieSwitch_Ind.ZIndex = 192
+NoffiticationPinkieSwitch_Ind.ZIndex = 212
 NoffiticationPinkieSwitch_Ind.Corner = 15
 if NoffiticationPinkieSwitch_IsChecked then
     NoffiticationPinkieSwitch_IndBorder.Position = NoffiticationPinkieSwitch.Position + Vector2.new(18, 1)
@@ -1121,12 +1071,12 @@ NoffiticationPinkieSwitch_Label.Color = Color3.fromHex("#FFFFFF")
 NoffiticationPinkieSwitch_Label.Outline = true
 NoffiticationPinkieSwitch_Label.Font = Drawing.Fonts.UI
 NoffiticationPinkieSwitch_Label.Position = NoffiticationPinkieSwitch.Position + Vector2.new(40, 0.5)
-NoffiticationPinkieSwitch_Label.ZIndex = 191
+NoffiticationPinkieSwitch_Label.ZIndex = 211
 
 local NoffiticationBlitzSwitch = Drawing.new("Switch")
 NoffiticationBlitzSwitch.Visible = false
 NoffiticationBlitzSwitch.Transparency = 1
-NoffiticationBlitzSwitch.ZIndex = 200
+NoffiticationBlitzSwitch.ZIndex = 220
 NoffiticationBlitzSwitch.Color = Color3.fromHex("#212121")
 NoffiticationBlitzSwitch.Position = ContentPageVisuals.Position + Vector2.new(491, 221)
 
@@ -1139,7 +1089,7 @@ NoffiticationBlitzSwitch.Thickness = 1
 NoffiticationBlitzSwitch.Filled = false
 NoffiticationBlitzSwitch.Size = Vector2.new(30, 13)
 NoffiticationBlitzSwitch.Position = Vector2.new(614, 355)
-NoffiticationBlitzSwitch.ZIndex = 200
+NoffiticationBlitzSwitch.ZIndex = 220
 NoffiticationBlitzSwitch.Corner = 15
 local NoffiticationBlitzSwitch_Bg = Drawing.new("Square")
 NoffiticationBlitzSwitch_Bg.Visible = false
@@ -1148,7 +1098,7 @@ NoffiticationBlitzSwitch_Bg.Color = Color3.fromHex("#212121")
 NoffiticationBlitzSwitch_Bg.Filled = true
 NoffiticationBlitzSwitch_Bg.Size = NoffiticationBlitzSwitch.Size
 NoffiticationBlitzSwitch_Bg.Position = NoffiticationBlitzSwitch.Position
-NoffiticationBlitzSwitch_Bg.ZIndex = 200
+NoffiticationBlitzSwitch_Bg.ZIndex = 220
 NoffiticationBlitzSwitch_Bg.Corner = 15
 local NoffiticationBlitzSwitch_IndBorder = Drawing.new("Square")
 NoffiticationBlitzSwitch_IndBorder.Visible = false
@@ -1157,7 +1107,7 @@ NoffiticationBlitzSwitch_IndBorder.Color = Color3.fromHex("#000000")
 NoffiticationBlitzSwitch_IndBorder.Thickness = 1
 NoffiticationBlitzSwitch_IndBorder.Filled = false
 NoffiticationBlitzSwitch_IndBorder.Size = Vector2.new(11, 11)
-NoffiticationBlitzSwitch_IndBorder.ZIndex = 202
+NoffiticationBlitzSwitch_IndBorder.ZIndex = 222
 NoffiticationBlitzSwitch_IndBorder.Corner = 15
 local NoffiticationBlitzSwitch_Ind = Drawing.new("Square")
 NoffiticationBlitzSwitch_Ind.Visible = false
@@ -1165,7 +1115,7 @@ NoffiticationBlitzSwitch_Ind.Transparency = 1
 NoffiticationBlitzSwitch_Ind.Color = Color3.fromHex("#ffffff")
 NoffiticationBlitzSwitch_Ind.Filled = true
 NoffiticationBlitzSwitch_Ind.Size = Vector2.new(11, 11)
-NoffiticationBlitzSwitch_Ind.ZIndex = 202
+NoffiticationBlitzSwitch_Ind.ZIndex = 222
 NoffiticationBlitzSwitch_Ind.Corner = 15
 if NoffiticationBlitzSwitch_IsChecked then
     NoffiticationBlitzSwitch_IndBorder.Position = NoffiticationBlitzSwitch.Position + Vector2.new(18, 1)
@@ -1182,12 +1132,12 @@ NoffiticationBlitzSwitch_Label.Color = Color3.fromHex("#FFFFFF")
 NoffiticationBlitzSwitch_Label.Outline = true
 NoffiticationBlitzSwitch_Label.Font = Drawing.Fonts.UI
 NoffiticationBlitzSwitch_Label.Position = NoffiticationBlitzSwitch.Position + Vector2.new(40, 0.5)
-NoffiticationBlitzSwitch_Label.ZIndex = 201
+NoffiticationBlitzSwitch_Label.ZIndex = 221
 
 local NoffiticationChainsmokerSwitch = Drawing.new("Switch")
 NoffiticationChainsmokerSwitch.Visible = false
 NoffiticationChainsmokerSwitch.Transparency = 1
-NoffiticationChainsmokerSwitch.ZIndex = 210
+NoffiticationChainsmokerSwitch.ZIndex = 230
 NoffiticationChainsmokerSwitch.Color = Color3.fromHex("#212121")
 NoffiticationChainsmokerSwitch.Position = ContentPageVisuals.Position + Vector2.new(491, 241)
 
@@ -1200,7 +1150,7 @@ NoffiticationChainsmokerSwitch.Thickness = 1
 NoffiticationChainsmokerSwitch.Filled = false
 NoffiticationChainsmokerSwitch.Size = Vector2.new(30, 13)
 NoffiticationChainsmokerSwitch.Position = Vector2.new(614, 375)
-NoffiticationChainsmokerSwitch.ZIndex = 210
+NoffiticationChainsmokerSwitch.ZIndex = 230
 NoffiticationChainsmokerSwitch.Corner = 15
 local NoffiticationChainsmokerSwitch_Bg = Drawing.new("Square")
 NoffiticationChainsmokerSwitch_Bg.Visible = false
@@ -1209,7 +1159,7 @@ NoffiticationChainsmokerSwitch_Bg.Color = Color3.fromHex("#212121")
 NoffiticationChainsmokerSwitch_Bg.Filled = true
 NoffiticationChainsmokerSwitch_Bg.Size = NoffiticationChainsmokerSwitch.Size
 NoffiticationChainsmokerSwitch_Bg.Position = NoffiticationChainsmokerSwitch.Position
-NoffiticationChainsmokerSwitch_Bg.ZIndex = 210
+NoffiticationChainsmokerSwitch_Bg.ZIndex = 230
 NoffiticationChainsmokerSwitch_Bg.Corner = 15
 local NoffiticationChainsmokerSwitch_IndBorder = Drawing.new("Square")
 NoffiticationChainsmokerSwitch_IndBorder.Visible = false
@@ -1218,7 +1168,7 @@ NoffiticationChainsmokerSwitch_IndBorder.Color = Color3.fromHex("#000000")
 NoffiticationChainsmokerSwitch_IndBorder.Thickness = 1
 NoffiticationChainsmokerSwitch_IndBorder.Filled = false
 NoffiticationChainsmokerSwitch_IndBorder.Size = Vector2.new(11, 11)
-NoffiticationChainsmokerSwitch_IndBorder.ZIndex = 212
+NoffiticationChainsmokerSwitch_IndBorder.ZIndex = 232
 NoffiticationChainsmokerSwitch_IndBorder.Corner = 15
 local NoffiticationChainsmokerSwitch_Ind = Drawing.new("Square")
 NoffiticationChainsmokerSwitch_Ind.Visible = false
@@ -1226,7 +1176,7 @@ NoffiticationChainsmokerSwitch_Ind.Transparency = 1
 NoffiticationChainsmokerSwitch_Ind.Color = Color3.fromHex("#ffffff")
 NoffiticationChainsmokerSwitch_Ind.Filled = true
 NoffiticationChainsmokerSwitch_Ind.Size = Vector2.new(11, 11)
-NoffiticationChainsmokerSwitch_Ind.ZIndex = 212
+NoffiticationChainsmokerSwitch_Ind.ZIndex = 232
 NoffiticationChainsmokerSwitch_Ind.Corner = 15
 if NoffiticationChainsmokerSwitch_IsChecked then
     NoffiticationChainsmokerSwitch_IndBorder.Position = NoffiticationChainsmokerSwitch.Position + Vector2.new(18, 1)
@@ -1243,12 +1193,12 @@ NoffiticationChainsmokerSwitch_Label.Color = Color3.fromHex("#FFFFFF")
 NoffiticationChainsmokerSwitch_Label.Outline = true
 NoffiticationChainsmokerSwitch_Label.Font = Drawing.Fonts.UI
 NoffiticationChainsmokerSwitch_Label.Position = NoffiticationChainsmokerSwitch.Position + Vector2.new(40, 0.5)
-NoffiticationChainsmokerSwitch_Label.ZIndex = 211
+NoffiticationChainsmokerSwitch_Label.ZIndex = 231
 
 local NoffiticationPandemoniumSwitch = Drawing.new("Switch")
 NoffiticationPandemoniumSwitch.Visible = false
 NoffiticationPandemoniumSwitch.Transparency = 1
-NoffiticationPandemoniumSwitch.ZIndex = 220
+NoffiticationPandemoniumSwitch.ZIndex = 240
 NoffiticationPandemoniumSwitch.Color = Color3.fromHex("#212121")
 NoffiticationPandemoniumSwitch.Position = ContentPageVisuals.Position + Vector2.new(491, 261)
 
@@ -1261,7 +1211,7 @@ NoffiticationPandemoniumSwitch.Thickness = 1
 NoffiticationPandemoniumSwitch.Filled = false
 NoffiticationPandemoniumSwitch.Size = Vector2.new(30, 13)
 NoffiticationPandemoniumSwitch.Position = Vector2.new(614, 395)
-NoffiticationPandemoniumSwitch.ZIndex = 220
+NoffiticationPandemoniumSwitch.ZIndex = 240
 NoffiticationPandemoniumSwitch.Corner = 15
 local NoffiticationPandemoniumSwitch_Bg = Drawing.new("Square")
 NoffiticationPandemoniumSwitch_Bg.Visible = false
@@ -1270,7 +1220,7 @@ NoffiticationPandemoniumSwitch_Bg.Color = Color3.fromHex("#212121")
 NoffiticationPandemoniumSwitch_Bg.Filled = true
 NoffiticationPandemoniumSwitch_Bg.Size = NoffiticationPandemoniumSwitch.Size
 NoffiticationPandemoniumSwitch_Bg.Position = NoffiticationPandemoniumSwitch.Position
-NoffiticationPandemoniumSwitch_Bg.ZIndex = 220
+NoffiticationPandemoniumSwitch_Bg.ZIndex = 240
 NoffiticationPandemoniumSwitch_Bg.Corner = 15
 local NoffiticationPandemoniumSwitch_IndBorder = Drawing.new("Square")
 NoffiticationPandemoniumSwitch_IndBorder.Visible = false
@@ -1279,7 +1229,7 @@ NoffiticationPandemoniumSwitch_IndBorder.Color = Color3.fromHex("#000000")
 NoffiticationPandemoniumSwitch_IndBorder.Thickness = 1
 NoffiticationPandemoniumSwitch_IndBorder.Filled = false
 NoffiticationPandemoniumSwitch_IndBorder.Size = Vector2.new(11, 11)
-NoffiticationPandemoniumSwitch_IndBorder.ZIndex = 222
+NoffiticationPandemoniumSwitch_IndBorder.ZIndex = 242
 NoffiticationPandemoniumSwitch_IndBorder.Corner = 15
 local NoffiticationPandemoniumSwitch_Ind = Drawing.new("Square")
 NoffiticationPandemoniumSwitch_Ind.Visible = false
@@ -1287,7 +1237,7 @@ NoffiticationPandemoniumSwitch_Ind.Transparency = 1
 NoffiticationPandemoniumSwitch_Ind.Color = Color3.fromHex("#ffffff")
 NoffiticationPandemoniumSwitch_Ind.Filled = true
 NoffiticationPandemoniumSwitch_Ind.Size = Vector2.new(11, 11)
-NoffiticationPandemoniumSwitch_Ind.ZIndex = 222
+NoffiticationPandemoniumSwitch_Ind.ZIndex = 242
 NoffiticationPandemoniumSwitch_Ind.Corner = 15
 if NoffiticationPandemoniumSwitch_IsChecked then
     NoffiticationPandemoniumSwitch_IndBorder.Position = NoffiticationPandemoniumSwitch.Position + Vector2.new(18, 1)
@@ -1304,12 +1254,12 @@ NoffiticationPandemoniumSwitch_Label.Color = Color3.fromHex("#FFFFFF")
 NoffiticationPandemoniumSwitch_Label.Outline = true
 NoffiticationPandemoniumSwitch_Label.Font = Drawing.Fonts.UI
 NoffiticationPandemoniumSwitch_Label.Position = NoffiticationPandemoniumSwitch.Position + Vector2.new(40, 0.5)
-NoffiticationPandemoniumSwitch_Label.ZIndex = 221
+NoffiticationPandemoniumSwitch_Label.ZIndex = 241
 
 local NoffiticationA60Switch = Drawing.new("Switch")
 NoffiticationA60Switch.Visible = false
 NoffiticationA60Switch.Transparency = 1
-NoffiticationA60Switch.ZIndex = 230
+NoffiticationA60Switch.ZIndex = 250
 NoffiticationA60Switch.Color = Color3.fromHex("#212121")
 NoffiticationA60Switch.Position = ContentPageVisuals.Position + Vector2.new(491, 281)
 
@@ -1322,7 +1272,7 @@ NoffiticationA60Switch.Thickness = 1
 NoffiticationA60Switch.Filled = false
 NoffiticationA60Switch.Size = Vector2.new(30, 13)
 NoffiticationA60Switch.Position = Vector2.new(614, 415)
-NoffiticationA60Switch.ZIndex = 230
+NoffiticationA60Switch.ZIndex = 250
 NoffiticationA60Switch.Corner = 15
 local NoffiticationA60Switch_Bg = Drawing.new("Square")
 NoffiticationA60Switch_Bg.Visible = false
@@ -1331,7 +1281,7 @@ NoffiticationA60Switch_Bg.Color = Color3.fromHex("#212121")
 NoffiticationA60Switch_Bg.Filled = true
 NoffiticationA60Switch_Bg.Size = NoffiticationA60Switch.Size
 NoffiticationA60Switch_Bg.Position = NoffiticationA60Switch.Position
-NoffiticationA60Switch_Bg.ZIndex = 230
+NoffiticationA60Switch_Bg.ZIndex = 250
 NoffiticationA60Switch_Bg.Corner = 15
 local NoffiticationA60Switch_IndBorder = Drawing.new("Square")
 NoffiticationA60Switch_IndBorder.Visible = false
@@ -1340,7 +1290,7 @@ NoffiticationA60Switch_IndBorder.Color = Color3.fromHex("#000000")
 NoffiticationA60Switch_IndBorder.Thickness = 1
 NoffiticationA60Switch_IndBorder.Filled = false
 NoffiticationA60Switch_IndBorder.Size = Vector2.new(11, 11)
-NoffiticationA60Switch_IndBorder.ZIndex = 232
+NoffiticationA60Switch_IndBorder.ZIndex = 252
 NoffiticationA60Switch_IndBorder.Corner = 15
 local NoffiticationA60Switch_Ind = Drawing.new("Square")
 NoffiticationA60Switch_Ind.Visible = false
@@ -1348,7 +1298,7 @@ NoffiticationA60Switch_Ind.Transparency = 1
 NoffiticationA60Switch_Ind.Color = Color3.fromHex("#ffffff")
 NoffiticationA60Switch_Ind.Filled = true
 NoffiticationA60Switch_Ind.Size = Vector2.new(11, 11)
-NoffiticationA60Switch_Ind.ZIndex = 232
+NoffiticationA60Switch_Ind.ZIndex = 252
 NoffiticationA60Switch_Ind.Corner = 15
 if NoffiticationA60Switch_IsChecked then
     NoffiticationA60Switch_IndBorder.Position = NoffiticationA60Switch.Position + Vector2.new(18, 1)
@@ -1365,12 +1315,12 @@ NoffiticationA60Switch_Label.Color = Color3.fromHex("#FFFFFF")
 NoffiticationA60Switch_Label.Outline = true
 NoffiticationA60Switch_Label.Font = Drawing.Fonts.UI
 NoffiticationA60Switch_Label.Position = NoffiticationA60Switch.Position + Vector2.new(40, 0.5)
-NoffiticationA60Switch_Label.ZIndex = 231
+NoffiticationA60Switch_Label.ZIndex = 251
 
 local NoffiticationHarbingerSwitch = Drawing.new("Switch")
 NoffiticationHarbingerSwitch.Visible = false
 NoffiticationHarbingerSwitch.Transparency = 1
-NoffiticationHarbingerSwitch.ZIndex = 240
+NoffiticationHarbingerSwitch.ZIndex = 260
 NoffiticationHarbingerSwitch.Color = Color3.fromHex("#212121")
 NoffiticationHarbingerSwitch.Position = ContentPageVisuals.Position + Vector2.new(491, 301)
 
@@ -1383,7 +1333,7 @@ NoffiticationHarbingerSwitch.Thickness = 1
 NoffiticationHarbingerSwitch.Filled = false
 NoffiticationHarbingerSwitch.Size = Vector2.new(30, 13)
 NoffiticationHarbingerSwitch.Position = Vector2.new(614, 435)
-NoffiticationHarbingerSwitch.ZIndex = 240
+NoffiticationHarbingerSwitch.ZIndex = 260
 NoffiticationHarbingerSwitch.Corner = 15
 local NoffiticationHarbingerSwitch_Bg = Drawing.new("Square")
 NoffiticationHarbingerSwitch_Bg.Visible = false
@@ -1392,7 +1342,7 @@ NoffiticationHarbingerSwitch_Bg.Color = Color3.fromHex("#212121")
 NoffiticationHarbingerSwitch_Bg.Filled = true
 NoffiticationHarbingerSwitch_Bg.Size = NoffiticationHarbingerSwitch.Size
 NoffiticationHarbingerSwitch_Bg.Position = NoffiticationHarbingerSwitch.Position
-NoffiticationHarbingerSwitch_Bg.ZIndex = 240
+NoffiticationHarbingerSwitch_Bg.ZIndex = 260
 NoffiticationHarbingerSwitch_Bg.Corner = 15
 local NoffiticationHarbingerSwitch_IndBorder = Drawing.new("Square")
 NoffiticationHarbingerSwitch_IndBorder.Visible = false
@@ -1401,7 +1351,7 @@ NoffiticationHarbingerSwitch_IndBorder.Color = Color3.fromHex("#000000")
 NoffiticationHarbingerSwitch_IndBorder.Thickness = 1
 NoffiticationHarbingerSwitch_IndBorder.Filled = false
 NoffiticationHarbingerSwitch_IndBorder.Size = Vector2.new(11, 11)
-NoffiticationHarbingerSwitch_IndBorder.ZIndex = 242
+NoffiticationHarbingerSwitch_IndBorder.ZIndex = 262
 NoffiticationHarbingerSwitch_IndBorder.Corner = 15
 local NoffiticationHarbingerSwitch_Ind = Drawing.new("Square")
 NoffiticationHarbingerSwitch_Ind.Visible = false
@@ -1409,7 +1359,7 @@ NoffiticationHarbingerSwitch_Ind.Transparency = 1
 NoffiticationHarbingerSwitch_Ind.Color = Color3.fromHex("#ffffff")
 NoffiticationHarbingerSwitch_Ind.Filled = true
 NoffiticationHarbingerSwitch_Ind.Size = Vector2.new(11, 11)
-NoffiticationHarbingerSwitch_Ind.ZIndex = 242
+NoffiticationHarbingerSwitch_Ind.ZIndex = 262
 NoffiticationHarbingerSwitch_Ind.Corner = 15
 if NoffiticationHarbingerSwitch_IsChecked then
     NoffiticationHarbingerSwitch_IndBorder.Position = NoffiticationHarbingerSwitch.Position + Vector2.new(18, 1)
@@ -1426,12 +1376,12 @@ NoffiticationHarbingerSwitch_Label.Color = Color3.fromHex("#FFFFFF")
 NoffiticationHarbingerSwitch_Label.Outline = true
 NoffiticationHarbingerSwitch_Label.Font = Drawing.Fonts.UI
 NoffiticationHarbingerSwitch_Label.Position = NoffiticationHarbingerSwitch.Position + Vector2.new(40, 0.5)
-NoffiticationHarbingerSwitch_Label.ZIndex = 241
+NoffiticationHarbingerSwitch_Label.ZIndex = 261
 
 local NoffiticationPainterRoomSwitch = Drawing.new("Switch")
 NoffiticationPainterRoomSwitch.Visible = false
 NoffiticationPainterRoomSwitch.Transparency = 1
-NoffiticationPainterRoomSwitch.ZIndex = 250
+NoffiticationPainterRoomSwitch.ZIndex = 270
 NoffiticationPainterRoomSwitch.Color = Color3.fromHex("#212121")
 NoffiticationPainterRoomSwitch.Position = ContentPageVisuals.Position + Vector2.new(491, 321)
 
@@ -1444,7 +1394,7 @@ NoffiticationPainterRoomSwitch.Thickness = 1
 NoffiticationPainterRoomSwitch.Filled = false
 NoffiticationPainterRoomSwitch.Size = Vector2.new(30, 13)
 NoffiticationPainterRoomSwitch.Position = Vector2.new(614, 455)
-NoffiticationPainterRoomSwitch.ZIndex = 250
+NoffiticationPainterRoomSwitch.ZIndex = 270
 NoffiticationPainterRoomSwitch.Corner = 15
 local NoffiticationPainterRoomSwitch_Bg = Drawing.new("Square")
 NoffiticationPainterRoomSwitch_Bg.Visible = false
@@ -1453,7 +1403,7 @@ NoffiticationPainterRoomSwitch_Bg.Color = Color3.fromHex("#212121")
 NoffiticationPainterRoomSwitch_Bg.Filled = true
 NoffiticationPainterRoomSwitch_Bg.Size = NoffiticationPainterRoomSwitch.Size
 NoffiticationPainterRoomSwitch_Bg.Position = NoffiticationPainterRoomSwitch.Position
-NoffiticationPainterRoomSwitch_Bg.ZIndex = 250
+NoffiticationPainterRoomSwitch_Bg.ZIndex = 270
 NoffiticationPainterRoomSwitch_Bg.Corner = 15
 local NoffiticationPainterRoomSwitch_IndBorder = Drawing.new("Square")
 NoffiticationPainterRoomSwitch_IndBorder.Visible = false
@@ -1462,7 +1412,7 @@ NoffiticationPainterRoomSwitch_IndBorder.Color = Color3.fromHex("#000000")
 NoffiticationPainterRoomSwitch_IndBorder.Thickness = 1
 NoffiticationPainterRoomSwitch_IndBorder.Filled = false
 NoffiticationPainterRoomSwitch_IndBorder.Size = Vector2.new(11, 11)
-NoffiticationPainterRoomSwitch_IndBorder.ZIndex = 252
+NoffiticationPainterRoomSwitch_IndBorder.ZIndex = 272
 NoffiticationPainterRoomSwitch_IndBorder.Corner = 15
 local NoffiticationPainterRoomSwitch_Ind = Drawing.new("Square")
 NoffiticationPainterRoomSwitch_Ind.Visible = false
@@ -1470,7 +1420,7 @@ NoffiticationPainterRoomSwitch_Ind.Transparency = 1
 NoffiticationPainterRoomSwitch_Ind.Color = Color3.fromHex("#ffffff")
 NoffiticationPainterRoomSwitch_Ind.Filled = true
 NoffiticationPainterRoomSwitch_Ind.Size = Vector2.new(11, 11)
-NoffiticationPainterRoomSwitch_Ind.ZIndex = 252
+NoffiticationPainterRoomSwitch_Ind.ZIndex = 272
 NoffiticationPainterRoomSwitch_Ind.Corner = 15
 if NoffiticationPainterRoomSwitch_IsChecked then
     NoffiticationPainterRoomSwitch_IndBorder.Position = NoffiticationPainterRoomSwitch.Position + Vector2.new(18, 1)
@@ -1487,7 +1437,7 @@ NoffiticationPainterRoomSwitch_Label.Color = Color3.fromHex("#FFFFFF")
 NoffiticationPainterRoomSwitch_Label.Outline = true
 NoffiticationPainterRoomSwitch_Label.Font = Drawing.Fonts.UI
 NoffiticationPainterRoomSwitch_Label.Position = NoffiticationPainterRoomSwitch.Position + Vector2.new(40, 0.5)
-NoffiticationPainterRoomSwitch_Label.ZIndex = 251
+NoffiticationPainterRoomSwitch_Label.ZIndex = 271
 
 local ContentPageVisuals3 = Drawing.new("Square")
 ContentPageVisuals3.Visible = false
@@ -1513,7 +1463,7 @@ ContentPageVisuals3_Border.Corner = 5
 local EnableWatermarkText = Drawing.new("Text")
 EnableWatermarkText.Visible = false
 EnableWatermarkText.Transparency = 1
-EnableWatermarkText.ZIndex = 380
+EnableWatermarkText.ZIndex = 430
 EnableWatermarkText.Color = Color3.fromHex("#e5e4d3")
 EnableWatermarkText.Position = ContentPageVisuals.Position + Vector2.new(9, 371)
 EnableWatermarkText.Text = "Watermark"
@@ -1525,7 +1475,7 @@ EnableWatermarkText.Font = Drawing.Fonts.Monospace
 local EnableWatermarkSwitch = Drawing.new("Switch")
 EnableWatermarkSwitch.Visible = false
 EnableWatermarkSwitch.Transparency = 1
-EnableWatermarkSwitch.ZIndex = 260
+EnableWatermarkSwitch.ZIndex = 280
 EnableWatermarkSwitch.Color = Color3.fromHex("#212121")
 EnableWatermarkSwitch.Position = ContentPageVisuals.Position + Vector2.new(491, 371)
 
@@ -1538,7 +1488,7 @@ EnableWatermarkSwitch.Thickness = 1
 EnableWatermarkSwitch.Filled = false
 EnableWatermarkSwitch.Size = Vector2.new(30, 13)
 EnableWatermarkSwitch.Position = Vector2.new(614, 505)
-EnableWatermarkSwitch.ZIndex = 260
+EnableWatermarkSwitch.ZIndex = 280
 EnableWatermarkSwitch.Corner = 15
 local EnableWatermarkSwitch_Bg = Drawing.new("Square")
 EnableWatermarkSwitch_Bg.Visible = false
@@ -1547,7 +1497,7 @@ EnableWatermarkSwitch_Bg.Color = Color3.fromHex("#212121")
 EnableWatermarkSwitch_Bg.Filled = true
 EnableWatermarkSwitch_Bg.Size = EnableWatermarkSwitch.Size
 EnableWatermarkSwitch_Bg.Position = EnableWatermarkSwitch.Position
-EnableWatermarkSwitch_Bg.ZIndex = 260
+EnableWatermarkSwitch_Bg.ZIndex = 280
 EnableWatermarkSwitch_Bg.Corner = 15
 local EnableWatermarkSwitch_IndBorder = Drawing.new("Square")
 EnableWatermarkSwitch_IndBorder.Visible = false
@@ -1556,7 +1506,7 @@ EnableWatermarkSwitch_IndBorder.Color = Color3.fromHex("#000000")
 EnableWatermarkSwitch_IndBorder.Thickness = 1
 EnableWatermarkSwitch_IndBorder.Filled = false
 EnableWatermarkSwitch_IndBorder.Size = Vector2.new(11, 11)
-EnableWatermarkSwitch_IndBorder.ZIndex = 262
+EnableWatermarkSwitch_IndBorder.ZIndex = 282
 EnableWatermarkSwitch_IndBorder.Corner = 15
 local EnableWatermarkSwitch_Ind = Drawing.new("Square")
 EnableWatermarkSwitch_Ind.Visible = false
@@ -1564,7 +1514,7 @@ EnableWatermarkSwitch_Ind.Transparency = 1
 EnableWatermarkSwitch_Ind.Color = Color3.fromHex("#ffffff")
 EnableWatermarkSwitch_Ind.Filled = true
 EnableWatermarkSwitch_Ind.Size = Vector2.new(11, 11)
-EnableWatermarkSwitch_Ind.ZIndex = 262
+EnableWatermarkSwitch_Ind.ZIndex = 282
 EnableWatermarkSwitch_Ind.Corner = 15
 if EnableWatermarkSwitch_IsChecked then
     EnableWatermarkSwitch_IndBorder.Position = EnableWatermarkSwitch.Position + Vector2.new(18, 1)
@@ -1581,12 +1531,12 @@ EnableWatermarkSwitch_Label.Color = Color3.fromHex("#FFFFFF")
 EnableWatermarkSwitch_Label.Outline = true
 EnableWatermarkSwitch_Label.Font = Drawing.Fonts.UI
 EnableWatermarkSwitch_Label.Position = EnableWatermarkSwitch.Position + Vector2.new(40, 0.5)
-EnableWatermarkSwitch_Label.ZIndex = 261
+EnableWatermarkSwitch_Label.ZIndex = 281
 
 local ContentPageExploits = Drawing.new("Square")
 ContentPageExploits.Visible = false
 ContentPageExploits.Transparency = 1
-ContentPageExploits.ZIndex = 390
+ContentPageExploits.ZIndex = 440
 ContentPageExploits.Color = Color3.fromHex("#0c1020")
 ContentPageExploits.Position = Main1.Position + Vector2.new(19, 107)
 ContentPageExploits.Size = Vector2.new(532, 300)
@@ -1596,7 +1546,7 @@ ContentPageExploits.Corner = 5
 local ContentPageExploits_Border = Drawing.new("Square")
 ContentPageExploits_Border.Visible = false
 ContentPageExploits_Border.Transparency = 1
-ContentPageExploits_Border.ZIndex = 391
+ContentPageExploits_Border.ZIndex = 441
 ContentPageExploits_Border.Color = Color3.fromHex("#13172a")
 ContentPageExploits_Border.Filled = false
 ContentPageExploits_Border.Thickness = 3
@@ -1607,7 +1557,7 @@ ContentPageExploits_Border.Corner = 5
 local AutoHideSwitch = Drawing.new("Switch")
 AutoHideSwitch.Visible = false
 AutoHideSwitch.Transparency = 1
-AutoHideSwitch.ZIndex = 400
+AutoHideSwitch.ZIndex = 450
 AutoHideSwitch.Color = Color3.fromHex("#212121")
 AutoHideSwitch.Position = ContentPageExploits.Position + Vector2.new(474, 18)
 
@@ -1620,7 +1570,7 @@ AutoHideSwitch.Thickness = 1
 AutoHideSwitch.Filled = false
 AutoHideSwitch.Size = Vector2.new(40, 15)
 AutoHideSwitch.Position = Vector2.new(591, 145)
-AutoHideSwitch.ZIndex = 400
+AutoHideSwitch.ZIndex = 450
 AutoHideSwitch.Corner = 15
 local AutoHideSwitch_Bg = Drawing.new("Square")
 AutoHideSwitch_Bg.Visible = false
@@ -1629,7 +1579,7 @@ AutoHideSwitch_Bg.Color = Color3.fromHex("#212121")
 AutoHideSwitch_Bg.Filled = true
 AutoHideSwitch_Bg.Size = AutoHideSwitch.Size
 AutoHideSwitch_Bg.Position = AutoHideSwitch.Position
-AutoHideSwitch_Bg.ZIndex = 400
+AutoHideSwitch_Bg.ZIndex = 450
 AutoHideSwitch_Bg.Corner = 15
 local AutoHideSwitch_IndBorder = Drawing.new("Square")
 AutoHideSwitch_IndBorder.Visible = false
@@ -1638,7 +1588,7 @@ AutoHideSwitch_IndBorder.Color = Color3.fromHex("#000000")
 AutoHideSwitch_IndBorder.Thickness = 1
 AutoHideSwitch_IndBorder.Filled = false
 AutoHideSwitch_IndBorder.Size = Vector2.new(13, 13)
-AutoHideSwitch_IndBorder.ZIndex = 402
+AutoHideSwitch_IndBorder.ZIndex = 452
 AutoHideSwitch_IndBorder.Corner = 15
 local AutoHideSwitch_Ind = Drawing.new("Square")
 AutoHideSwitch_Ind.Visible = false
@@ -1646,7 +1596,7 @@ AutoHideSwitch_Ind.Transparency = 1
 AutoHideSwitch_Ind.Color = Color3.fromHex("#ffffff")
 AutoHideSwitch_Ind.Filled = true
 AutoHideSwitch_Ind.Size = Vector2.new(13, 13)
-AutoHideSwitch_Ind.ZIndex = 402
+AutoHideSwitch_Ind.ZIndex = 452
 AutoHideSwitch_Ind.Corner = 15
 if AutoHideSwitch_IsChecked then
     AutoHideSwitch_IndBorder.Position = AutoHideSwitch.Position + Vector2.new(26, 1)
@@ -1663,12 +1613,12 @@ AutoHideSwitch_Label.Color = Color3.fromHex("#FFFFFF")
 AutoHideSwitch_Label.Outline = true
 AutoHideSwitch_Label.Font = Drawing.Fonts.UI
 AutoHideSwitch_Label.Position = AutoHideSwitch.Position + Vector2.new(50, 1.5)
-AutoHideSwitch_Label.ZIndex = 401
+AutoHideSwitch_Label.ZIndex = 451
 
 local AutoHideText = Drawing.new("Text")
 AutoHideText.Visible = false
 AutoHideText.Transparency = 1
-AutoHideText.ZIndex = 410
+AutoHideText.ZIndex = 460
 AutoHideText.Color = Color3.fromHex("#e5e4d3")
 AutoHideText.Position = ContentPageExploits.Position + Vector2.new(14, 18)
 AutoHideText.Text = "AutoHide(Beta)"
@@ -1680,17 +1630,17 @@ AutoHideText.Font = Drawing.Fonts.Monospace
 local ContentPageMisc = Drawing.new("Square")
 ContentPageMisc.Visible = false
 ContentPageMisc.Transparency = 1
-ContentPageMisc.ZIndex = 420
+ContentPageMisc.ZIndex = 470
 ContentPageMisc.Color = Color3.fromHex("#0c1020")
-ContentPageMisc.Position = Main1.Position + Vector2.new(19, 107)
-ContentPageMisc.Size = Vector2.new(332, 300)
+ContentPageMisc.Position = Main1.Position + Vector2.new(14, 106)
+ContentPageMisc.Size = Vector2.new(332, 150)
 ContentPageMisc.Filled = true
 ContentPageMisc.Corner = 5
 
 local ContentPageMisc_Border = Drawing.new("Square")
 ContentPageMisc_Border.Visible = false
 ContentPageMisc_Border.Transparency = 1
-ContentPageMisc_Border.ZIndex = 421
+ContentPageMisc_Border.ZIndex = 471
 ContentPageMisc_Border.Color = Color3.fromHex("#13172a")
 ContentPageMisc_Border.Filled = false
 ContentPageMisc_Border.Thickness = 3
@@ -1698,39 +1648,10 @@ ContentPageMisc_Border.Position = ContentPageMisc.Position
 ContentPageMisc_Border.Size = ContentPageMisc.Size
 ContentPageMisc_Border.Corner = 5
 
-local AutoRescanSlider = Drawing.new("Square")
-AutoRescanSlider.Visible = false
-AutoRescanSlider.Transparency = 1
-AutoRescanSlider.Color = Color3.fromHex("#444444")
-AutoRescanSlider.Filled = true
-AutoRescanSlider.Size = Vector2.new(284, 10)
-AutoRescanSlider.Position = Vector2.new(123, 190)
-AutoRescanSlider.ZIndex = 430
-AutoRescanSlider.Corner = 10
-local AutoRescanSlider_Value = 10
-local AutoRescanSlider_Knob = Drawing.new("Square")
-AutoRescanSlider_Knob.Visible = false
-AutoRescanSlider_Knob.Transparency = 1
-AutoRescanSlider_Knob.Color = Color3.fromHex("#FFFFFF")
-AutoRescanSlider_Knob.Filled = true
-AutoRescanSlider_Knob.Size = Vector2.new(20, 20)
-AutoRescanSlider_Knob.Position = AutoRescanSlider.Position + Vector2.new(284 * 0.16666666666666666 - 10, 5 - 10)
-AutoRescanSlider_Knob.ZIndex = 431
-AutoRescanSlider_Knob.Corner = 100
-local AutoRescanSlider_ValueText = Drawing.new("Text")
-AutoRescanSlider_ValueText.Visible = false
-AutoRescanSlider_ValueText.Text = tostring(math.floor(AutoRescanSlider_Value)) .. ""
-AutoRescanSlider_ValueText.Size = 16
-AutoRescanSlider_ValueText.Center = true
-AutoRescanSlider_ValueText.Outline = true
-AutoRescanSlider_ValueText.Color = Color3.new(1, 1, 1)
-AutoRescanSlider_ValueText.Position = AutoRescanSlider.Position + Vector2.new(284/2, -10)
-AutoRescanSlider_ValueText.ZIndex = 432
-
 local AutoRescanSwitch = Drawing.new("Switch")
 AutoRescanSwitch.Visible = false
 AutoRescanSwitch.Transparency = 1
-AutoRescanSwitch.ZIndex = 440
+AutoRescanSwitch.ZIndex = 500
 AutoRescanSwitch.Color = Color3.fromHex("#212121")
 AutoRescanSwitch.Position = ContentPageMisc.Position + Vector2.new(280, 18)
 
@@ -1742,8 +1663,8 @@ AutoRescanSwitch.Color = Color3.fromHex("#000000")
 AutoRescanSwitch.Thickness = 1
 AutoRescanSwitch.Filled = false
 AutoRescanSwitch.Size = Vector2.new(40, 15)
-AutoRescanSwitch.Position = Vector2.new(397, 145)
-AutoRescanSwitch.ZIndex = 440
+AutoRescanSwitch.Position = Vector2.new(392, 144)
+AutoRescanSwitch.ZIndex = 500
 AutoRescanSwitch.Corner = 15
 local AutoRescanSwitch_Bg = Drawing.new("Square")
 AutoRescanSwitch_Bg.Visible = false
@@ -1752,7 +1673,7 @@ AutoRescanSwitch_Bg.Color = Color3.fromHex("#212121")
 AutoRescanSwitch_Bg.Filled = true
 AutoRescanSwitch_Bg.Size = AutoRescanSwitch.Size
 AutoRescanSwitch_Bg.Position = AutoRescanSwitch.Position
-AutoRescanSwitch_Bg.ZIndex = 440
+AutoRescanSwitch_Bg.ZIndex = 500
 AutoRescanSwitch_Bg.Corner = 15
 local AutoRescanSwitch_IndBorder = Drawing.new("Square")
 AutoRescanSwitch_IndBorder.Visible = false
@@ -1761,7 +1682,7 @@ AutoRescanSwitch_IndBorder.Color = Color3.fromHex("#000000")
 AutoRescanSwitch_IndBorder.Thickness = 1
 AutoRescanSwitch_IndBorder.Filled = false
 AutoRescanSwitch_IndBorder.Size = Vector2.new(13, 13)
-AutoRescanSwitch_IndBorder.ZIndex = 442
+AutoRescanSwitch_IndBorder.ZIndex = 502
 AutoRescanSwitch_IndBorder.Corner = 15
 local AutoRescanSwitch_Ind = Drawing.new("Square")
 AutoRescanSwitch_Ind.Visible = false
@@ -1769,7 +1690,7 @@ AutoRescanSwitch_Ind.Transparency = 1
 AutoRescanSwitch_Ind.Color = Color3.fromHex("#ffffff")
 AutoRescanSwitch_Ind.Filled = true
 AutoRescanSwitch_Ind.Size = Vector2.new(13, 13)
-AutoRescanSwitch_Ind.ZIndex = 442
+AutoRescanSwitch_Ind.ZIndex = 502
 AutoRescanSwitch_Ind.Corner = 15
 if AutoRescanSwitch_IsChecked then
     AutoRescanSwitch_IndBorder.Position = AutoRescanSwitch.Position + Vector2.new(26, 1)
@@ -1786,12 +1707,12 @@ AutoRescanSwitch_Label.Color = Color3.fromHex("#FFFFFF")
 AutoRescanSwitch_Label.Outline = true
 AutoRescanSwitch_Label.Font = Drawing.Fonts.UI
 AutoRescanSwitch_Label.Position = AutoRescanSwitch.Position + Vector2.new(50, 1.5)
-AutoRescanSwitch_Label.ZIndex = 441
+AutoRescanSwitch_Label.ZIndex = 501
 
 local AutoRescanText = Drawing.new("Text")
 AutoRescanText.Visible = false
 AutoRescanText.Transparency = 1
-AutoRescanText.ZIndex = 450
+AutoRescanText.ZIndex = 510
 AutoRescanText.Color = Color3.fromHex("#eae0e2")
 AutoRescanText.Position = ContentPageMisc.Position + Vector2.new(6, 18)
 AutoRescanText.Text = "AutoRescan"
@@ -1803,7 +1724,7 @@ AutoRescanText.Font = Drawing.Fonts.Monospace
 local ContentPageSettings = Drawing.new("Square")
 ContentPageSettings.Visible = false
 ContentPageSettings.Transparency = 1
-ContentPageSettings.ZIndex = 460
+ContentPageSettings.ZIndex = 520
 ContentPageSettings.Color = Color3.fromHex("#0c1020")
 ContentPageSettings.Position = Main1.Position + Vector2.new(25, 111)
 ContentPageSettings.Size = Vector2.new(332, 300)
@@ -1813,7 +1734,7 @@ ContentPageSettings.Corner = 5
 local ContentPageSettings_Border = Drawing.new("Square")
 ContentPageSettings_Border.Visible = false
 ContentPageSettings_Border.Transparency = 1
-ContentPageSettings_Border.ZIndex = 461
+ContentPageSettings_Border.ZIndex = 521
 ContentPageSettings_Border.Color = Color3.fromHex("#13172a")
 ContentPageSettings_Border.Filled = false
 ContentPageSettings_Border.Thickness = 3
@@ -1828,7 +1749,7 @@ ToggleUIvisiblity.Color = Color3.fromHex("#6c11ae")
 ToggleUIvisiblity.Filled = true
 ToggleUIvisiblity.Size = Vector2.new(74, 16)
 ToggleUIvisiblity.Position = Vector2.new(135, 145)
-ToggleUIvisiblity.ZIndex = 470
+ToggleUIvisiblity.ZIndex = 530
 ToggleUIvisiblity.Corner = 10
 local ToggleUIvisiblity_Text = Drawing.new("Text")
 ToggleUIvisiblity_Text.Text = "[ F1 ]"
@@ -1839,9 +1760,229 @@ ToggleUIvisiblity_Text.Font = 0
 ToggleUIvisiblity_Text.Color = Color3.fromHex("#eae0e2")
 ToggleUIvisiblity_Text.Position = ToggleUIvisiblity.Position + Vector2.new(74/2, 16/2)
 ToggleUIvisiblity_Text.Visible = false
-ToggleUIvisiblity_Text.ZIndex = 472
+ToggleUIvisiblity_Text.ZIndex = 532
 local ToggleUIvisiblity_Key = 0x70
 local ToggleUIvisiblity_IsListening = false
+
+local TextToRescanForce = Drawing.new("Text")
+TextToRescanForce.Visible = false
+TextToRescanForce.Transparency = 1
+TextToRescanForce.ZIndex = 410
+TextToRescanForce.Color = Color3.fromHex("#eedc17")
+TextToRescanForce.Position = ContentPageVisuals.Position + Vector2.new(93, 9)
+TextToRescanForce.Text = "To force-rescan tap F5"
+TextToRescanForce.Size = 10
+TextToRescanForce.Center = false
+TextToRescanForce.Outline = false
+TextToRescanForce.Font = Drawing.Fonts.SystemBold
+
+local EspItemsText = Drawing.new("Text")
+EspItemsText.Visible = false
+EspItemsText.Transparency = 1
+EspItemsText.ZIndex = 310
+EspItemsText.Color = Color3.fromHex("#e5e4d3")
+EspItemsText.Position = ContentPageVisuals.Position + Vector2.new(9, 58)
+EspItemsText.Text = "ESP Items ALL"
+EspItemsText.Size = 14
+EspItemsText.Center = false
+EspItemsText.Outline = true
+EspItemsText.Font = Drawing.Fonts.Monospace
+
+local SwitchForESPitems = Drawing.new("Switch")
+SwitchForESPitems.Visible = false
+SwitchForESPitems.Transparency = 1
+SwitchForESPitems.ZIndex = 170
+SwitchForESPitems.Color = Color3.fromHex("#212121")
+SwitchForESPitems.Position = ContentPageVisuals.Position + Vector2.new(481, 58)
+
+local SwitchForESPitems_IsChecked = false
+local SwitchForESPitems = Drawing.new("Square")
+SwitchForESPitems.Visible = false
+SwitchForESPitems.Transparency = 1
+SwitchForESPitems.Color = Color3.fromHex("#000000")
+SwitchForESPitems.Thickness = 1
+SwitchForESPitems.Filled = false
+SwitchForESPitems.Size = Vector2.new(40, 20)
+SwitchForESPitems.Position = Vector2.new(604, 192)
+SwitchForESPitems.ZIndex = 170
+SwitchForESPitems.Corner = 15
+local SwitchForESPitems_Bg = Drawing.new("Square")
+SwitchForESPitems_Bg.Visible = false
+SwitchForESPitems_Bg.Transparency = 1
+SwitchForESPitems_Bg.Color = Color3.fromHex("#212121")
+SwitchForESPitems_Bg.Filled = true
+SwitchForESPitems_Bg.Size = SwitchForESPitems.Size
+SwitchForESPitems_Bg.Position = SwitchForESPitems.Position
+SwitchForESPitems_Bg.ZIndex = 170
+SwitchForESPitems_Bg.Corner = 15
+local SwitchForESPitems_IndBorder = Drawing.new("Square")
+SwitchForESPitems_IndBorder.Visible = false
+SwitchForESPitems_IndBorder.Transparency = 1
+SwitchForESPitems_IndBorder.Color = Color3.fromHex("#000000")
+SwitchForESPitems_IndBorder.Thickness = 1
+SwitchForESPitems_IndBorder.Filled = false
+SwitchForESPitems_IndBorder.Size = Vector2.new(18, 18)
+SwitchForESPitems_IndBorder.ZIndex = 172
+SwitchForESPitems_IndBorder.Corner = 15
+local SwitchForESPitems_Ind = Drawing.new("Square")
+SwitchForESPitems_Ind.Visible = false
+SwitchForESPitems_Ind.Transparency = 1
+SwitchForESPitems_Ind.Color = Color3.fromHex("#ffffff")
+SwitchForESPitems_Ind.Filled = true
+SwitchForESPitems_Ind.Size = Vector2.new(18, 18)
+SwitchForESPitems_Ind.ZIndex = 172
+SwitchForESPitems_Ind.Corner = 15
+if SwitchForESPitems_IsChecked then
+    SwitchForESPitems_IndBorder.Position = SwitchForESPitems.Position + Vector2.new(21, 1)
+    SwitchForESPitems_Ind.Position = SwitchForESPitems.Position + Vector2.new(21, 1)
+else
+    SwitchForESPitems_IndBorder.Position = SwitchForESPitems.Position + Vector2.new(1, 1)
+    SwitchForESPitems_Ind.Position = SwitchForESPitems.Position + Vector2.new(1, 1)
+end
+local SwitchForESPitems_Label = Drawing.new("Text")
+SwitchForESPitems_Label.Visible = false
+SwitchForESPitems_Label.Text = ""
+SwitchForESPitems_Label.Size = 12
+SwitchForESPitems_Label.Color = Color3.fromHex("#FFFFFF")
+SwitchForESPitems_Label.Outline = true
+SwitchForESPitems_Label.Font = Drawing.Fonts.UI
+SwitchForESPitems_Label.Position = SwitchForESPitems.Position + Vector2.new(50, 4)
+SwitchForESPitems_Label.ZIndex = 171
+
+local TextESPCurrency = Drawing.new("Text")
+TextESPCurrency.Visible = false
+TextESPCurrency.Transparency = 1
+TextESPCurrency.ZIndex = 320
+TextESPCurrency.Color = Color3.fromHex("#e5e4d3")
+TextESPCurrency.Position = ContentPageVisuals.Position + Vector2.new(9, 84)
+TextESPCurrency.Text = "ESP Currency ALL"
+TextESPCurrency.Size = 14
+TextESPCurrency.Center = false
+TextESPCurrency.Outline = true
+TextESPCurrency.Font = Drawing.Fonts.Monospace
+
+local ESPswitchToCurrency = Drawing.new("Switch")
+ESPswitchToCurrency.Visible = false
+ESPswitchToCurrency.Transparency = 1
+ESPswitchToCurrency.ZIndex = 180
+ESPswitchToCurrency.Color = Color3.fromHex("#212121")
+ESPswitchToCurrency.Position = ContentPageVisuals.Position + Vector2.new(481, 84)
+
+local ESPswitchToCurrency_IsChecked = false
+local ESPswitchToCurrency = Drawing.new("Square")
+ESPswitchToCurrency.Visible = false
+ESPswitchToCurrency.Transparency = 1
+ESPswitchToCurrency.Color = Color3.fromHex("#000000")
+ESPswitchToCurrency.Thickness = 1
+ESPswitchToCurrency.Filled = false
+ESPswitchToCurrency.Size = Vector2.new(40, 20)
+ESPswitchToCurrency.Position = Vector2.new(604, 218)
+ESPswitchToCurrency.ZIndex = 180
+ESPswitchToCurrency.Corner = 15
+local ESPswitchToCurrency_Bg = Drawing.new("Square")
+ESPswitchToCurrency_Bg.Visible = false
+ESPswitchToCurrency_Bg.Transparency = 1
+ESPswitchToCurrency_Bg.Color = Color3.fromHex("#212121")
+ESPswitchToCurrency_Bg.Filled = true
+ESPswitchToCurrency_Bg.Size = ESPswitchToCurrency.Size
+ESPswitchToCurrency_Bg.Position = ESPswitchToCurrency.Position
+ESPswitchToCurrency_Bg.ZIndex = 180
+ESPswitchToCurrency_Bg.Corner = 15
+local ESPswitchToCurrency_IndBorder = Drawing.new("Square")
+ESPswitchToCurrency_IndBorder.Visible = false
+ESPswitchToCurrency_IndBorder.Transparency = 1
+ESPswitchToCurrency_IndBorder.Color = Color3.fromHex("#000000")
+ESPswitchToCurrency_IndBorder.Thickness = 1
+ESPswitchToCurrency_IndBorder.Filled = false
+ESPswitchToCurrency_IndBorder.Size = Vector2.new(18, 18)
+ESPswitchToCurrency_IndBorder.ZIndex = 182
+ESPswitchToCurrency_IndBorder.Corner = 15
+local ESPswitchToCurrency_Ind = Drawing.new("Square")
+ESPswitchToCurrency_Ind.Visible = false
+ESPswitchToCurrency_Ind.Transparency = 1
+ESPswitchToCurrency_Ind.Color = Color3.fromHex("#ffffff")
+ESPswitchToCurrency_Ind.Filled = true
+ESPswitchToCurrency_Ind.Size = Vector2.new(18, 18)
+ESPswitchToCurrency_Ind.ZIndex = 182
+ESPswitchToCurrency_Ind.Corner = 15
+if ESPswitchToCurrency_IsChecked then
+    ESPswitchToCurrency_IndBorder.Position = ESPswitchToCurrency.Position + Vector2.new(21, 1)
+    ESPswitchToCurrency_Ind.Position = ESPswitchToCurrency.Position + Vector2.new(21, 1)
+else
+    ESPswitchToCurrency_IndBorder.Position = ESPswitchToCurrency.Position + Vector2.new(1, 1)
+    ESPswitchToCurrency_Ind.Position = ESPswitchToCurrency.Position + Vector2.new(1, 1)
+end
+local ESPswitchToCurrency_Label = Drawing.new("Text")
+ESPswitchToCurrency_Label.Visible = false
+ESPswitchToCurrency_Label.Text = ""
+ESPswitchToCurrency_Label.Size = 12
+ESPswitchToCurrency_Label.Color = Color3.fromHex("#FFFFFF")
+ESPswitchToCurrency_Label.Outline = true
+ESPswitchToCurrency_Label.Font = Drawing.Fonts.UI
+ESPswitchToCurrency_Label.Position = ESPswitchToCurrency.Position + Vector2.new(50, 4)
+ESPswitchToCurrency_Label.ZIndex = 181
+
+local ContentPageMisc2 = Drawing.new("Square")
+ContentPageMisc2.Visible = false
+ContentPageMisc2.Transparency = 1
+ContentPageMisc2.ZIndex = 480
+ContentPageMisc2.Color = Color3.fromHex("#0c1020")
+ContentPageMisc2.Position = ContentPageMisc.Position + Vector2.new(0, 165)
+ContentPageMisc2.Size = Vector2.new(325, 116)
+ContentPageMisc2.Filled = true
+ContentPageMisc2.Corner = 5
+
+local ContentPageMisc2_Border = Drawing.new("Square")
+ContentPageMisc2_Border.Visible = false
+ContentPageMisc2_Border.Transparency = 1
+ContentPageMisc2_Border.ZIndex = 481
+ContentPageMisc2_Border.Color = Color3.fromHex("#13172a")
+ContentPageMisc2_Border.Filled = false
+ContentPageMisc2_Border.Thickness = 1
+ContentPageMisc2_Border.Position = ContentPageMisc2.Position
+ContentPageMisc2_Border.Size = ContentPageMisc2.Size
+ContentPageMisc2_Border.Corner = 5
+
+local SliderForESPdistance = Drawing.new("Square")
+SliderForESPdistance.Visible = false
+SliderForESPdistance.Transparency = 1
+SliderForESPdistance.Color = Color3.fromHex("#444444")
+SliderForESPdistance.Filled = true
+SliderForESPdistance.Size = Vector2.new(200, 10)
+SliderForESPdistance.Position = Vector2.new(118, 313)
+SliderForESPdistance.ZIndex = 490
+SliderForESPdistance.Corner = 15
+local SliderForESPdistance_Value = 150
+local SliderForESPdistance_Knob = Drawing.new("Square")
+SliderForESPdistance_Knob.Visible = false
+SliderForESPdistance_Knob.Transparency = 1
+SliderForESPdistance_Knob.Color = Color3.fromHex("#3300ff")
+SliderForESPdistance_Knob.Filled = true
+SliderForESPdistance_Knob.Size = Vector2.new(20, 20)
+SliderForESPdistance_Knob.Position = SliderForESPdistance.Position + Vector2.new(200 * 0.08544087491455912 - 10, 5 - 10)
+SliderForESPdistance_Knob.ZIndex = 491
+SliderForESPdistance_Knob.Corner = 100
+local SliderForESPdistance_ValueText = Drawing.new("Text")
+SliderForESPdistance_ValueText.Visible = false
+SliderForESPdistance_ValueText.Text = tostring(math.floor(SliderForESPdistance_Value)) .. ""
+SliderForESPdistance_ValueText.Size = 16
+SliderForESPdistance_ValueText.Center = true
+SliderForESPdistance_ValueText.Outline = true
+SliderForESPdistance_ValueText.Color = Color3.new(1, 1, 1)
+SliderForESPdistance_ValueText.Position = SliderForESPdistance.Position + Vector2.new(200/2, -10)
+SliderForESPdistance_ValueText.ZIndex = 492
+
+local TextUnderSliderEspDis = Drawing.new("Text")
+TextUnderSliderEspDis.Visible = false
+TextUnderSliderEspDis.Transparency = 1
+TextUnderSliderEspDis.ZIndex = 510
+TextUnderSliderEspDis.Color = Color3.fromHex("#eae0e2")
+TextUnderSliderEspDis.Position = ContentPageMisc2.Position + Vector2.new(6, 46)
+TextUnderSliderEspDis.Text = "ESP distance"
+TextUnderSliderEspDis.Size = 14
+TextUnderSliderEspDis.Center = false
+TextUnderSliderEspDis.Outline = true
+TextUnderSliderEspDis.Font = Drawing.Fonts.Monospace
 
 local KeyNames = {
     [48] = "0",
@@ -2061,6 +2202,31 @@ Tab_ContentPageVisuals_SetVisible = function(visible)
         if EnableWatermarkSwitch_Ind then EnableWatermarkSwitch_Ind.Visible = visible end
         if EnableWatermarkSwitch_Label then EnableWatermarkSwitch_Label.Visible = visible end
     end
+    if TextToRescanForce then
+        TextToRescanForce.Visible = visible
+    end
+    if EspItemsText then
+        EspItemsText.Visible = visible
+    end
+    if SwitchForESPitems then
+        SwitchForESPitems.Visible = visible
+        SwitchForESPitems.Visible = visible
+        if SwitchForESPitems_Bg then SwitchForESPitems_Bg.Visible = visible end
+        if SwitchForESPitems_IndBorder then SwitchForESPitems_IndBorder.Visible = visible end
+        if SwitchForESPitems_Ind then SwitchForESPitems_Ind.Visible = visible end
+        if SwitchForESPitems_Label then SwitchForESPitems_Label.Visible = visible end
+    end
+    if TextESPCurrency then
+        TextESPCurrency.Visible = visible
+    end
+    if ESPswitchToCurrency then
+        ESPswitchToCurrency.Visible = visible
+        ESPswitchToCurrency.Visible = visible
+        if ESPswitchToCurrency_Bg then ESPswitchToCurrency_Bg.Visible = visible end
+        if ESPswitchToCurrency_IndBorder then ESPswitchToCurrency_IndBorder.Visible = visible end
+        if ESPswitchToCurrency_Ind then ESPswitchToCurrency_Ind.Visible = visible end
+        if ESPswitchToCurrency_Label then ESPswitchToCurrency_Label.Visible = visible end
+    end
 end
 
 local Tab_ContentPageVisuals2_SetVisible
@@ -2096,11 +2262,6 @@ local Tab_ContentPageMisc_SetVisible
 Tab_ContentPageMisc_SetVisible = function(visible)
     if ContentPageMisc then ContentPageMisc.Visible = visible end
     if ContentPageMisc_Border then ContentPageMisc_Border.Visible = visible end
-    if AutoRescanSlider then
-        AutoRescanSlider.Visible = visible
-        if AutoRescanSlider_Knob then AutoRescanSlider_Knob.Visible = visible end
-        if AutoRescanSlider_ValueText then AutoRescanSlider_ValueText.Visible = visible end
-    end
     if AutoRescanSwitch then
         AutoRescanSwitch.Visible = visible
         AutoRescanSwitch.Visible = visible
@@ -2111,6 +2272,18 @@ Tab_ContentPageMisc_SetVisible = function(visible)
     end
     if AutoRescanText then
         AutoRescanText.Visible = visible
+    end
+    if ContentPageMisc2 then
+        ContentPageMisc2.Visible = visible
+        if ContentPageMisc2_Border then ContentPageMisc2_Border.Visible = visible end
+    end
+    if SliderForESPdistance then
+        SliderForESPdistance.Visible = visible
+        if SliderForESPdistance_Knob then SliderForESPdistance_Knob.Visible = visible end
+        if SliderForESPdistance_ValueText then SliderForESPdistance_ValueText.Visible = visible end
+    end
+    if TextUnderSliderEspDis then
+        TextUnderSliderEspDis.Visible = visible
     end
 end
 
@@ -2124,6 +2297,20 @@ Tab_ContentPageSettings_SetVisible = function(visible)
     end
 end
 
+local Tab_ContentPageMisc2_SetVisible
+Tab_ContentPageMisc2_SetVisible = function(visible)
+    if ContentPageMisc2 then ContentPageMisc2.Visible = visible end
+    if ContentPageMisc2_Border then ContentPageMisc2_Border.Visible = visible end
+    if SliderForESPdistance then
+        SliderForESPdistance.Visible = visible
+        if SliderForESPdistance_Knob then SliderForESPdistance_Knob.Visible = visible end
+        if SliderForESPdistance_ValueText then SliderForESPdistance_ValueText.Visible = visible end
+    end
+    if TextUnderSliderEspDis then
+        TextUnderSliderEspDis.Visible = visible
+    end
+end
+
 spawn(function()
     local lastVis=false
     while true do
@@ -2134,18 +2321,18 @@ spawn(function()
 end)
 
 local onSwitch=function(val)
-    Settings.notificationsEnabled.Angler=NoffiticationAnglerSwitch_IsChecked
-    Settings.notificationsEnabled.Froger=NoffiticationFrogerSwitch_IsChecked
-    Settings.notificationsEnabled.Pinkie=NoffiticationPinkieSwitch_IsChecked
-    Settings.notificationsEnabled.Blitz=NoffiticationBlitzSwitch_IsChecked
-    Settings.notificationsEnabled.Chainsmoker=NoffiticationChainsmokerSwitch_IsChecked
-    Settings.notificationsEnabled.Pandemonium=NoffiticationPandemoniumSwitch_IsChecked
-    Settings.notificationsEnabled["A60"]=NoffiticationA60Switch_IsChecked
-    Settings.notificationsEnabled.Harbinger=NoffiticationHarbingerSwitch_IsChecked
-    Settings.notificationsEnabled.Painter=NoffiticationPainterRoomSwitch_IsChecked
-    AutoHideSystem.enabled=AutoHideSwitch_IsChecked
-    Settings.autoRescanEnabled=AutoRescanSwitch_IsChecked
-    if EnableWatermarkSwitch_IsChecked~=WatermarkSystem.enabled then
+    Settings.notificationsEnabled.Angler      = NoffiticationAnglerSwitch_IsChecked
+    Settings.notificationsEnabled.Froger      = NoffiticationFrogerSwitch_IsChecked
+    Settings.notificationsEnabled.Pinkie      = NoffiticationPinkieSwitch_IsChecked
+    Settings.notificationsEnabled.Blitz       = NoffiticationBlitzSwitch_IsChecked
+    Settings.notificationsEnabled.Chainsmoker = NoffiticationChainsmokerSwitch_IsChecked
+    Settings.notificationsEnabled.Pandemonium = NoffiticationPandemoniumSwitch_IsChecked
+    Settings.notificationsEnabled["A-60"]     = NoffiticationA60Switch_IsChecked
+    Settings.notificationsEnabled.Harbinger   = NoffiticationHarbingerSwitch_IsChecked
+    Settings.notificationsEnabled.Painter     = NoffiticationPainterRoomSwitch_IsChecked
+    AutoHideSystem.enabled = AutoHideSwitch_IsChecked
+    Settings.autoRescanEnabled = AutoRescanSwitch_IsChecked
+    if EnableWatermarkSwitch_IsChecked ~= WatermarkSystem.enabled then
         WatermarkSystem.enabled=EnableWatermarkSwitch_IsChecked
         WatermarkSystem:SetVisible(EnableWatermarkSwitch_IsChecked)
     end
@@ -2153,11 +2340,13 @@ local onSwitch=function(val)
     elseif not ESPkeycardSwitch_IsChecked and Settings.keycardESPEnabled then CleanupKeycardESP() end
     if ESPDoorsSwitch_IsChecked and not Settings.doorESPEnabled then StartDoorESP()
     elseif not ESPDoorsSwitch_IsChecked and Settings.doorESPEnabled then CleanupDoorESP() end
+    if SwitchForESPitems_IsChecked and not Settings.itemsESPEnabled then StartItemsESP()
+    elseif not SwitchForESPitems_IsChecked and Settings.itemsESPEnabled then CleanupItemsESP() end
+    if ESPswitchToCurrency_IsChecked and not Settings.currencyESPEnabled then StartCurrencyESP()
+    elseif not ESPswitchToCurrency_IsChecked and Settings.currencyESPEnabled then CleanupCurrencyESP() end
 end
 
-local onChanged=function(val)
-    Settings.autoRescanInterval=math.max(1,math.floor(val))
-end
+local onChanged=function(val) Settings.espMaxDistance=math.max(25,math.floor(val)) end
 local onClick=function() end
 local onKeyChanged=function(i) end
 
@@ -2306,9 +2495,6 @@ while true do
                  AutoHideText.Visible = newState
                  ContentPageMisc.Visible = newState
                  ContentPageMisc_Border.Visible = newState
-                 AutoRescanSlider.Visible = newState
-                 AutoRescanSlider_Knob.Visible = newState
-                 AutoRescanSlider_ValueText.Visible = newState
                  AutoRescanSwitch.Visible = newState
                  AutoRescanSwitch.Visible = newState
                  AutoRescanSwitch_Bg.Visible = newState
@@ -2320,6 +2506,27 @@ while true do
                  ContentPageSettings_Border.Visible = newState
                  ToggleUIvisiblity.Visible = newState
                  ToggleUIvisiblity_Text.Visible = newState
+                 TextToRescanForce.Visible = newState
+                 EspItemsText.Visible = newState
+                 SwitchForESPitems.Visible = newState
+                 SwitchForESPitems.Visible = newState
+                 SwitchForESPitems_Bg.Visible = newState
+                 SwitchForESPitems_IndBorder.Visible = newState
+                 SwitchForESPitems_Ind.Visible = newState
+                 SwitchForESPitems_Label.Visible = newState
+                 TextESPCurrency.Visible = newState
+                 ESPswitchToCurrency.Visible = newState
+                 ESPswitchToCurrency.Visible = newState
+                 ESPswitchToCurrency_Bg.Visible = newState
+                 ESPswitchToCurrency_IndBorder.Visible = newState
+                 ESPswitchToCurrency_Ind.Visible = newState
+                 ESPswitchToCurrency_Label.Visible = newState
+                 ContentPageMisc2.Visible = newState
+                 ContentPageMisc2_Border.Visible = newState
+                 SliderForESPdistance.Visible = newState
+                 SliderForESPdistance_Knob.Visible = newState
+                 SliderForESPdistance_ValueText.Visible = newState
+                 TextUnderSliderEspDis.Visible = newState
                  wait(0.2)
              end
         end
@@ -2335,6 +2542,7 @@ while true do
                 pcall(function() Tab_ContentPageExploits_SetVisible(false) end)
                 pcall(function() Tab_ContentPageMisc_SetVisible(false) end)
                 pcall(function() Tab_ContentPageSettings_SetVisible(false) end)
+                pcall(function() Tab_ContentPageMisc2_SetVisible(false) end)
                 pcall(function() Tab_ContentPageVisuals_SetVisible(not ContentPageVisuals.Visible) end)
             end
 
@@ -2347,6 +2555,7 @@ while true do
                 pcall(function() Tab_ContentPageVisuals3_SetVisible(false) end)
                 pcall(function() Tab_ContentPageMisc_SetVisible(false) end)
                 pcall(function() Tab_ContentPageSettings_SetVisible(false) end)
+                pcall(function() Tab_ContentPageMisc2_SetVisible(false) end)
                 pcall(function() Tab_ContentPageExploits_SetVisible(not ContentPageExploits.Visible) end)
             end
 
@@ -2359,6 +2568,7 @@ while true do
                 pcall(function() Tab_ContentPageVisuals3_SetVisible(false) end)
                 pcall(function() Tab_ContentPageExploits_SetVisible(false) end)
                 pcall(function() Tab_ContentPageSettings_SetVisible(false) end)
+                pcall(function() Tab_ContentPageMisc2_SetVisible(false) end)
                 pcall(function() Tab_ContentPageMisc_SetVisible(not ContentPageMisc.Visible) end)
             end
 
@@ -2371,6 +2581,7 @@ while true do
                 pcall(function() Tab_ContentPageVisuals3_SetVisible(false) end)
                 pcall(function() Tab_ContentPageExploits_SetVisible(false) end)
                 pcall(function() Tab_ContentPageMisc_SetVisible(false) end)
+                pcall(function() Tab_ContentPageMisc2_SetVisible(false) end)
                 pcall(function() Tab_ContentPageSettings_SetVisible(not ContentPageSettings.Visible) end)
             end
 
@@ -2579,6 +2790,34 @@ while true do
                 ToggleUIvisiblity_Text.Color = Color3.fromHex("#FFFF00")
             end
 
+            if SwitchForESPitems_Label.Visible and mPos.X >= SwitchForESPitems.Position.X and mPos.X <= SwitchForESPitems.Position.X + SwitchForESPitems.Size.X and
+               mPos.Y >= SwitchForESPitems.Position.Y and mPos.Y <= SwitchForESPitems.Position.Y + SwitchForESPitems.Size.Y then
+
+                SwitchForESPitems_IsChecked = not SwitchForESPitems_IsChecked
+                if SwitchForESPitems_IsChecked then
+                    SwitchForESPitems_IndBorder.Position = SwitchForESPitems.Position + Vector2.new(21, 1)
+                    SwitchForESPitems_Ind.Position = SwitchForESPitems.Position + Vector2.new(21, 1)
+                else
+                    SwitchForESPitems_IndBorder.Position = SwitchForESPitems.Position + Vector2.new(1, 1)
+                    SwitchForESPitems_Ind.Position = SwitchForESPitems.Position + Vector2.new(1, 1)
+                end
+                if onSwitch then pcall(function() onSwitch(SwitchForESPitems_IsChecked) end) end
+            end
+
+            if ESPswitchToCurrency_Label.Visible and mPos.X >= ESPswitchToCurrency.Position.X and mPos.X <= ESPswitchToCurrency.Position.X + ESPswitchToCurrency.Size.X and
+               mPos.Y >= ESPswitchToCurrency.Position.Y and mPos.Y <= ESPswitchToCurrency.Position.Y + ESPswitchToCurrency.Size.Y then
+
+                ESPswitchToCurrency_IsChecked = not ESPswitchToCurrency_IsChecked
+                if ESPswitchToCurrency_IsChecked then
+                    ESPswitchToCurrency_IndBorder.Position = ESPswitchToCurrency.Position + Vector2.new(21, 1)
+                    ESPswitchToCurrency_Ind.Position = ESPswitchToCurrency.Position + Vector2.new(21, 1)
+                else
+                    ESPswitchToCurrency_IndBorder.Position = ESPswitchToCurrency.Position + Vector2.new(1, 1)
+                    ESPswitchToCurrency_Ind.Position = ESPswitchToCurrency.Position + Vector2.new(1, 1)
+                end
+                if onSwitch then pcall(function() onSwitch(ESPswitchToCurrency_IsChecked) end) end
+            end
+
             if Main1.Visible and mPos.X >= Main1.Position.X and mPos.X <= Main1.Position.X + Main1.Size.X and
                mPos.Y >= Main1.Position.Y and mPos.Y <= Main1.Position.Y + Main1.Size.Y then
                 dragging = Main1
@@ -2586,11 +2825,11 @@ while true do
                 startPos = Main1.Position
             end
 
-            if AutoRescanSlider_Knob.Visible and mPos.X >= AutoRescanSlider_Knob.Position.X and mPos.X <= AutoRescanSlider_Knob.Position.X + AutoRescanSlider_Knob.Size.X and
-               mPos.Y >= AutoRescanSlider_Knob.Position.Y and mPos.Y <= AutoRescanSlider_Knob.Position.Y + AutoRescanSlider_Knob.Size.Y then
-                dragging = AutoRescanSlider_Knob
+            if SliderForESPdistance_Knob.Visible and mPos.X >= SliderForESPdistance_Knob.Position.X and mPos.X <= SliderForESPdistance_Knob.Position.X + SliderForESPdistance_Knob.Size.X and
+               mPos.Y >= SliderForESPdistance_Knob.Position.Y and mPos.Y <= SliderForESPdistance_Knob.Position.Y + SliderForESPdistance_Knob.Size.Y then
+                dragging = SliderForESPdistance_Knob
                 dragStart = mPos
-                startPos = AutoRescanSlider_Knob.Position
+                startPos = SliderForESPdistance_Knob.Position
             end
         end
 
@@ -2601,18 +2840,18 @@ while true do
         if dragging and mouse1 then
             local delta = mPos - dragStart
             dragging.Position = startPos + delta
-            if dragging == AutoRescanSlider_Knob then
+            if dragging == SliderForESPdistance_Knob then
 
-                local minX = AutoRescanSlider.Position.X
-                local maxX = AutoRescanSlider.Position.X + AutoRescanSlider.Size.X
+                local minX = SliderForESPdistance.Position.X
+                local maxX = SliderForESPdistance.Position.X + SliderForESPdistance.Size.X
                 if dragging.Position.X < minX then dragging.Position = Vector2.new(minX, dragging.Position.Y) end
                 if dragging.Position.X > maxX then dragging.Position = Vector2.new(maxX, dragging.Position.Y) end
-                dragging.Position = Vector2.new(dragging.Position.X, AutoRescanSlider.Position.Y + 5 - dragging.Size.Y/2)
+                dragging.Position = Vector2.new(dragging.Position.X, SliderForESPdistance.Position.Y + 5 - dragging.Size.Y/2)
 
-                local percent = (dragging.Position.X - minX) / (AutoRescanSlider.Size.X)
-                local value = 0 + (60 - 0) * percent
-                AutoRescanSlider_Value = value
-                AutoRescanSlider_ValueText.Text = tostring(math.floor(value)) .. ""
+                local percent = (dragging.Position.X - minX) / (SliderForESPdistance.Size.X)
+                local value = 25 + (1488 - 25) * percent
+                SliderForESPdistance_Value = value
+                SliderForESPdistance_ValueText.Text = tostring(math.floor(value)) .. ""
                 pcall(function() onChanged(value) end)
             end
             if dragging == Main1 then
@@ -2768,6 +3007,29 @@ while true do
                     EnableWatermarkSwitch_IndBorder.Position = EnableWatermarkSwitch.Position + Vector2.new(1, 1)
                     EnableWatermarkSwitch_Ind.Position = EnableWatermarkSwitch.Position + Vector2.new(1, 1)
                 end
+                TextToRescanForce.Position = dragging.Position + Vector2.new(118, 123)
+                EspItemsText.Position = dragging.Position + Vector2.new(34, 172)
+                SwitchForESPitems.Position = dragging.Position + Vector2.new(506, 172)
+                SwitchForESPitems_Bg.Position = SwitchForESPitems.Position
+                SwitchForESPitems_Label.Position = SwitchForESPitems.Position + Vector2.new(50, 4)
+                if SwitchForESPitems_IsChecked then
+                    SwitchForESPitems_IndBorder.Position = SwitchForESPitems.Position + Vector2.new(21, 1)
+                    SwitchForESPitems_Ind.Position = SwitchForESPitems.Position + Vector2.new(21, 1)
+                else
+                    SwitchForESPitems_IndBorder.Position = SwitchForESPitems.Position + Vector2.new(1, 1)
+                    SwitchForESPitems_Ind.Position = SwitchForESPitems.Position + Vector2.new(1, 1)
+                end
+                TextESPCurrency.Position = dragging.Position + Vector2.new(34, 198)
+                ESPswitchToCurrency.Position = dragging.Position + Vector2.new(506, 198)
+                ESPswitchToCurrency_Bg.Position = ESPswitchToCurrency.Position
+                ESPswitchToCurrency_Label.Position = ESPswitchToCurrency.Position + Vector2.new(50, 4)
+                if ESPswitchToCurrency_IsChecked then
+                    ESPswitchToCurrency_IndBorder.Position = ESPswitchToCurrency.Position + Vector2.new(21, 1)
+                    ESPswitchToCurrency_Ind.Position = ESPswitchToCurrency.Position + Vector2.new(21, 1)
+                else
+                    ESPswitchToCurrency_IndBorder.Position = ESPswitchToCurrency.Position + Vector2.new(1, 1)
+                    ESPswitchToCurrency_Ind.Position = ESPswitchToCurrency.Position + Vector2.new(1, 1)
+                end
                 ContentPageExploits.Position = dragging.Position + Vector2.new(19, 107)
                 ContentPageExploits_Border.Position = ContentPageExploits.Position
                 AutoHideSwitch.Position = dragging.Position + Vector2.new(493, 125)
@@ -2781,13 +3043,9 @@ while true do
                     AutoHideSwitch_Ind.Position = AutoHideSwitch.Position + Vector2.new(1, 1)
                 end
                 AutoHideText.Position = dragging.Position + Vector2.new(33, 125)
-                ContentPageMisc.Position = dragging.Position + Vector2.new(19, 107)
+                ContentPageMisc.Position = dragging.Position + Vector2.new(14, 106)
                 ContentPageMisc_Border.Position = ContentPageMisc.Position
-                AutoRescanSlider.Position = dragging.Position + Vector2.new(25, 170)
-                local percent = (AutoRescanSlider_Value - 0) / (60 - 0)
-                AutoRescanSlider_Knob.Position = AutoRescanSlider.Position + Vector2.new(284 * percent - 10, 5 - 10)
-                AutoRescanSlider_ValueText.Position = AutoRescanSlider.Position + Vector2.new(284/2, -10)
-                AutoRescanSwitch.Position = dragging.Position + Vector2.new(299, 125)
+                AutoRescanSwitch.Position = dragging.Position + Vector2.new(294, 124)
                 AutoRescanSwitch_Bg.Position = AutoRescanSwitch.Position
                 AutoRescanSwitch_Label.Position = AutoRescanSwitch.Position + Vector2.new(50, 1.5)
                 if AutoRescanSwitch_IsChecked then
@@ -2797,7 +3055,14 @@ while true do
                     AutoRescanSwitch_IndBorder.Position = AutoRescanSwitch.Position + Vector2.new(1, 1)
                     AutoRescanSwitch_Ind.Position = AutoRescanSwitch.Position + Vector2.new(1, 1)
                 end
-                AutoRescanText.Position = dragging.Position + Vector2.new(25, 125)
+                AutoRescanText.Position = dragging.Position + Vector2.new(20, 124)
+                ContentPageMisc2.Position = dragging.Position + Vector2.new(14, 271)
+                ContentPageMisc2_Border.Position = ContentPageMisc2.Position
+                SliderForESPdistance.Position = dragging.Position + Vector2.new(20, 293)
+                local percent = (SliderForESPdistance_Value - 25) / (1488 - 25)
+                SliderForESPdistance_Knob.Position = SliderForESPdistance.Position + Vector2.new(200 * percent - 10, 5 - 10)
+                SliderForESPdistance_ValueText.Position = SliderForESPdistance.Position + Vector2.new(200/2, -10)
+                TextUnderSliderEspDis.Position = dragging.Position + Vector2.new(20, 317)
                 ContentPageSettings.Position = dragging.Position + Vector2.new(25, 111)
                 ContentPageSettings_Border.Position = ContentPageSettings.Position
                 ToggleUIvisiblity.Position = dragging.Position + Vector2.new(37, 125)
