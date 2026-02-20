@@ -1,26 +1,13 @@
-
+do
 
 local Mouse = game.Players.LocalPlayer:GetMouse()
 
-local Settings = {
-    notificationsEnabled = {
-        Angler = false,
-        Froger = false,
-        Pinkie = false,
-        Blitz = false,
-        Pandemonium = false,
-        Chainsmoker = false,
-        ["A60"] = false,
-        Harbinger = false,
-        Painter = false
-    },
-    keycardESPEnabled = false,
-    doorESPEnabled = false,
-    autoRescanEnabled = false,
-    autoRescanInterval = 10
+Settings={
+    notificationsEnabled={Angler=false,Froger=false,Pinkie=false,Blitz=false,Pandemonium=false,Chainsmoker=false,["A60"]=false,Harbinger=false,Painter=false},
+    keycardESPEnabled=false,doorESPEnabled=false,autoRescanEnabled=false,autoRescanInterval=10
 }
 
-local NotificationSystem = {
+NotificationSystem = {
     activeNotifications = {},
     nextYPosition = 0,
     notificationHeight = 60,
@@ -28,135 +15,97 @@ local NotificationSystem = {
     maxNotifications = 5
 }
 
-local TrackedMobs = {"Angler", "Blitz", "Pinkie", "Pandemonium", "Froger", "Chainsmoker",
-    "RidgeAngler", "RidgeBlitz", "RidgePinkie", "RidgePandemonium", "RidgeFroger", "RidgeChainsmoker", "A60", "Harbinger"}
+TrackedMobs = {"Angler", "Blitz", "Pinkie", "Pandemonium", "Froger", "Chainsmoker",
+    "RidgeAngler","RidgeBlitz","RidgePinkie","RidgePandemonium","RidgeFroger","RidgeChainsmoker","A60","Harbinger"}
 
-local detectedMobs = {}
+detectedMobs = {}
 
-function NotificationSystem:CreateNotification(mobName, duration)
-    if #self.activeNotifications >= self.maxNotifications then
-        local oldest = table.remove(self.activeNotifications, 1)
+function NotificationSystem:CreateNotification(mobName,duration)
+    if #self.activeNotifications>=self.maxNotifications then
+        local oldest=table.remove(self.activeNotifications,1)
         if oldest then
             pcall(function()
-                oldest.background:Remove()
-                oldest.border:Remove()
-                oldest.text:Remove()
-                oldest.progress:Remove()
+                oldest.bg1:Remove() oldest.bg2:Remove() oldest.bg3:Remove()
+                oldest.logo:Remove() oldest.ttl:Remove()
+                oldest.c1:Remove() oldest.c2:Remove() oldest.c3:Remove()
+                oldest.div:Remove() oldest.etxt:Remove() oldest.tbar:Remove()
             end)
-            self.nextYPosition = self.nextYPosition - (self.notificationHeight + self.spacing)
+            self.nextYPosition=self.nextYPosition-110
         end
     end
-    local camera = workspace.CurrentCamera
-    local viewportSize = (camera and camera.ViewportSize) or Vector2.new(1920, 1080)
-    local startX = viewportSize.X - 280
-    local startY = viewportSize.Y - 80 - self.nextYPosition
-
-    local background = Drawing.new("Square")
-    background.Visible = true
-    background.Transparency = 1
-    background.ZIndex = 10
-    background.Color = Color3.fromHex("#06070e")
-    background.Position = Vector2.new(startX, startY)
-    background.Size = Vector2.new(260, 60)
-    background.Filled = true
-    background.Corner = 8
-
-    local border = Drawing.new("Square")
-    border.Visible = true
-    border.Transparency = 1
-    border.ZIndex = 11
-    border.Color = Color3.fromHex("#1c132f")
-    border.Filled = false
-    border.Thickness = 2
-    border.Position = background.Position
-    border.Size = background.Size
-    border.Corner = 8
-
-    local text = Drawing.new("Text")
-    text.Visible = true
-    text.Transparency = 0.75
-    text.ZIndex = 20
-    text.Color = Color3.fromHex("#FFFFFF")
-    text.Position = Vector2.new(startX + 10, startY + 22)
-    text.Text = mobName .. " spawned!"
-    text.Size = 16
-    text.Center = false
-    text.Outline = true
-    text.Font = Drawing.Fonts.UI
-
-    local progress = Drawing.new("Square")
-    progress.Visible = true
-    progress.Transparency = 0.8
-    progress.ZIndex = 12
-    progress.Color = Color3.fromHex("#8a4dff")
-    progress.Position = Vector2.new(startX, startY + 58)
-    progress.Size = Vector2.new(260, 2)
-    progress.Filled = true
-    progress.Corner = 0
-
-    local notification = {
-        background = background,
-        border = border,
-        text = text,
-        progress = progress,
-        startTime = os.clock(),
-        duration = duration or 5,
-        targetY = startY
-    }
-    table.insert(self.activeNotifications, notification)
-    self.nextYPosition = self.nextYPosition + (self.notificationHeight + self.spacing)
+    local cam=workspace.CurrentCamera
+    local vp=(cam and cam.ViewportSize) or Vector2.new(1920,1080)
+    local bp=Vector2.new(vp.X-360,vp.Y-130-self.nextYPosition)
+    local bg2=Drawing.new("Square") bg2.Visible=true bg2.Transparency=1 bg2.ZIndex=10
+    bg2.Color=Color3.fromHex("#20133f") bg2.Position=bp+Vector2.new(-3.5,0) bg2.Size=Vector2.new(348,100) bg2.Filled=true
+    local bg1=Drawing.new("Square") bg1.Visible=true bg1.Transparency=1 bg1.ZIndex=20
+    bg1.Color=Color3.fromHex("#0e0f2f") bg1.Position=bp bg1.Size=Vector2.new(341,98) bg1.Filled=true
+    local bg3=Drawing.new("Square") bg3.Visible=true bg3.Transparency=1 bg3.ZIndex=30
+    bg3.Color=Color3.fromHex("#0a0b1e") bg3.Position=bp bg3.Size=Vector2.new(341,30) bg3.Filled=true
+    local logo=Drawing.new("Text") logo.Visible=true logo.Transparency=1 logo.ZIndex=40
+    logo.Color=Color3.fromHex("#4948b9") logo.Position=bp+Vector2.new(13,7)
+    logo.Text=">" logo.Size=16 logo.Center=false logo.Outline=false logo.Font=Drawing.Fonts.Monospace
+    local ttl=Drawing.new("Text") ttl.Visible=true ttl.Transparency=1 ttl.ZIndex=50
+    ttl.Color=Color3.fromHex("#6366f1") ttl.Position=bp+Vector2.new(29,11)
+    ttl.Text="NOTIFICATION" ttl.Size=10 ttl.Center=false ttl.Outline=false ttl.Font=Drawing.Fonts.SystemBold
+    local c1=Drawing.new("Circle") c1.Visible=true c1.Transparency=1 c1.ZIndex=60
+    c1.Color=Color3.fromHex("#7c3aec") c1.Position=bp+Vector2.new(300,17) c1.Radius=3 c1.NumSides=32 c1.Thickness=1 c1.Filled=true
+    local c2=Drawing.new("Circle") c2.Visible=true c2.Transparency=1 c2.ZIndex=70
+    c2.Color=Color3.fromHex("#4b1c94") c2.Position=bp+Vector2.new(309,17) c2.Radius=3 c2.NumSides=32 c2.Thickness=1 c2.Filled=true
+    local c3=Drawing.new("Circle") c3.Visible=true c3.Transparency=1 c3.ZIndex=80
+    c3.Color=Color3.fromHex("#1f3b8a") c3.Position=bp+Vector2.new(318,17) c3.Radius=3 c3.NumSides=32 c3.Thickness=1 c3.Filled=true
+    local div=Drawing.new("Square") div.Visible=true div.Transparency=1 div.ZIndex=100
+    div.Color=Color3.fromHex("#1f3b8a") div.Position=bp+Vector2.new(0,30) div.Size=Vector2.new(340,1) div.Filled=true
+    local etxt=Drawing.new("Text") etxt.Visible=true etxt.Transparency=1 etxt.ZIndex=110
+    etxt.Color=Color3.fromHex("#e4e6eb") etxt.Position=bp+Vector2.new(23,50)
+    etxt.Text=mobName.." is here!" etxt.Size=14 etxt.Center=false etxt.Outline=true etxt.Font=Drawing.Fonts.System
+    local tbar=Drawing.new("Square") tbar.Visible=true tbar.Transparency=1 tbar.ZIndex=110
+    tbar.Color=Color3.fromHex("#7c3aed") tbar.Position=bp+Vector2.new(-1,0) tbar.Size=Vector2.new(341,1) tbar.Filled=true
+    local notif={bg1=bg1,bg2=bg2,bg3=bg3,logo=logo,ttl=ttl,c1=c1,c2=c2,c3=c3,div=div,etxt=etxt,tbar=tbar,startTime=os.clock(),duration=duration or 5,fullWidth=341}
+    table.insert(self.activeNotifications,notif)
+    self.nextYPosition=self.nextYPosition+110
 end
-
 function NotificationSystem:Update()
-    local currentTime = os.clock()
-    local toRemove = {}
-    for i, notif in ipairs(self.activeNotifications) do
-        local elapsed = currentTime - notif.startTime
-        local progress = math.min(elapsed / notif.duration, 1)
-        local easedProgress = 1 - math.pow(1 - progress, 3)
-        notif.progress.Size = Vector2.new(260 * (1 - easedProgress), 2)
-        if elapsed >= notif.duration then
-            local fadeProgress = math.min((elapsed - notif.duration) / 0.3, 1)
-            local easedFade = math.pow(fadeProgress, 2)
-            local alpha = 1 - easedFade
-            notif.background.Transparency = alpha
-            notif.border.Transparency = alpha
-            notif.text.Transparency = 0.75 * alpha
-            notif.progress.Transparency = 0.8 * alpha
-            if fadeProgress >= 1 then
-                table.insert(toRemove, i)
-            end
+    local now=os.clock()
+    local toRemove={}
+    for i,n in ipairs(self.activeNotifications) do
+        local el=now-n.startTime
+        local prog=math.min(el/n.duration,1)
+        n.tbar.Size=Vector2.new(n.fullWidth*(1-prog),1)
+        if el>=n.duration then
+            local fp=math.min((el-n.duration)/0.3,1)
+            local a=1-math.pow(fp,2)
+            n.bg1.Transparency=a n.bg2.Transparency=a n.bg3.Transparency=a
+            n.logo.Transparency=a n.ttl.Transparency=a n.c1.Transparency=a
+            n.c2.Transparency=a n.c3.Transparency=a n.div.Transparency=a
+            n.etxt.Transparency=a n.tbar.Transparency=a
+            if fp>=1 then table.insert(toRemove,i) end
         end
     end
-    for i = #toRemove, 1, -1 do
-        local idx = toRemove[i]
-        local notif = table.remove(self.activeNotifications, idx)
-        if notif then
-            pcall(function()
-                notif.background:Remove()
-                notif.border:Remove()
-                notif.text:Remove()
-                notif.progress:Remove()
-            end)
-        end
+    for i=#toRemove,1,-1 do
+        local idx=toRemove[i]
+        local n=table.remove(self.activeNotifications,idx)
+        if n then pcall(function()
+            n.bg1:Remove() n.bg2:Remove() n.bg3:Remove() n.logo:Remove() n.ttl:Remove()
+            n.c1:Remove() n.c2:Remove() n.c3:Remove() n.div:Remove() n.etxt:Remove() n.tbar:Remove()
+        end) end
     end
-    if #toRemove > 0 then
-        self.nextYPosition = 0
-        for i, notif in ipairs(self.activeNotifications) do
-            local camera = workspace.CurrentCamera
-            local viewportSize = (camera and camera.ViewportSize) or Vector2.new(1920, 1080)
-            local targetY = viewportSize.Y - 80 - self.nextYPosition
-            local currentY = notif.background.Position.Y
-            local newY = currentY + (targetY - currentY) * 0.15
-            notif.background.Position = Vector2.new(notif.background.Position.X, newY)
-            notif.border.Position = Vector2.new(notif.border.Position.X, newY)
-            notif.text.Position = Vector2.new(notif.text.Position.X, newY + 22)
-            notif.progress.Position = Vector2.new(notif.progress.Position.X, newY + 58)
-            self.nextYPosition = self.nextYPosition + (self.notificationHeight + self.spacing)
+    if #toRemove>0 then
+        self.nextYPosition=0
+        for i,n in ipairs(self.activeNotifications) do
+            local cam=workspace.CurrentCamera
+            local vp=(cam and cam.ViewportSize) or Vector2.new(1920,1080)
+            local ty=vp.Y-130-self.nextYPosition
+            local np=Vector2.new(vp.X-360,n.bg1.Position.Y+(ty-n.bg1.Position.Y)*0.15)
+            n.bg1.Position=np n.bg2.Position=np+Vector2.new(-3.5,0) n.bg3.Position=np
+            n.logo.Position=np+Vector2.new(13,7) n.ttl.Position=np+Vector2.new(29,11)
+            n.c1.Position=np+Vector2.new(300,17) n.c2.Position=np+Vector2.new(309,17)
+            n.c3.Position=np+Vector2.new(318,17) n.div.Position=np+Vector2.new(0,30)
+            n.etxt.Position=np+Vector2.new(23,50) n.tbar.Position=np+Vector2.new(-1,0)
+            self.nextYPosition=self.nextYPosition+110
         end
     end
 end
-
 function NotificationSystem:CheckForMobs()
     local currentFrameMobs = {}
     for _, obj in ipairs(workspace:GetChildren()) do
@@ -178,30 +127,17 @@ function NotificationSystem:CheckForMobs()
             end
         end
     end
-        local painterKey = "__Painter__"
-    local gf = workspace:FindFirstChild("GameplayFolder")
-    local painterFound = false
-    if gf then
-        local rooms = gf:FindFirstChild("Rooms")
-        if rooms then
-            for _, room in ipairs(rooms:GetChildren()) do
-                if room:FindFirstChild("Painter") then
-                    painterFound = true
-                    break
-                end
-            end
-        end
+        local painterKey="__Painter__"
+    local gf=workspace:FindFirstChild("GameplayFolder")
+    local painterFound=false
+    if gf then local rooms=gf:FindFirstChild("Rooms")
+        if rooms then for _,room in ipairs(rooms:GetChildren()) do
+            if room:FindFirstChild("Painter") then painterFound=true break end end end
     end
-    if painterFound then
-        currentFrameMobs[painterKey] = true
-        if not detectedMobs[painterKey] then
-            detectedMobs[painterKey] = true
-            if Settings.notificationsEnabled.Painter then
-                self:CreateNotification("Painter", 5)
-            end
-            if WatermarkSystem then
-                WatermarkSystem.currentEntity = "Painter"
-            end
+    if painterFound then currentFrameMobs[painterKey]=true
+        if not detectedMobs[painterKey] then detectedMobs[painterKey]=true
+            if Settings.notificationsEnabled.Painter then self:CreateNotification("Painter",5) end
+            if WatermarkSystem then WatermarkSystem.currentEntity="Painter" end
         end
     end
     for mobName, _ in pairs(detectedMobs) do
@@ -211,200 +147,94 @@ function NotificationSystem:CheckForMobs()
     end
 end
 
-WatermarkSystem = {
-    enabled = false,
-    currentEntity = "NoEntities",
-    elements = {}
-}
-
-local MobColors = {
-    Angler = Color3.fromHex("#00ff00"),
-    Blitz = Color3.fromHex("#ff0000"),
-    Pinkie = Color3.fromHex("#ff66cc"),
-    Pandemonium = Color3.fromHex("#8000ff"),
-    Froger = Color3.fromHex("#00ffff"),
-    Chainsmoker = Color3.fromHex("#808080"),
-    ["A60"] = Color3.fromHex("#ffff00"),
-    Harbinger = Color3.fromHex("#ff6600")
-}
-
-local getCenterPosition
-getCenterPosition = function()
-    local camera = workspace.CurrentCamera
-    local viewportSize = camera.ViewportSize
-    local centerX = (viewportSize.X / 2) - (307 / 2)
-    return Vector2.new(centerX, 60)
-end
-
-function WatermarkSystem:Initialize()
-    local pos = getCenterPosition()
-    self.elements.background = Drawing.new("Square")
-    self.elements.background.Visible = false
-    self.elements.background.Transparency = 1
-    self.elements.background.ZIndex = 10
-    self.elements.background.Color = Color3.fromHex("#0a0e1e")
-    self.elements.background.Position = pos
-    self.elements.background.Size = Vector2.new(307, 32)
-    self.elements.background.Filled = true
-    self.elements.background.Corner = 15
-
-    self.elements.border = Drawing.new("Square")
-    self.elements.border.Visible = false
-    self.elements.border.Transparency = 1
-    self.elements.border.ZIndex = 11
-    self.elements.border.Color = Color3.fromHex("#000000")
-    self.elements.border.Filled = false
-    self.elements.border.Thickness = 2
-    self.elements.border.Position = pos
-    self.elements.border.Size = Vector2.new(307, 32)
-    self.elements.border.Corner = 15
-
-    self.elements.pressure = Drawing.new("Text")
-    self.elements.pressure.Visible = false
-    self.elements.pressure.Transparency = 1
-    self.elements.pressure.ZIndex = 20
-    self.elements.pressure.Color = Color3.fromHex("#cd0e0e")
-    self.elements.pressure.Position = pos + Vector2.new(26.5, 11)
-    self.elements.pressure.Text = "Pressure"
-    self.elements.pressure.Size = 12
-    self.elements.pressure.Center = false
-    self.elements.pressure.Outline = true
-    self.elements.pressure.Font = Drawing.Fonts.UI
-
-    self.elements.circle1 = Drawing.new("Circle")
-    self.elements.circle1.Visible = false
-    self.elements.circle1.Transparency = 1
-    self.elements.circle1.ZIndex = 30
-    self.elements.circle1.Color = Color3.fromHex("#ca0707")
-    self.elements.circle1.Position = pos + Vector2.new(95, 16)
-    self.elements.circle1.Radius = 4
-    self.elements.circle1.NumSides = 32
-    self.elements.circle1.Thickness = 1
-    self.elements.circle1.Filled = true
-
-    self.elements.circle2 = Drawing.new("Circle")
-    self.elements.circle2.Visible = false
-    self.elements.circle2.Transparency = 1
-    self.elements.circle2.ZIndex = 30
-    self.elements.circle2.Color = Color3.fromHex("#ca0707")
-    self.elements.circle2.Position = pos + Vector2.new(120, 16)
-    self.elements.circle2.Radius = 4
-    self.elements.circle2.NumSides = 32
-    self.elements.circle2.Thickness = 1
-    self.elements.circle2.Filled = true
-
-    self.elements.circle3 = Drawing.new("Circle")
-    self.elements.circle3.Visible = false
-    self.elements.circle3.Transparency = 1
-    self.elements.circle3.ZIndex = 30
-    self.elements.circle3.Color = Color3.fromHex("#ca0707")
-    self.elements.circle3.Position = pos + Vector2.new(143.5, 16)
-    self.elements.circle3.Radius = 4
-    self.elements.circle3.NumSides = 32
-    self.elements.circle3.Thickness = 1
-    self.elements.circle3.Filled = true
-
-    self.elements.status = Drawing.new("Text")
-    self.elements.status.Visible = false
-    self.elements.status.Transparency = 1
-    self.elements.status.ZIndex = 60
-    self.elements.status.Color = Color3.fromHex("#b0b0b0")
-    self.elements.status.Position = pos + Vector2.new(171.5, 11)
-    self.elements.status.Text = "STATUS"
-    self.elements.status.Size = 12
-    self.elements.status.Center = false
-    self.elements.status.Outline = true
-    self.elements.status.Font = Drawing.Fonts.UI
-
-    self.elements.entity = Drawing.new("Text")
-    self.elements.entity.Visible = false
-    self.elements.entity.Transparency = 1
-    self.elements.entity.ZIndex = 70
-    self.elements.entity.Color = Color3.fromHex("#1cf000")
-    self.elements.entity.Position = pos + Vector2.new(226.5, 11)
-    self.elements.entity.Text = "NoEntities"
-    self.elements.entity.Size = 12
-    self.elements.entity.Center = false
-    self.elements.entity.Outline = true
-    self.elements.entity.Font = Drawing.Fonts.UI
-end
-
-function WatermarkSystem:SetVisible(visible)
-    for _, element in pairs(self.elements) do
-        if element and element.Visible ~= nil then
-            element.Visible = visible and self.enabled
-        end
-    end
-end
-
+WatermarkSystem={enabled=false,currentEntity="None",elements={}}
+local _wm=Vector2.new(90,28)
+local _WM1=Drawing.new("Square") _WM1.Visible=false _WM1.Transparency=1 _WM1.ZIndex=10
+_WM1.Color=Color3.fromHex("#0c0d1e") _WM1.Position=_wm _WM1.Size=Vector2.new(582,55) _WM1.Filled=true _WM1.Corner=12
+local _WM1B=Drawing.new("Square") _WM1B.Visible=false _WM1B.Transparency=1 _WM1B.ZIndex=11
+_WM1B.Color=Color3.fromHex("#18193c") _WM1B.Filled=false _WM1B.Thickness=1 _WM1B.Position=_wm _WM1B.Size=Vector2.new(582,55) _WM1B.Corner=12
+local _W1=Drawing.new("Circle") _W1.Visible=false _W1.Transparency=1 _W1.ZIndex=20
+_W1.Color=Color3.fromHex("#5c61e3") _W1.Position=_wm+Vector2.new(39,29) _W1.Radius=3 _W1.NumSides=32 _W1.Thickness=1 _W1.Filled=true
+local _W2=Drawing.new("Circle") _W2.Visible=false _W2.Transparency=1 _W2.ZIndex=30
+_W2.Color=Color3.fromHex("#8b5df6") _W2.Position=_wm+Vector2.new(48,29) _W2.Radius=3 _W2.NumSides=32 _W2.Thickness=1 _W2.Filled=true
+local _W3=Drawing.new("Circle") _W3.Visible=false _W3.Transparency=1 _W3.ZIndex=40
+_W3.Color=Color3.fromHex("#a68afa") _W3.Position=_wm+Vector2.new(59,29) _W3.Radius=3 _W3.NumSides=32 _W3.Thickness=1 _W3.Filled=true
+local _WRT=Drawing.new("Text") _WRT.Visible=false _WRT.Transparency=1 _WRT.ZIndex=70
+_WRT.Color=Color3.fromHex("#435bee") _WRT.Position=_wm+Vector2.new(69,20) _WRT.Text="RatHub" _WRT.Size=14 _WRT.Center=false _WRT.Outline=false _WRT.Font=Drawing.Fonts.SystemBold
+local _W4=Drawing.new("Circle") _W4.Visible=false _W4.Transparency=1 _W4.ZIndex=50
+_W4.Color=Color3.fromHex("#5c61e3") _W4.Position=_wm+Vector2.new(123,29) _W4.Radius=3 _W4.NumSides=32 _W4.Thickness=1 _W4.Filled=true
+local _W5=Drawing.new("Circle") _W5.Visible=false _W5.Transparency=1 _W5.ZIndex=60
+_W5.Color=Color3.fromHex("#8b5df6") _W5.Position=_wm+Vector2.new(133,29) _W5.Radius=3 _W5.NumSides=32 _W5.Thickness=1 _W5.Filled=true
+local _W6=Drawing.new("Circle") _W6.Visible=false _W6.Transparency=1 _W6.ZIndex=80
+_W6.Color=Color3.fromHex("#a68afa") _W6.Position=_wm+Vector2.new(144,29) _W6.Radius=3 _W6.NumSides=32 _W6.Thickness=1 _W6.Filled=true
+local _DL1=Drawing.new("Square") _DL1.Visible=false _DL1.Transparency=1 _DL1.ZIndex=90
+_DL1.Color=Color3.fromHex("#20204a") _DL1.Position=_wm+Vector2.new(154,19) _DL1.Size=Vector2.new(0.5,15) _DL1.Filled=true
+local _NNP=Drawing.new("Text") _NNP.Visible=false _NNP.Transparency=1 _NNP.ZIndex=110
+_NNP.Color=Color3.fromHex("#FFFFFF") _NNP.Position=_wm+Vector2.new(161,22) _NNP.Text="..." _NNP.Size=10 _NNP.Center=false _NNP.Outline=true _NNP.Font=Drawing.Fonts.SystemBold
+local _MSE=Drawing.new("Square") _MSE.Visible=false _MSE.Transparency=1 _MSE.ZIndex=120
+_MSE.Color=Color3.fromHex("#20204a") _MSE.Position=_wm+Vector2.new(246,9.5) _MSE.Size=Vector2.new(168,36) _MSE.Filled=true _MSE.Corner=12
+local _MSEB=Drawing.new("Square") _MSEB.Visible=false _MSEB.Transparency=1 _MSEB.ZIndex=121
+_MSEB.Color=Color3.fromHex("#242452") _MSEB.Filled=false _MSEB.Thickness=1 _MSEB.Position=_MSE.Position _MSEB.Size=_MSE.Size _MSEB.Corner=12
+local _CET=Drawing.new("Text") _CET.Visible=false _CET.Transparency=1 _CET.ZIndex=130
+_CET.Color=Color3.fromHex("#7f839a") _CET.Position=_wm+Vector2.new(254,23) _CET.Text="Current Entinty:" _CET.Size=10 _CET.Center=false _CET.Outline=true _CET.Font=Drawing.Fonts.SystemBold
+local _SE=Drawing.new("Text") _SE.Visible=false _SE.Transparency=1 _SE.ZIndex=140
+_SE.Color=Color3.fromHex("#e1e2cc") _SE.Position=_wm+Vector2.new(329,24) _SE.Text="None" _SE.Size=10 _SE.Center=false _SE.Outline=true _SE.Font=Drawing.Fonts.SystemBold
+local _CDR=Drawing.new("Text") _CDR.Visible=false _CDR.Transparency=1 _CDR.ZIndex=150
+_CDR.Color=Color3.fromHex("#e1d7c6") _CDR.Position=_wm+Vector2.new(423,24) _CDR.Text="Count Doors Reach: ???" _CDR.Size=10 _CDR.Center=false _CDR.Outline=true _CDR.Font=Drawing.Fonts.SystemBold
+local _DL2=Drawing.new("Square") _DL2.Visible=false _DL2.Transparency=1 _DL2.ZIndex=90
+_DL2.Color=Color3.fromHex("#20204a") _DL2.Position=_wm+Vector2.new(534,19) _DL2.Size=Vector2.new(0.5,15) _DL2.Filled=true
+local _W8=Drawing.new("Circle") _W8.Visible=false _W8.Transparency=1 _W8.ZIndex=50
+_W8.Color=Color3.fromHex("#5c61e3") _W8.Position=_wm+Vector2.new(543,29) _W8.Radius=3 _W8.NumSides=32 _W8.Thickness=1 _W8.Filled=true
+local _W7=Drawing.new("Circle") _W7.Visible=false _W7.Transparency=1 _W7.ZIndex=60
+_W7.Color=Color3.fromHex("#8b5df6") _W7.Position=_wm+Vector2.new(552,29) _W7.Radius=3 _W7.NumSides=32 _W7.Thickness=1 _W7.Filled=true
+local _W9=Drawing.new("Circle") _W9.Visible=false _W9.Transparency=1 _W9.ZIndex=80
+_W9.Color=Color3.fromHex("#a68afa") _W9.Position=_wm+Vector2.new(562,29) _W9.Radius=3 _W9.NumSides=32 _W9.Thickness=1 _W9.Filled=true
+_NNP.Text=game.Players.LocalPlayer.Name
+WatermarkSystem.elements={_WM1,_WM1B,_W1,_W2,_W3,_W4,_W5,_W6,_W7,_W8,_W9,_WRT,_DL1,_NNP,_MSE,_MSEB,_CET,_SE,_CDR,_DL2}
+function WatermarkSystem:SetVisible(v) for _,el in pairs(self.elements) do if el then el.Visible=v and self.enabled end end end
 function WatermarkSystem:CheckForMobs()
-    for _, obj in ipairs(workspace:GetChildren()) do
-        for _, targetMob in ipairs(TrackedMobs) do
-            if obj.Name == targetMob then
-                return targetMob
-            end
-        end
-    end
-    return nil
+    for _,obj in ipairs(workspace:GetChildren()) do for _,m in ipairs(TrackedMobs) do if obj.Name==m then return m end end end return nil
 end
-
 function WatermarkSystem:UpdateEntity()
-    if not self.elements.entity then return end
-    local mob = self:CheckForMobs()
-    if mob then
-        self.currentEntity = mob
-        self.elements.entity.Text = mob
-        self.elements.entity.Color = MobColors[mob] or Color3.fromHex("#ff0000")
-    else
-        self.currentEntity = "NoEntities"
-        self.elements.entity.Text = "NoEntities"
-        self.elements.entity.Color = Color3.fromHex("#1cf000")
-    end
+    if not self.enabled then return end
+    local mob=self:CheckForMobs()
+    if mob then self.currentEntity=mob _SE.Text=mob _SE.Color=MobColors[mob] or Color3.fromHex("#ff0000")
+    else self.currentEntity="None" _SE.Text="None" _SE.Color=Color3.fromHex("#e1e2cc") end
 end
-
-local watermarkDragging = nil
-local watermarkDragStart = nil
-local watermarkStartPos = nil
-local lastWatermarkMouse1 = false
-
 spawn(function()
+    local wmM=game.Players.LocalPlayer:GetMouse()
+    local wmDrag=false local wmDS=nil local wmSP=nil local lwm=false
     while true do
         wait(0.01)
-        if isrbxactive() and WatermarkSystem.elements.background then
-            local mouse1 = ismouse1pressed()
-            local mPos = Vector2.new(Mouse.X, Mouse.Y)
-            local bg = WatermarkSystem.elements.background
-            if mouse1 and not lastWatermarkMouse1 then
-                if bg.Visible and mPos.X >= bg.Position.X and mPos.X <= bg.Position.X + bg.Size.X
-                    and mPos.Y >= bg.Position.Y and mPos.Y <= bg.Position.Y + bg.Size.Y then
-                    watermarkDragging = bg
-                    watermarkDragStart = mPos
-                    watermarkStartPos = bg.Position
-                end
+        if isrbxactive() and WatermarkSystem.enabled then
+            local m1=ismouse1pressed() local mp=Vector2.new(wmM.X,wmM.Y)
+            if m1 and not lwm then
+                if _WM1.Visible and mp.X>=_WM1.Position.X and mp.X<=_WM1.Position.X+_WM1.Size.X and
+                   mp.Y>=_WM1.Position.Y and mp.Y<=_WM1.Position.Y+_WM1.Size.Y then
+                    wmDrag=true wmDS=mp wmSP=_WM1.Position end
             end
-            if not mouse1 and lastWatermarkMouse1 then
-                watermarkDragging = nil
+            if not m1 then wmDrag=false end
+            if wmDrag and m1 then
+                local np=wmSP+(mp-wmDS)
+                _WM1.Position=np _WM1B.Position=np
+                _W1.Position=np+Vector2.new(39,29) _W2.Position=np+Vector2.new(48,29)
+                _W3.Position=np+Vector2.new(59,29) _WRT.Position=np+Vector2.new(69,20)
+                _W4.Position=np+Vector2.new(123,29) _W5.Position=np+Vector2.new(133,29)
+                _W6.Position=np+Vector2.new(144,29) _DL1.Position=np+Vector2.new(154,19)
+                _NNP.Position=np+Vector2.new(161,22) _MSE.Position=np+Vector2.new(246,9.5)
+                _MSEB.Position=_MSE.Position _CET.Position=np+Vector2.new(254,23)
+                _SE.Position=np+Vector2.new(329,24) _CDR.Position=np+Vector2.new(423,24)
+                _DL2.Position=np+Vector2.new(534,19) _W8.Position=np+Vector2.new(543,29)
+                _W7.Position=np+Vector2.new(552,29) _W9.Position=np+Vector2.new(562,29)
             end
-            if watermarkDragging and mouse1 then
-                local delta = mPos - watermarkDragStart
-                local newPos = watermarkStartPos + delta
-                WatermarkSystem.elements.background.Position = newPos
-                WatermarkSystem.elements.border.Position = newPos
-                WatermarkSystem.elements.pressure.Position = newPos + Vector2.new(26.5, 11)
-                WatermarkSystem.elements.circle1.Position = newPos + Vector2.new(95, 16)
-                WatermarkSystem.elements.circle2.Position = newPos + Vector2.new(120, 16)
-                WatermarkSystem.elements.circle3.Position = newPos + Vector2.new(143.5, 16)
-                WatermarkSystem.elements.status.Position = newPos + Vector2.new(171.5, 11)
-                WatermarkSystem.elements.entity.Position = newPos + Vector2.new(226.5, 11)
-            end
-            lastWatermarkMouse1 = mouse1
+            lwm=m1
         end
     end
 end)
 
 loadstring(game:HttpGet("https://www.arcanecheats.xyz/api/matcha/esplib"))()
 
-local activeESPs = {}
+activeESPs = {}
 
 local KeycardConfigs = {
     KeyCard = {color = Color3.fromRGB(0, 255, 0), name = "KeyCard"},
@@ -448,7 +278,6 @@ CreateESP = function(item)
     return {esp = esp, model = item.model, key = key}
 end
 
-local StartKeycardESP
 StartKeycardESP = function()
     if Settings.keycardESPEnabled then return end
     Settings.keycardESPEnabled = true
@@ -461,7 +290,6 @@ StartKeycardESP = function()
     end
 end
 
-local CleanupKeycardESP
 CleanupKeycardESP = function()
     Settings.keycardESPEnabled = false
     for key, espData in pairs(activeESPs) do
@@ -470,9 +298,8 @@ CleanupKeycardESP = function()
     activeESPs = {}
 end
 
-local lastRescanTime = 0
+lastRescanTime = 0
 
-local ForceRescanESP
 ForceRescanESP = function()
     if not Settings.keycardESPEnabled then return end
     pcall(function()
@@ -511,7 +338,7 @@ spawn(function()
     end
 end)
 
-local activeDoorESPs = {}
+activeDoorESPs = {}
 
 local FindDoors
 FindDoors = function()
@@ -539,7 +366,6 @@ FindDoors = function()
     return foundDoors
 end
 
-local StartDoorESP
 StartDoorESP = function()
     if Settings.doorESPEnabled then return end
     Settings.doorESPEnabled = true
@@ -558,7 +384,6 @@ StartDoorESP = function()
     end
 end
 
-local CleanupDoorESP
 CleanupDoorESP = function()
     Settings.doorESPEnabled = false
     for key, esp in pairs(activeDoorESPs) do
@@ -596,118 +421,40 @@ spawn(function()
     end
 end)
 
-local Players = game.Players
-
-local AutoHideSystem = {
-    enabled = false,
-    isHiding = false,
-    originalPosition = nil,
-    checkInterval = 0.05,
-    lastCheckTime = 0,
-    holdLoop = false
-}
-
-local TrackedMobsSet = {}
-for _, name in ipairs(TrackedMobs) do
-    TrackedMobsSet[name] = true
+AutoHideSystem={enabled=false,isHiding=false,originalPosition=nil,checkInterval=0.05,lastCheckTime=0,holdLoop=false}
+local _AHP=game.Players
+local TrackedMobsSet={}
+for _,name in ipairs(TrackedMobs) do TrackedMobsSet[name]=true end
+local getHRP; getHRP=function()
+    local p=_AHP.LocalPlayer if not p or not p.Character then return nil end
+    return p.Character:FindFirstChild("HumanoidRootPart")
 end
-
-local getHRP
-getHRP = function()
-    local player = Players.LocalPlayer
-    if not player or not player.Character then return nil end
-    return player.Character:FindFirstChild("HumanoidRootPart")
+local forceTeleport; forceTeleport=function(targetPos)
+    for i=1,5 do local hrp=getHRP() if hrp then hrp.AssemblyLinearVelocity=Vector3.new(0,0,0) hrp.Position=targetPos end wait() end
 end
-
-local forceTeleport
-forceTeleport = function(targetPos)
-    for i = 1, 5 do
-        local hrp = getHRP()
-        if hrp then
-            hrp.AssemblyLinearVelocity = Vector3.new(0, 0, 0)
-            hrp.Position = targetPos
-        end
-        wait()
-    end
-end
-
 function AutoHideSystem:CheckForMobs()
-    for _, obj in ipairs(workspace:GetChildren()) do
-        if TrackedMobsSet[obj.Name] then
-            return true
-        end
-    end
-    return false
+    for _,obj in ipairs(workspace:GetChildren()) do if TrackedMobsSet[obj.Name] then return true end end return false
 end
-
 function AutoHideSystem:Hide()
-    if self.isHiding then return end
-    local hrp = getHRP()
-    if not hrp then return end
-
-    self.originalPosition = hrp.Position
-    self.isHiding = true
-    self.holdLoop = true
-
-    spawn(function()
-        forceTeleport(self.originalPosition + Vector3.new(0, 1000, 0))
-    end)
-
-    spawn(function()
-        while self.holdLoop do
-            local currentHrp = getHRP()
-            if currentHrp then
-                currentHrp.AssemblyLinearVelocity = Vector3.new(0, 0, 0)
-            end
-            wait()
-        end
-    end)
+    if self.isHiding then return end local hrp=getHRP() if not hrp then return end
+    self.originalPosition=hrp.Position self.isHiding=true self.holdLoop=true
+    spawn(function() forceTeleport(self.originalPosition+Vector3.new(0,1000,0)) end)
+    spawn(function() while self.holdLoop do local h=getHRP() if h then h.AssemblyLinearVelocity=Vector3.new(0,0,0) end wait() end end)
 end
-
 function AutoHideSystem:Unhide()
-    if not self.isHiding then return end
-
-    self.holdLoop = false
-    self.isHiding = false
-
-    local savedPos = self.originalPosition
-    self.originalPosition = nil
-
-    spawn(function()
-        if savedPos then
-            forceTeleport(savedPos)
-        end
-    end)
+    if not self.isHiding then return end self.holdLoop=false self.isHiding=false
+    local sp=self.originalPosition self.originalPosition=nil
+    spawn(function() if sp then forceTeleport(sp) end end)
 end
-
 function AutoHideSystem:Update()
-    if not self.enabled then
-        if self.isHiding then self:Unhide() end
-        return
-    end
-
-    if self.isHiding and not self.originalPosition then
-        self.isHiding = false
-        self.holdLoop = false
-    end
-
-    local currentTime = os.clock()
-    if currentTime - self.lastCheckTime < self.checkInterval then return end
-    self.lastCheckTime = currentTime
-
-    if self:CheckForMobs() then
-        if not self.isHiding then self:Hide() end
-    else
-        if self.isHiding then self:Unhide() end
-    end
+    if not self.enabled then if self.isHiding then self:Unhide() end return end
+    if self.isHiding and not self.originalPosition then self.isHiding=false self.holdLoop=false end
+    local ct=os.clock() if ct-self.lastCheckTime<self.checkInterval then return end
+    self.lastCheckTime=ct
+    if self:CheckForMobs() then if not self.isHiding then self:Hide() end
+    else if self.isHiding then self:Unhide() end end
 end
-
-spawn(function()
-    while true do
-        AutoHideSystem:Update()
-        wait()
-    end
-end)
+spawn(function() while true do AutoHideSystem:Update() wait() end end)
 
 spawn(function()
     while true do
@@ -733,22 +480,11 @@ spawn(function()
 end)
 
 spawn(function()
-    local lastF5 = false
-    while true do
-        wait(0.01)
-        if isrbxactive() then
-            local f5 = iskeypressed(0x74)
-            if f5 and not lastF5 then
-                if Settings.keycardESPEnabled then
-                    ForceRescanESP()
-                end
-            end
-            lastF5 = f5
-        end
-    end
+    local lF5=false while true do wait(0.01) if isrbxactive() then
+        local f5=iskeypressed(0x74) if f5 and not lF5 then
+            if Settings.keycardESPEnabled then ForceRescanESP() end end lF5=f5 end end
 end)
-
-WatermarkSystem:Initialize()
+end
 
 local Mouse = game.Players.LocalPlayer:GetMouse()
 
@@ -2389,54 +2125,41 @@ Tab_ContentPageSettings_SetVisible = function(visible)
 end
 
 spawn(function()
-    local lastVis = false
+    local lastVis=false
     while true do
         wait(0.05)
-        local v = Main1.Visible
-        if v ~= lastVis then
-            lastVis = v
-            setrobloxinput(not v)
-        end
+        local v=Main1.Visible
+        if v~=lastVis then lastVis=v setrobloxinput(not v) end
     end
 end)
 
-local onSwitch = function(val)
-    Settings.notificationsEnabled.Angler      = NoffiticationAnglerSwitch_IsChecked
-    Settings.notificationsEnabled.Froger      = NoffiticationFrogerSwitch_IsChecked
-    Settings.notificationsEnabled.Pinkie      = NoffiticationPinkieSwitch_IsChecked
-    Settings.notificationsEnabled.Blitz       = NoffiticationBlitzSwitch_IsChecked
-    Settings.notificationsEnabled.Chainsmoker = NoffiticationChainsmokerSwitch_IsChecked
-    Settings.notificationsEnabled.Pandemonium = NoffiticationPandemoniumSwitch_IsChecked
-    Settings.notificationsEnabled["A60"]     = NoffiticationA60Switch_IsChecked
-    Settings.notificationsEnabled.Harbinger   = NoffiticationHarbingerSwitch_IsChecked
-    Settings.notificationsEnabled.Painter     = NoffiticationPainterRoomSwitch_IsChecked
-    AutoHideSystem.enabled = AutoHideSwitch_IsChecked
-    Settings.autoRescanEnabled = AutoRescanSwitch_IsChecked
-    if EnableWatermarkSwitch_IsChecked ~= WatermarkSystem.enabled then
-        WatermarkSystem.enabled = EnableWatermarkSwitch_IsChecked
+local onSwitch=function(val)
+    Settings.notificationsEnabled.Angler=NoffiticationAnglerSwitch_IsChecked
+    Settings.notificationsEnabled.Froger=NoffiticationFrogerSwitch_IsChecked
+    Settings.notificationsEnabled.Pinkie=NoffiticationPinkieSwitch_IsChecked
+    Settings.notificationsEnabled.Blitz=NoffiticationBlitzSwitch_IsChecked
+    Settings.notificationsEnabled.Chainsmoker=NoffiticationChainsmokerSwitch_IsChecked
+    Settings.notificationsEnabled.Pandemonium=NoffiticationPandemoniumSwitch_IsChecked
+    Settings.notificationsEnabled["A60"]=NoffiticationA60Switch_IsChecked
+    Settings.notificationsEnabled.Harbinger=NoffiticationHarbingerSwitch_IsChecked
+    Settings.notificationsEnabled.Painter=NoffiticationPainterRoomSwitch_IsChecked
+    AutoHideSystem.enabled=AutoHideSwitch_IsChecked
+    Settings.autoRescanEnabled=AutoRescanSwitch_IsChecked
+    if EnableWatermarkSwitch_IsChecked~=WatermarkSystem.enabled then
+        WatermarkSystem.enabled=EnableWatermarkSwitch_IsChecked
         WatermarkSystem:SetVisible(EnableWatermarkSwitch_IsChecked)
     end
-    if ESPkeycardSwitch_IsChecked and not Settings.keycardESPEnabled then
-        StartKeycardESP()
-    elseif not ESPkeycardSwitch_IsChecked and Settings.keycardESPEnabled then
-        CleanupKeycardESP()
-    end
-    if ESPDoorsSwitch_IsChecked and not Settings.doorESPEnabled then
-        StartDoorESP()
-    elseif not ESPDoorsSwitch_IsChecked and Settings.doorESPEnabled then
-        CleanupDoorESP()
-    end
+    if ESPkeycardSwitch_IsChecked and not Settings.keycardESPEnabled then StartKeycardESP()
+    elseif not ESPkeycardSwitch_IsChecked and Settings.keycardESPEnabled then CleanupKeycardESP() end
+    if ESPDoorsSwitch_IsChecked and not Settings.doorESPEnabled then StartDoorESP()
+    elseif not ESPDoorsSwitch_IsChecked and Settings.doorESPEnabled then CleanupDoorESP() end
 end
 
-local onChanged = function(val)
-    Settings.autoRescanInterval = math.max(1, math.floor(val))
+local onChanged=function(val)
+    Settings.autoRescanInterval=math.max(1,math.floor(val))
 end
-
-local onClick = function()
-end
-
-local onKeyChanged = function(i)
-end
+local onClick=function() end
+local onKeyChanged=function(i) end
 
 local dragging = nil
 local dragStart = nil
