@@ -26,15 +26,12 @@ detectedMobs = {}
 function NotificationSystem:CreateNotification(mobName,duration)
     if #self.activeNotifications>=self.maxNotifications then
         local oldest=table.remove(self.activeNotifications,1)
-        if oldest then
-            pcall(function()
-                oldest.bg1:Remove() oldest.bg2:Remove() oldest.bg3:Remove()
-                oldest.logo:Remove() oldest.ttl:Remove()
-                oldest.c1:Remove() oldest.c2:Remove() oldest.c3:Remove()
-                oldest.div:Remove() oldest.etxt:Remove() oldest.tbar:Remove()
-            end)
-            self.nextYPosition=self.nextYPosition-110
-        end
+        if oldest then pcall(function()
+            oldest.bg1:Remove() oldest.bg2:Remove() oldest.bg3:Remove()
+            oldest.logo:Remove() oldest.ttl:Remove()
+            oldest.c1:Remove() oldest.c2:Remove() oldest.c3:Remove()
+            oldest.div:Remove() oldest.etxt:Remove() oldest.tbar:Remove()
+        end) self.nextYPosition=self.nextYPosition-110 end
     end
     local cam=workspace.CurrentCamera
     local vp=(cam and cam.ViewportSize) or Vector2.new(1920,1080)
@@ -69,12 +66,10 @@ function NotificationSystem:CreateNotification(mobName,duration)
     self.nextYPosition=self.nextYPosition+110
 end
 function NotificationSystem:Update()
-    local now=os.clock()
-    local toRemove={}
+    local now=os.clock() local toRemove={}
     for i,n in ipairs(self.activeNotifications) do
         local el=now-n.startTime
-        local prog=math.min(el/n.duration,1)
-        n.tbar.Size=Vector2.new(n.fullWidth*(1-prog),1)
+        n.tbar.Size=Vector2.new(n.fullWidth*(1-math.min(el/n.duration,1)),1)
         if el>=n.duration then
             local fp=math.min((el-n.duration)/0.3,1)
             local a=1-math.pow(fp,2)
@@ -86,8 +81,7 @@ function NotificationSystem:Update()
         end
     end
     for i=#toRemove,1,-1 do
-        local idx=toRemove[i]
-        local n=table.remove(self.activeNotifications,idx)
+        local n=table.remove(self.activeNotifications,toRemove[i])
         if n then pcall(function()
             n.bg1:Remove() n.bg2:Remove() n.bg3:Remove() n.logo:Remove() n.ttl:Remove()
             n.c1:Remove() n.c2:Remove() n.c3:Remove() n.div:Remove() n.etxt:Remove() n.tbar:Remove()
@@ -95,7 +89,7 @@ function NotificationSystem:Update()
     end
     if #toRemove>0 then
         self.nextYPosition=0
-        for i,n in ipairs(self.activeNotifications) do
+        for _,n in ipairs(self.activeNotifications) do
             local cam=workspace.CurrentCamera
             local vp=(cam and cam.ViewportSize) or Vector2.new(1920,1080)
             local ty=vp.Y-130-self.nextYPosition
@@ -132,17 +126,15 @@ function NotificationSystem:CheckForMobs()
     end
         local painterKey="__Painter__"
     local gf=workspace:FindFirstChild("GameplayFolder")
-    local painterFound=false
-    if gf then local rooms=gf:FindFirstChild("Rooms")
-        if rooms then for _,room in ipairs(rooms:GetChildren()) do
-            if room:FindFirstChild("Painter") then painterFound=true break end end end
-    end
-    if painterFound then currentFrameMobs[painterKey]=true
-        if not detectedMobs[painterKey] then detectedMobs[painterKey]=true
-            if Settings.notificationsEnabled.Painter then self:CreateNotification("Painter",5) end
-            if WatermarkSystem then WatermarkSystem.currentEntity="Painter" end
-        end
-    end
+    if gf then local rooms=gf:FindFirstChild("Rooms") if rooms then
+        for _,room in ipairs(rooms:GetChildren()) do
+            if room:FindFirstChild("Painter") then
+                currentFrameMobs[painterKey]=true
+                if not detectedMobs[painterKey] then detectedMobs[painterKey]=true
+                    if Settings.notificationsEnabled.Painter then self:CreateNotification("Painter",5) end
+                    if WatermarkSystem then WatermarkSystem.currentEntity="Painter" end
+                end break end
+        end end end
     for mobName, _ in pairs(detectedMobs) do
         if not currentFrameMobs[mobName] then
             detectedMobs[mobName] = nil
@@ -152,46 +144,26 @@ end
 
 WatermarkSystem={enabled=false,currentEntity="None",elements={}}
 local _wm=Vector2.new(90,28)
-local _WM1=Drawing.new("Square") _WM1.Visible=false _WM1.Transparency=1 _WM1.ZIndex=10
-_WM1.Color=Color3.fromHex("#0c0d1e") _WM1.Position=_wm _WM1.Size=Vector2.new(582,55) _WM1.Filled=true _WM1.Corner=12
-local _WM1B=Drawing.new("Square") _WM1B.Visible=false _WM1B.Transparency=1 _WM1B.ZIndex=11
-_WM1B.Color=Color3.fromHex("#18193c") _WM1B.Filled=false _WM1B.Thickness=1 _WM1B.Position=_wm _WM1B.Size=Vector2.new(582,55) _WM1B.Corner=12
-local _W1=Drawing.new("Circle") _W1.Visible=false _W1.Transparency=1 _W1.ZIndex=20
-_W1.Color=Color3.fromHex("#5c61e3") _W1.Position=_wm+Vector2.new(39,29) _W1.Radius=3 _W1.NumSides=32 _W1.Thickness=1 _W1.Filled=true
-local _W2=Drawing.new("Circle") _W2.Visible=false _W2.Transparency=1 _W2.ZIndex=30
-_W2.Color=Color3.fromHex("#8b5df6") _W2.Position=_wm+Vector2.new(48,29) _W2.Radius=3 _W2.NumSides=32 _W2.Thickness=1 _W2.Filled=true
-local _W3=Drawing.new("Circle") _W3.Visible=false _W3.Transparency=1 _W3.ZIndex=40
-_W3.Color=Color3.fromHex("#a68afa") _W3.Position=_wm+Vector2.new(59,29) _W3.Radius=3 _W3.NumSides=32 _W3.Thickness=1 _W3.Filled=true
-local _WRT=Drawing.new("Text") _WRT.Visible=false _WRT.Transparency=1 _WRT.ZIndex=70
-_WRT.Color=Color3.fromHex("#435bee") _WRT.Position=_wm+Vector2.new(69,20) _WRT.Text="RatHub" _WRT.Size=14 _WRT.Center=false _WRT.Outline=false _WRT.Font=Drawing.Fonts.SystemBold
-local _W4=Drawing.new("Circle") _W4.Visible=false _W4.Transparency=1 _W4.ZIndex=50
-_W4.Color=Color3.fromHex("#5c61e3") _W4.Position=_wm+Vector2.new(123,29) _W4.Radius=3 _W4.NumSides=32 _W4.Thickness=1 _W4.Filled=true
-local _W5=Drawing.new("Circle") _W5.Visible=false _W5.Transparency=1 _W5.ZIndex=60
-_W5.Color=Color3.fromHex("#8b5df6") _W5.Position=_wm+Vector2.new(133,29) _W5.Radius=3 _W5.NumSides=32 _W5.Thickness=1 _W5.Filled=true
-local _W6=Drawing.new("Circle") _W6.Visible=false _W6.Transparency=1 _W6.ZIndex=80
-_W6.Color=Color3.fromHex("#a68afa") _W6.Position=_wm+Vector2.new(144,29) _W6.Radius=3 _W6.NumSides=32 _W6.Thickness=1 _W6.Filled=true
-local _DL1=Drawing.new("Square") _DL1.Visible=false _DL1.Transparency=1 _DL1.ZIndex=90
-_DL1.Color=Color3.fromHex("#20204a") _DL1.Position=_wm+Vector2.new(154,19) _DL1.Size=Vector2.new(0.5,15) _DL1.Filled=true
-local _NNP=Drawing.new("Text") _NNP.Visible=false _NNP.Transparency=1 _NNP.ZIndex=110
-_NNP.Color=Color3.fromHex("#FFFFFF") _NNP.Position=_wm+Vector2.new(161,22) _NNP.Text="..." _NNP.Size=10 _NNP.Center=false _NNP.Outline=true _NNP.Font=Drawing.Fonts.SystemBold
-local _MSE=Drawing.new("Square") _MSE.Visible=false _MSE.Transparency=1 _MSE.ZIndex=120
-_MSE.Color=Color3.fromHex("#20204a") _MSE.Position=_wm+Vector2.new(246,9.5) _MSE.Size=Vector2.new(168,36) _MSE.Filled=true _MSE.Corner=12
-local _MSEB=Drawing.new("Square") _MSEB.Visible=false _MSEB.Transparency=1 _MSEB.ZIndex=121
-_MSEB.Color=Color3.fromHex("#242452") _MSEB.Filled=false _MSEB.Thickness=1 _MSEB.Position=_MSE.Position _MSEB.Size=_MSE.Size _MSEB.Corner=12
-local _CET=Drawing.new("Text") _CET.Visible=false _CET.Transparency=1 _CET.ZIndex=130
-_CET.Color=Color3.fromHex("#7f839a") _CET.Position=_wm+Vector2.new(254,23) _CET.Text="Current Entinty:" _CET.Size=10 _CET.Center=false _CET.Outline=true _CET.Font=Drawing.Fonts.SystemBold
-local _SE=Drawing.new("Text") _SE.Visible=false _SE.Transparency=1 _SE.ZIndex=140
-_SE.Color=Color3.fromHex("#e1e2cc") _SE.Position=_wm+Vector2.new(329,24) _SE.Text="None" _SE.Size=10 _SE.Center=false _SE.Outline=true _SE.Font=Drawing.Fonts.SystemBold
-local _CDR=Drawing.new("Text") _CDR.Visible=false _CDR.Transparency=1 _CDR.ZIndex=150
-_CDR.Color=Color3.fromHex("#e1d7c6") _CDR.Position=_wm+Vector2.new(423,24) _CDR.Text="Count Doors Reach: ???" _CDR.Size=10 _CDR.Center=false _CDR.Outline=true _CDR.Font=Drawing.Fonts.SystemBold
-local _DL2=Drawing.new("Square") _DL2.Visible=false _DL2.Transparency=1 _DL2.ZIndex=90
-_DL2.Color=Color3.fromHex("#20204a") _DL2.Position=_wm+Vector2.new(534,19) _DL2.Size=Vector2.new(0.5,15) _DL2.Filled=true
-local _W8=Drawing.new("Circle") _W8.Visible=false _W8.Transparency=1 _W8.ZIndex=50
-_W8.Color=Color3.fromHex("#5c61e3") _W8.Position=_wm+Vector2.new(543,29) _W8.Radius=3 _W8.NumSides=32 _W8.Thickness=1 _W8.Filled=true
-local _W7=Drawing.new("Circle") _W7.Visible=false _W7.Transparency=1 _W7.ZIndex=60
-_W7.Color=Color3.fromHex("#8b5df6") _W7.Position=_wm+Vector2.new(552,29) _W7.Radius=3 _W7.NumSides=32 _W7.Thickness=1 _W7.Filled=true
-local _W9=Drawing.new("Circle") _W9.Visible=false _W9.Transparency=1 _W9.ZIndex=80
-_W9.Color=Color3.fromHex("#a68afa") _W9.Position=_wm+Vector2.new(562,29) _W9.Radius=3 _W9.NumSides=32 _W9.Thickness=1 _W9.Filled=true
+local _WM1=Drawing.new("Square") _WM1.Visible=false _WM1.Transparency=1 _WM1.ZIndex=10 _WM1.Color=Color3.fromHex("#0c0d1e") _WM1.Position=_wm _WM1.Size=Vector2.new(582,55) _WM1.Filled=true _WM1.Corner=12
+local _WM1B=Drawing.new("Square") _WM1B.Visible=false _WM1B.Transparency=1 _WM1B.ZIndex=11 _WM1B.Color=Color3.fromHex("#18193c") _WM1B.Filled=false _WM1B.Thickness=1 _WM1B.Position=_wm _WM1B.Size=Vector2.new(582,55) _WM1B.Corner=12
+local _W1=Drawing.new("Circle") _W1.Visible=false _W1.Transparency=1 _W1.ZIndex=20 _W1.Color=Color3.fromHex("#5c61e3") _W1.Position=_wm+Vector2.new(39,29) _W1.Radius=3 _W1.NumSides=32 _W1.Thickness=1 _W1.Filled=true
+local _W2=Drawing.new("Circle") _W2.Visible=false _W2.Transparency=1 _W2.ZIndex=30 _W2.Color=Color3.fromHex("#8b5df6") _W2.Position=_wm+Vector2.new(48,29) _W2.Radius=3 _W2.NumSides=32 _W2.Thickness=1 _W2.Filled=true
+local _W3=Drawing.new("Circle") _W3.Visible=false _W3.Transparency=1 _W3.ZIndex=40 _W3.Color=Color3.fromHex("#a68afa") _W3.Position=_wm+Vector2.new(59,29) _W3.Radius=3 _W3.NumSides=32 _W3.Thickness=1 _W3.Filled=true
+local _WRT=Drawing.new("Text") _WRT.Visible=false _WRT.Transparency=1 _WRT.ZIndex=70 _WRT.Color=Color3.fromHex("#435bee") _WRT.Position=_wm+Vector2.new(69,20) _WRT.Text="RatHub" _WRT.Size=14 _WRT.Center=false _WRT.Outline=false _WRT.Font=Drawing.Fonts.SystemBold
+local _W4=Drawing.new("Circle") _W4.Visible=false _W4.Transparency=1 _W4.ZIndex=50 _W4.Color=Color3.fromHex("#5c61e3") _W4.Position=_wm+Vector2.new(123,29) _W4.Radius=3 _W4.NumSides=32 _W4.Thickness=1 _W4.Filled=true
+local _W5=Drawing.new("Circle") _W5.Visible=false _W5.Transparency=1 _W5.ZIndex=60 _W5.Color=Color3.fromHex("#8b5df6") _W5.Position=_wm+Vector2.new(133,29) _W5.Radius=3 _W5.NumSides=32 _W5.Thickness=1 _W5.Filled=true
+local _W6=Drawing.new("Circle") _W6.Visible=false _W6.Transparency=1 _W6.ZIndex=80 _W6.Color=Color3.fromHex("#a68afa") _W6.Position=_wm+Vector2.new(144,29) _W6.Radius=3 _W6.NumSides=32 _W6.Thickness=1 _W6.Filled=true
+local _DL1=Drawing.new("Square") _DL1.Visible=false _DL1.Transparency=1 _DL1.ZIndex=90 _DL1.Color=Color3.fromHex("#20204a") _DL1.Position=_wm+Vector2.new(154,19) _DL1.Size=Vector2.new(0.5,15) _DL1.Filled=true
+local _NNP=Drawing.new("Text") _NNP.Visible=false _NNP.Transparency=1 _NNP.ZIndex=110 _NNP.Color=Color3.fromHex("#FFFFFF") _NNP.Position=_wm+Vector2.new(161,22) _NNP.Text="..." _NNP.Size=10 _NNP.Center=false _NNP.Outline=true _NNP.Font=Drawing.Fonts.SystemBold
+local _MSE=Drawing.new("Square") _MSE.Visible=false _MSE.Transparency=1 _MSE.ZIndex=120 _MSE.Color=Color3.fromHex("#20204a") _MSE.Position=_wm+Vector2.new(246,9.5) _MSE.Size=Vector2.new(168,36) _MSE.Filled=true _MSE.Corner=12
+local _MSEB=Drawing.new("Square") _MSEB.Visible=false _MSEB.Transparency=1 _MSEB.ZIndex=121 _MSEB.Color=Color3.fromHex("#242452") _MSEB.Filled=false _MSEB.Thickness=1 _MSEB.Position=_MSE.Position _MSEB.Size=_MSE.Size _MSEB.Corner=12
+local _CET=Drawing.new("Text") _CET.Visible=false _CET.Transparency=1 _CET.ZIndex=130 _CET.Color=Color3.fromHex("#7f839a") _CET.Position=_wm+Vector2.new(254,23) _CET.Text="Current Entinty:" _CET.Size=10 _CET.Center=false _CET.Outline=true _CET.Font=Drawing.Fonts.SystemBold
+local _SE=Drawing.new("Text") _SE.Visible=false _SE.Transparency=1 _SE.ZIndex=140 _SE.Color=Color3.fromHex("#e1e2cc") _SE.Position=_wm+Vector2.new(329,24) _SE.Text="None" _SE.Size=10 _SE.Center=false _SE.Outline=true _SE.Font=Drawing.Fonts.SystemBold
+local _CDR=Drawing.new("Text") _CDR.Visible=false _CDR.Transparency=1 _CDR.ZIndex=150 _CDR.Color=Color3.fromHex("#e1d7c6") _CDR.Position=_wm+Vector2.new(423,24) _CDR.Text="Count Doors Reach: ???" _CDR.Size=10 _CDR.Center=false _CDR.Outline=true _CDR.Font=Drawing.Fonts.SystemBold
+local _DL2=Drawing.new("Square") _DL2.Visible=false _DL2.Transparency=1 _DL2.ZIndex=90 _DL2.Color=Color3.fromHex("#20204a") _DL2.Position=_wm+Vector2.new(534,19) _DL2.Size=Vector2.new(0.5,15) _DL2.Filled=true
+local _W8=Drawing.new("Circle") _W8.Visible=false _W8.Transparency=1 _W8.ZIndex=50 _W8.Color=Color3.fromHex("#5c61e3") _W8.Position=_wm+Vector2.new(543,29) _W8.Radius=3 _W8.NumSides=32 _W8.Thickness=1 _W8.Filled=true
+local _W7=Drawing.new("Circle") _W7.Visible=false _W7.Transparency=1 _W7.ZIndex=60 _W7.Color=Color3.fromHex("#8b5df6") _W7.Position=_wm+Vector2.new(552,29) _W7.Radius=3 _W7.NumSides=32 _W7.Thickness=1 _W7.Filled=true
+local _W9=Drawing.new("Circle") _W9.Visible=false _W9.Transparency=1 _W9.ZIndex=80 _W9.Color=Color3.fromHex("#a68afa") _W9.Position=_wm+Vector2.new(562,29) _W9.Radius=3 _W9.NumSides=32 _W9.Thickness=1 _W9.Filled=true
 _NNP.Text=game.Players.LocalPlayer.Name
 WatermarkSystem.elements={_WM1,_WM1B,_W1,_W2,_W3,_W4,_W5,_W6,_W7,_W8,_W9,_WRT,_DL1,_NNP,_MSE,_MSEB,_CET,_SE,_CDR,_DL2}
 function WatermarkSystem:SetVisible(v) for _,el in pairs(self.elements) do if el then el.Visible=v and self.enabled end end end
@@ -237,65 +209,60 @@ end)
 
 loadstring(game:HttpGet("https://www.arcanecheats.xyz/api/matcha/esplib"))()
 
-activeChunkedESPs = { KeyCard={}, ItemBase={}, CurrencyBase={} }
+activeChunkedESPs = { KeyCard={}, InnerKeyCard={}, ItemBase={}, CurrencyBase={} }
 activeDoorESPs = {}
 
 local ChunkedColors = {
     KeyCard      = Color3.fromRGB(0, 255, 100),
+    InnerKeyCard = Color3.fromRGB(102, 0, 255),
     ItemBase     = Color3.fromRGB(0, 200, 255),
     CurrencyBase = Color3.fromRGB(255, 215, 0),
 }
 
 local GetPlayerPos
 GetPlayerPos = function()
-    local p = game.Players.LocalPlayer
+    local p=game.Players.LocalPlayer
     if not p or not p.Character then return nil end
-    local hrp = p.Character:FindFirstChild("HumanoidRootPart")
+    local hrp=p.Character:FindFirstChild("HumanoidRootPart")
     return hrp and hrp.Position or nil
 end
 
 local GetObjPos
 GetObjPos = function(obj)
     if obj:IsA("BasePart") then return obj.Position end
-    local bp = obj:FindFirstChildWhichIsA("BasePart", true)
+    local bp=obj:FindFirstChildWhichIsA("BasePart",true)
     return bp and bp.Position or nil
 end
 
 local CreateChunkedESP
-CreateChunkedESP = function(obj, iType)
-    local tbl = activeChunkedESPs[iType]
-    if not tbl then return end
-    local key = obj:GetFullName()
-    if tbl[key] then return end
-    local pPos = GetPlayerPos()
+CreateChunkedESP = function(obj,iType)
+    local tbl=activeChunkedESPs[iType] if not tbl then return end
+    local key=obj:GetFullName() if tbl[key] then return end
+    local pPos=GetPlayerPos()
     if pPos then
-        local oPos = GetObjPos(obj)
-        if oPos and (oPos - pPos).Magnitude > Settings.espMaxDistance then return end
+        local oPos=GetObjPos(obj)
+        if oPos and (oPos-pPos).Magnitude>Settings.espMaxDistance then return end
     end
-    local ok, esp = pcall(function()
-        return ArcaneEsp.new(obj)
-            :AddTitle(ChunkedColors[iType], obj.Name)
-            :AddDistance(ChunkedColors[iType])
-            :SetFont(0)
+    local ok,esp=pcall(function()
+        return ArcaneEsp.new(obj):AddTitle(ChunkedColors[iType],obj.Name):AddDistance(ChunkedColors[iType]):SetFont(0)
     end)
-    if ok and esp then tbl[key] = { esp=esp, obj=obj } end
+    if ok and esp then tbl[key]={esp=esp,obj=obj} end
 end
 
 local CleanupChunkedESP
 CleanupChunkedESP = function(iType)
-    local tbl = activeChunkedESPs[iType]
-    if not tbl then return end
-    for key, data in pairs(tbl) do pcall(function() data.esp:Destroy() end) end
-    activeChunkedESPs[iType] = {}
+    local tbl=activeChunkedESPs[iType] if not tbl then return end
+    for _,data in pairs(tbl) do pcall(function() data.esp:Destroy() end) end
+    activeChunkedESPs[iType]={}
 end
 
 local CleanupDeadChunked
 CleanupDeadChunked = function()
-    for iType, tbl in pairs(activeChunkedESPs) do
-        for key, data in pairs(tbl) do
+    for _,tbl in pairs(activeChunkedESPs) do
+        for key,data in pairs(tbl) do
             if not data.obj or not data.obj.Parent then
                 pcall(function() data.esp:Destroy() end)
-                tbl[key] = nil
+                tbl[key]=nil
             end
         end
     end
@@ -303,98 +270,69 @@ end
 
 local FindDoors
 FindDoors = function()
-    local found = {}
-    local gf = workspace:FindFirstChild("GameplayFolder")
+    local found={}
+    local gf=workspace:FindFirstChild("GameplayFolder")
     if not gf then return found end
-    local rooms = gf:FindFirstChild("Rooms")
+    local rooms=gf:FindFirstChild("Rooms")
     if not rooms then return found end
-    for _, room in ipairs(rooms:GetChildren()) do
-        local exits = room:FindFirstChild("Exits")
-        if exits then
-            for _, exitObj in ipairs(exits:GetChildren()) do
-                local part = exitObj:IsA("BasePart") and exitObj
-                    or exitObj:FindFirstChildWhichIsA("BasePart", true)
-                if part then table.insert(found, {part=part, key=exitObj:GetFullName()}) end
-            end
-        end
+    for _,room in ipairs(rooms:GetChildren()) do
+        local exits=room:FindFirstChild("Exits")
+        if exits then for _,e in ipairs(exits:GetChildren()) do
+            local part=e:IsA("BasePart") and e or e:FindFirstChildWhichIsA("BasePart",true)
+            if part then table.insert(found,{part=part,key=e:GetFullName()}) end
+        end end
     end
     return found
 end
 
-local chunkedScanning = false
-
+local chunkedScanning=false
 local ChunkedScan
 ChunkedScan = function()
-    if chunkedScanning then return end
-    chunkedScanning = true
-    local root = workspace:FindFirstChild("GameplayFolder")
-    if root then root = root:FindFirstChild("Rooms") or root end
-    if not root then root = workspace end
-    local desc = root:GetDescendants()
-    local count = 0
-    for _, obj in ipairs(desc) do
-        local iType = obj:GetAttribute("InteractionType")
+    if chunkedScanning then return end chunkedScanning=true
+    local gf=workspace:FindFirstChild("GameplayFolder")
+    local root=(gf and gf:FindFirstChild("Rooms")) or gf or workspace
+    local desc=root:GetDescendants() local count=0
+    for _,obj in ipairs(desc) do
+        local iType=obj:GetAttribute("InteractionType")
         if iType then
-            if     iType=="KeyCard"      and Settings.keycardESPEnabled  then CreateChunkedESP(obj,"KeyCard")
-            elseif iType=="ItemBase"     and Settings.itemsESPEnabled     then CreateChunkedESP(obj,"ItemBase")
-            elseif iType=="CurrencyBase" and Settings.currencyESPEnabled  then CreateChunkedESP(obj,"CurrencyBase")
+            if (iType=="KeyCard" or iType=="InnerKeyCard") and Settings.keycardESPEnabled then
+                CreateChunkedESP(obj,iType)
+            elseif iType=="ItemBase" and Settings.itemsESPEnabled then
+                CreateChunkedESP(obj,"ItemBase")
+            elseif iType=="CurrencyBase" and Settings.currencyESPEnabled then
+                CreateChunkedESP(obj,"CurrencyBase")
             end
         end
-        count = count + 1
-        if count % 30 == 0 then wait() end
+        count=count+1 if count%30==0 then wait() end
     end
-    CleanupDeadChunked()
-    chunkedScanning = false
+    CleanupDeadChunked() chunkedScanning=false
 end
 
-StartKeycardESP = function()
-    if Settings.keycardESPEnabled then return end
-    Settings.keycardESPEnabled = true
-end
+StartKeycardESP   = function() if Settings.keycardESPEnabled then return end Settings.keycardESPEnabled=true end
 CleanupKeycardESP = function()
-    Settings.keycardESPEnabled = false
+    Settings.keycardESPEnabled=false
     CleanupChunkedESP("KeyCard")
+    CleanupChunkedESP("InnerKeyCard")
 end
-StartItemsESP = function()
-    if Settings.itemsESPEnabled then return end
-    Settings.itemsESPEnabled = true
-end
-CleanupItemsESP = function()
-    Settings.itemsESPEnabled = false
-    CleanupChunkedESP("ItemBase")
-end
-StartCurrencyESP = function()
-    if Settings.currencyESPEnabled then return end
-    Settings.currencyESPEnabled = true
-end
-CleanupCurrencyESP = function()
-    Settings.currencyESPEnabled = false
-    CleanupChunkedESP("CurrencyBase")
-end
+StartItemsESP      = function() if Settings.itemsESPEnabled    then return end Settings.itemsESPEnabled=true    end
+CleanupItemsESP    = function() Settings.itemsESPEnabled=false    CleanupChunkedESP("ItemBase")    end
+StartCurrencyESP   = function() if Settings.currencyESPEnabled then return end Settings.currencyESPEnabled=true end
+CleanupCurrencyESP = function() Settings.currencyESPEnabled=false CleanupChunkedESP("CurrencyBase") end
 
 StartDoorESP = function()
-    if Settings.doorESPEnabled then return end
-    Settings.doorESPEnabled = true
-    local doors = FindDoors()
-    for _, door in ipairs(doors) do
+    if Settings.doorESPEnabled then return end Settings.doorESPEnabled=true
+    for _,door in ipairs(FindDoors()) do
         if not activeDoorESPs[door.key] then
-            local ok, esp = pcall(function()
-                return ArcaneEsp.new(door.part)
-                    :AddEsp(Color3.fromRGB(255,165,0))
-                    :AddTitle(Color3.new(1,1,1),"Door")
-                    :AddDistance(Color3.new(1,1,1))
-                    :SetFont(0)
+            local ok,esp=pcall(function()
+                return ArcaneEsp.new(door.part):AddEsp(Color3.fromRGB(255,165,0)):AddTitle(Color3.new(1,1,1),"Door"):AddDistance(Color3.new(1,1,1)):SetFont(0)
             end)
-            if ok and esp then activeDoorESPs[door.key] = esp end
+            if ok and esp then activeDoorESPs[door.key]=esp end
         end
     end
 end
 CleanupDoorESP = function()
-    Settings.doorESPEnabled = false
-    for key, esp in pairs(activeDoorESPs) do
-        pcall(function() esp:Destroy() end)
-        activeDoorESPs[key] = nil
-    end
+    Settings.doorESPEnabled=false
+    for key,esp in pairs(activeDoorESPs) do pcall(function() esp:Destroy() end) activeDoorESPs[key]=nil end
 end
 
 ForceRescanESP = function() ChunkedScan() end
@@ -402,31 +340,21 @@ ForceRescanESP = function() ChunkedScan() end
 spawn(function()
     while true do
         wait(1)
-        local anyChunked = Settings.keycardESPEnabled or Settings.itemsESPEnabled or Settings.currencyESPEnabled
-        if anyChunked then
-            if Settings.autoRescanEnabled then ChunkedScan()
-            else CleanupDeadChunked() end
+        if Settings.keycardESPEnabled or Settings.itemsESPEnabled or Settings.currencyESPEnabled then
+            if Settings.autoRescanEnabled then ChunkedScan() else CleanupDeadChunked() end
         end
         if Settings.doorESPEnabled then
-            local doors = FindDoors()
-            local newKeys = {}
-            for _, d in ipairs(doors) do newKeys[d.key] = d end
-            for key, esp in pairs(activeDoorESPs) do
-                if not newKeys[key] then
-                    pcall(function() esp:Destroy() end)
-                    activeDoorESPs[key] = nil
-                end
+            local doors=FindDoors() local newKeys={}
+            for _,d in ipairs(doors) do newKeys[d.key]=d end
+            for key,esp in pairs(activeDoorESPs) do
+                if not newKeys[key] then pcall(function() esp:Destroy() end) activeDoorESPs[key]=nil end
             end
-            for key, d in pairs(newKeys) do
+            for key,d in pairs(newKeys) do
                 if not activeDoorESPs[key] then
-                    local ok, esp = pcall(function()
-                        return ArcaneEsp.new(d.part)
-                            :AddEsp(Color3.fromRGB(255,165,0))
-                            :AddTitle(Color3.new(1,1,1),"Door")
-                            :AddDistance(Color3.new(1,1,1))
-                            :SetFont(0)
+                    local ok,esp=pcall(function()
+                        return ArcaneEsp.new(d.part):AddEsp(Color3.fromRGB(255,165,0)):AddTitle(Color3.new(1,1,1),"Door"):AddDistance(Color3.new(1,1,1)):SetFont(0)
                     end)
-                    if ok and esp then activeDoorESPs[key] = esp end
+                    if ok and esp then activeDoorESPs[key]=esp end
                 end
             end
         end
@@ -441,8 +369,8 @@ local getHRP; getHRP=function()
     local p=_AHP.LocalPlayer if not p or not p.Character then return nil end
     return p.Character:FindFirstChild("HumanoidRootPart")
 end
-local forceTeleport; forceTeleport=function(targetPos)
-    for i=1,5 do local hrp=getHRP() if hrp then hrp.AssemblyLinearVelocity=Vector3.new(0,0,0) hrp.Position=targetPos end wait() end
+local forceTeleport; forceTeleport=function(pos)
+    for i=1,5 do local h=getHRP() if h then h.AssemblyLinearVelocity=Vector3.new(0,0,0) h.Position=pos end wait() end
 end
 function AutoHideSystem:CheckForMobs()
     for _,obj in ipairs(workspace:GetChildren()) do if TrackedMobsSet[obj.Name] then return true end end return false
@@ -2373,15 +2301,15 @@ Tab_ContentPageMisc2_SetVisible = function(visible)
 end
 
 spawn(function()
-    local lastVis = false
+    local lastVis=false
     while true do
         wait(0.05)
-        local v = Main1.Visible
-        if v ~= lastVis then lastVis=v setrobloxinput(not v) end
+        local v=Main1.Visible
+        if v~=lastVis then lastVis=v setrobloxinput(not v) end
     end
 end)
 
-local onSwitch = function(val)
+local onSwitch=function(val)
     Settings.notificationsEnabled.Angler      = NoffiticationAnglerSwitch_IsChecked
     Settings.notificationsEnabled.Froger      = NoffiticationFrogerSwitch_IsChecked
     Settings.notificationsEnabled.Pinkie      = NoffiticationPinkieSwitch_IsChecked
@@ -2394,7 +2322,7 @@ local onSwitch = function(val)
     AutoHideSystem.enabled = AutoHideSwitch_IsChecked
     Settings.autoRescanEnabled = AutoRescanSwitch_IsChecked
     if EnableWatermarkSwitch_IsChecked ~= WatermarkSystem.enabled then
-        WatermarkSystem.enabled = EnableWatermarkSwitch_IsChecked
+        WatermarkSystem.enabled=EnableWatermarkSwitch_IsChecked
         WatermarkSystem:SetVisible(EnableWatermarkSwitch_IsChecked)
     end
     if ESPkeycardSwitch_IsChecked and not Settings.keycardESPEnabled then StartKeycardESP()
@@ -2407,12 +2335,9 @@ local onSwitch = function(val)
     elseif not ESPswitchToCurrency_IsChecked and Settings.currencyESPEnabled then CleanupCurrencyESP() end
 end
 
-local onChanged = function(val)
-    Settings.espMaxDistance = math.max(25, math.floor(val))
-end
-
-local onClick = function() end
-local onKeyChanged = function(i) end
+local onChanged=function(val) Settings.espMaxDistance=math.max(25,math.floor(val)) end
+local onClick=function() end
+local onKeyChanged=function(i) end
 
 local dragging = nil
 local dragStart = nil
