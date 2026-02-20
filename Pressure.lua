@@ -26,12 +26,15 @@ detectedMobs = {}
 function NotificationSystem:CreateNotification(mobName,duration)
     if #self.activeNotifications>=self.maxNotifications then
         local oldest=table.remove(self.activeNotifications,1)
-        if oldest then pcall(function()
-            oldest.bg1:Remove() oldest.bg2:Remove() oldest.bg3:Remove()
-            oldest.logo:Remove() oldest.ttl:Remove()
-            oldest.c1:Remove() oldest.c2:Remove() oldest.c3:Remove()
-            oldest.div:Remove() oldest.etxt:Remove() oldest.tbar:Remove()
-        end) self.nextYPosition=self.nextYPosition-110 end
+        if oldest then
+            pcall(function()
+                oldest.bg1:Remove() oldest.bg2:Remove() oldest.bg3:Remove()
+                oldest.logo:Remove() oldest.ttl:Remove()
+                oldest.c1:Remove() oldest.c2:Remove() oldest.c3:Remove()
+                oldest.div:Remove() oldest.etxt:Remove() oldest.tbar:Remove()
+            end)
+            self.nextYPosition=self.nextYPosition-110
+        end
     end
     local cam=workspace.CurrentCamera
     local vp=(cam and cam.ViewportSize) or Vector2.new(1920,1080)
@@ -66,10 +69,12 @@ function NotificationSystem:CreateNotification(mobName,duration)
     self.nextYPosition=self.nextYPosition+110
 end
 function NotificationSystem:Update()
-    local now=os.clock() local toRemove={}
+    local now=os.clock()
+    local toRemove={}
     for i,n in ipairs(self.activeNotifications) do
         local el=now-n.startTime
-        n.tbar.Size=Vector2.new(n.fullWidth*(1-math.min(el/n.duration,1)),1)
+        local prog=math.min(el/n.duration,1)
+        n.tbar.Size=Vector2.new(n.fullWidth*(1-prog),1)
         if el>=n.duration then
             local fp=math.min((el-n.duration)/0.3,1)
             local a=1-math.pow(fp,2)
@@ -81,7 +86,8 @@ function NotificationSystem:Update()
         end
     end
     for i=#toRemove,1,-1 do
-        local n=table.remove(self.activeNotifications,toRemove[i])
+        local idx=toRemove[i]
+        local n=table.remove(self.activeNotifications,idx)
         if n then pcall(function()
             n.bg1:Remove() n.bg2:Remove() n.bg3:Remove() n.logo:Remove() n.ttl:Remove()
             n.c1:Remove() n.c2:Remove() n.c3:Remove() n.div:Remove() n.etxt:Remove() n.tbar:Remove()
@@ -89,7 +95,7 @@ function NotificationSystem:Update()
     end
     if #toRemove>0 then
         self.nextYPosition=0
-        for _,n in ipairs(self.activeNotifications) do
+        for i,n in ipairs(self.activeNotifications) do
             local cam=workspace.CurrentCamera
             local vp=(cam and cam.ViewportSize) or Vector2.new(1920,1080)
             local ty=vp.Y-130-self.nextYPosition
@@ -126,15 +132,17 @@ function NotificationSystem:CheckForMobs()
     end
         local painterKey="__Painter__"
     local gf=workspace:FindFirstChild("GameplayFolder")
-    if gf then local rooms=gf:FindFirstChild("Rooms") if rooms then
-        for _,room in ipairs(rooms:GetChildren()) do
-            if room:FindFirstChild("Painter") then
-                currentFrameMobs[painterKey]=true
-                if not detectedMobs[painterKey] then detectedMobs[painterKey]=true
-                    if Settings.notificationsEnabled.Painter then self:CreateNotification("Painter",5) end
-                    if WatermarkSystem then WatermarkSystem.currentEntity="Painter" end
-                end break end
-        end end end
+    local painterFound=false
+    if gf then local rooms=gf:FindFirstChild("Rooms")
+        if rooms then for _,room in ipairs(rooms:GetChildren()) do
+            if room:FindFirstChild("Painter") then painterFound=true break end end end
+    end
+    if painterFound then currentFrameMobs[painterKey]=true
+        if not detectedMobs[painterKey] then detectedMobs[painterKey]=true
+            if Settings.notificationsEnabled.Painter then self:CreateNotification("Painter",5) end
+            if WatermarkSystem then WatermarkSystem.currentEntity="Painter" end
+        end
+    end
     for mobName, _ in pairs(detectedMobs) do
         if not currentFrameMobs[mobName] then
             detectedMobs[mobName] = nil
@@ -240,48 +248,54 @@ local ChunkedColors = {
 
 local GetPlayerPos
 GetPlayerPos = function()
-    local p=game.Players.LocalPlayer
+    local p = game.Players.LocalPlayer
     if not p or not p.Character then return nil end
-    local hrp=p.Character:FindFirstChild("HumanoidRootPart")
+    local hrp = p.Character:FindFirstChild("HumanoidRootPart")
     return hrp and hrp.Position or nil
 end
 
 local GetObjPos
 GetObjPos = function(obj)
     if obj:IsA("BasePart") then return obj.Position end
-    local bp=obj:FindFirstChildWhichIsA("BasePart",true)
+    local bp = obj:FindFirstChildWhichIsA("BasePart", true)
     return bp and bp.Position or nil
 end
 
 local CreateChunkedESP
-CreateChunkedESP = function(obj,iType)
-    local tbl=activeChunkedESPs[iType] if not tbl then return end
-    local key=obj:GetFullName() if tbl[key] then return end
-    local pPos=GetPlayerPos()
+CreateChunkedESP = function(obj, iType)
+    local tbl = activeChunkedESPs[iType]
+    if not tbl then return end
+    local key = obj:GetFullName()
+    if tbl[key] then return end
+    local pPos = GetPlayerPos()
     if pPos then
-        local oPos=GetObjPos(obj)
-        if oPos and (oPos-pPos).Magnitude>Settings.espMaxDistance then return end
+        local oPos = GetObjPos(obj)
+        if oPos and (oPos - pPos).Magnitude > Settings.espMaxDistance then return end
     end
-    local ok,esp=pcall(function()
-        return ArcaneEsp.new(obj):AddTitle(ChunkedColors[iType],obj.Name):AddDistance(ChunkedColors[iType]):SetFont(0)
+    local ok, esp = pcall(function()
+        return ArcaneEsp.new(obj)
+            :AddTitle(ChunkedColors[iType], obj.Name)
+            :AddDistance(ChunkedColors[iType])
+            :SetFont(0)
     end)
-    if ok and esp then tbl[key]={esp=esp,obj=obj} end
+    if ok and esp then tbl[key] = { esp=esp, obj=obj } end
 end
 
 local CleanupChunkedESP
 CleanupChunkedESP = function(iType)
-    local tbl=activeChunkedESPs[iType] if not tbl then return end
-    for _,data in pairs(tbl) do pcall(function() data.esp:Destroy() end) end
-    activeChunkedESPs[iType]={}
+    local tbl = activeChunkedESPs[iType]
+    if not tbl then return end
+    for key, data in pairs(tbl) do pcall(function() data.esp:Destroy() end) end
+    activeChunkedESPs[iType] = {}
 end
 
 local CleanupDeadChunked
 CleanupDeadChunked = function()
-    for _,tbl in pairs(activeChunkedESPs) do
-        for key,data in pairs(tbl) do
+    for iType, tbl in pairs(activeChunkedESPs) do
+        for key, data in pairs(tbl) do
             if not data.obj or not data.obj.Parent then
                 pcall(function() data.esp:Destroy() end)
-                tbl[key]=nil
+                tbl[key] = nil
             end
         end
     end
@@ -289,61 +303,98 @@ end
 
 local FindDoors
 FindDoors = function()
-    local found={}
-    local rooms=(workspace:FindFirstChild("GameplayFolder") or {}):FindFirstChild and
-        (workspace:FindFirstChild("GameplayFolder")):FindFirstChild("Rooms")
+    local found = {}
+    local gf = workspace:FindFirstChild("GameplayFolder")
+    if not gf then return found end
+    local rooms = gf:FindFirstChild("Rooms")
     if not rooms then return found end
-    for _,room in ipairs(rooms:GetChildren()) do
-        local exits=room:FindFirstChild("Exits")
-        if exits then for _,e in ipairs(exits:GetChildren()) do
-            local part=e:IsA("BasePart") and e or e:FindFirstChildWhichIsA("BasePart",true)
-            if part then table.insert(found,{part=part,key=e:GetFullName()}) end
-        end end
+    for _, room in ipairs(rooms:GetChildren()) do
+        local exits = room:FindFirstChild("Exits")
+        if exits then
+            for _, exitObj in ipairs(exits:GetChildren()) do
+                local part = exitObj:IsA("BasePart") and exitObj
+                    or exitObj:FindFirstChildWhichIsA("BasePart", true)
+                if part then table.insert(found, {part=part, key=exitObj:GetFullName()}) end
+            end
+        end
     end
     return found
 end
 
-local chunkedScanning=false
+local chunkedScanning = false
+
 local ChunkedScan
 ChunkedScan = function()
-    if chunkedScanning then return end chunkedScanning=true
-    local gf=workspace:FindFirstChild("GameplayFolder")
-    local root=(gf and gf:FindFirstChild("Rooms")) or gf or workspace
-    local desc=root:GetDescendants() local count=0
-    for _,obj in ipairs(desc) do
-        local iType=obj:GetAttribute("InteractionType")
+    if chunkedScanning then return end
+    chunkedScanning = true
+    local root = workspace:FindFirstChild("GameplayFolder")
+    if root then root = root:FindFirstChild("Rooms") or root end
+    if not root then root = workspace end
+    local desc = root:GetDescendants()
+    local count = 0
+    for _, obj in ipairs(desc) do
+        local iType = obj:GetAttribute("InteractionType")
         if iType then
             if     iType=="KeyCard"      and Settings.keycardESPEnabled  then CreateChunkedESP(obj,"KeyCard")
             elseif iType=="ItemBase"     and Settings.itemsESPEnabled     then CreateChunkedESP(obj,"ItemBase")
             elseif iType=="CurrencyBase" and Settings.currencyESPEnabled  then CreateChunkedESP(obj,"CurrencyBase")
             end
         end
-        count=count+1 if count%30==0 then wait() end
+        count = count + 1
+        if count % 30 == 0 then wait() end
     end
-    CleanupDeadChunked() chunkedScanning=false
+    CleanupDeadChunked()
+    chunkedScanning = false
 end
 
-StartKeycardESP    = function() if Settings.keycardESPEnabled  then return end Settings.keycardESPEnabled=true  end
-CleanupKeycardESP  = function() Settings.keycardESPEnabled=false  CleanupChunkedESP("KeyCard")     end
-StartItemsESP      = function() if Settings.itemsESPEnabled    then return end Settings.itemsESPEnabled=true    end
-CleanupItemsESP    = function() Settings.itemsESPEnabled=false    CleanupChunkedESP("ItemBase")    end
-StartCurrencyESP   = function() if Settings.currencyESPEnabled then return end Settings.currencyESPEnabled=true end
-CleanupCurrencyESP = function() Settings.currencyESPEnabled=false CleanupChunkedESP("CurrencyBase") end
+StartKeycardESP = function()
+    if Settings.keycardESPEnabled then return end
+    Settings.keycardESPEnabled = true
+end
+CleanupKeycardESP = function()
+    Settings.keycardESPEnabled = false
+    CleanupChunkedESP("KeyCard")
+end
+StartItemsESP = function()
+    if Settings.itemsESPEnabled then return end
+    Settings.itemsESPEnabled = true
+end
+CleanupItemsESP = function()
+    Settings.itemsESPEnabled = false
+    CleanupChunkedESP("ItemBase")
+end
+StartCurrencyESP = function()
+    if Settings.currencyESPEnabled then return end
+    Settings.currencyESPEnabled = true
+end
+CleanupCurrencyESP = function()
+    Settings.currencyESPEnabled = false
+    CleanupChunkedESP("CurrencyBase")
+end
 
 StartDoorESP = function()
-    if Settings.doorESPEnabled then return end Settings.doorESPEnabled=true
-    for _,door in ipairs(FindDoors()) do
+    if Settings.doorESPEnabled then return end
+    Settings.doorESPEnabled = true
+    local doors = FindDoors()
+    for _, door in ipairs(doors) do
         if not activeDoorESPs[door.key] then
-            local ok,esp=pcall(function()
-                return ArcaneEsp.new(door.part):AddEsp(Color3.fromRGB(255,165,0)):AddTitle(Color3.new(1,1,1),"Door"):AddDistance(Color3.new(1,1,1)):SetFont(0)
+            local ok, esp = pcall(function()
+                return ArcaneEsp.new(door.part)
+                    :AddEsp(Color3.fromRGB(255,165,0))
+                    :AddTitle(Color3.new(1,1,1),"Door")
+                    :AddDistance(Color3.new(1,1,1))
+                    :SetFont(0)
             end)
-            if ok and esp then activeDoorESPs[door.key]=esp end
+            if ok and esp then activeDoorESPs[door.key] = esp end
         end
     end
 end
 CleanupDoorESP = function()
-    Settings.doorESPEnabled=false
-    for key,esp in pairs(activeDoorESPs) do pcall(function() esp:Destroy() end) activeDoorESPs[key]=nil end
+    Settings.doorESPEnabled = false
+    for key, esp in pairs(activeDoorESPs) do
+        pcall(function() esp:Destroy() end)
+        activeDoorESPs[key] = nil
+    end
 end
 
 ForceRescanESP = function() ChunkedScan() end
@@ -351,21 +402,31 @@ ForceRescanESP = function() ChunkedScan() end
 spawn(function()
     while true do
         wait(1)
-        if Settings.keycardESPEnabled or Settings.itemsESPEnabled or Settings.currencyESPEnabled then
-            if Settings.autoRescanEnabled then ChunkedScan() else CleanupDeadChunked() end
+        local anyChunked = Settings.keycardESPEnabled or Settings.itemsESPEnabled or Settings.currencyESPEnabled
+        if anyChunked then
+            if Settings.autoRescanEnabled then ChunkedScan()
+            else CleanupDeadChunked() end
         end
         if Settings.doorESPEnabled then
-            local doors=FindDoors() local newKeys={}
-            for _,d in ipairs(doors) do newKeys[d.key]=d end
-            for key,esp in pairs(activeDoorESPs) do
-                if not newKeys[key] then pcall(function() esp:Destroy() end) activeDoorESPs[key]=nil end
+            local doors = FindDoors()
+            local newKeys = {}
+            for _, d in ipairs(doors) do newKeys[d.key] = d end
+            for key, esp in pairs(activeDoorESPs) do
+                if not newKeys[key] then
+                    pcall(function() esp:Destroy() end)
+                    activeDoorESPs[key] = nil
+                end
             end
-            for key,d in pairs(newKeys) do
+            for key, d in pairs(newKeys) do
                 if not activeDoorESPs[key] then
-                    local ok,esp=pcall(function()
-                        return ArcaneEsp.new(d.part):AddEsp(Color3.fromRGB(255,165,0)):AddTitle(Color3.new(1,1,1),"Door"):AddDistance(Color3.new(1,1,1)):SetFont(0)
+                    local ok, esp = pcall(function()
+                        return ArcaneEsp.new(d.part)
+                            :AddEsp(Color3.fromRGB(255,165,0))
+                            :AddTitle(Color3.new(1,1,1),"Door")
+                            :AddDistance(Color3.new(1,1,1))
+                            :SetFont(0)
                     end)
-                    if ok and esp then activeDoorESPs[key]=esp end
+                    if ok and esp then activeDoorESPs[key] = esp end
                 end
             end
         end
@@ -380,8 +441,8 @@ local getHRP; getHRP=function()
     local p=_AHP.LocalPlayer if not p or not p.Character then return nil end
     return p.Character:FindFirstChild("HumanoidRootPart")
 end
-local forceTeleport; forceTeleport=function(pos)
-    for i=1,5 do local h=getHRP() if h then h.AssemblyLinearVelocity=Vector3.new(0,0,0) h.Position=pos end wait() end
+local forceTeleport; forceTeleport=function(targetPos)
+    for i=1,5 do local hrp=getHRP() if hrp then hrp.AssemblyLinearVelocity=Vector3.new(0,0,0) hrp.Position=targetPos end wait() end
 end
 function AutoHideSystem:CheckForMobs()
     for _,obj in ipairs(workspace:GetChildren()) do if TrackedMobsSet[obj.Name] then return true end end return false
@@ -2312,15 +2373,15 @@ Tab_ContentPageMisc2_SetVisible = function(visible)
 end
 
 spawn(function()
-    local lastVis=false
+    local lastVis = false
     while true do
         wait(0.05)
-        local v=Main1.Visible
-        if v~=lastVis then lastVis=v setrobloxinput(not v) end
+        local v = Main1.Visible
+        if v ~= lastVis then lastVis=v setrobloxinput(not v) end
     end
 end)
 
-local onSwitch=function(val)
+local onSwitch = function(val)
     Settings.notificationsEnabled.Angler      = NoffiticationAnglerSwitch_IsChecked
     Settings.notificationsEnabled.Froger      = NoffiticationFrogerSwitch_IsChecked
     Settings.notificationsEnabled.Pinkie      = NoffiticationPinkieSwitch_IsChecked
@@ -2333,7 +2394,7 @@ local onSwitch=function(val)
     AutoHideSystem.enabled = AutoHideSwitch_IsChecked
     Settings.autoRescanEnabled = AutoRescanSwitch_IsChecked
     if EnableWatermarkSwitch_IsChecked ~= WatermarkSystem.enabled then
-        WatermarkSystem.enabled=EnableWatermarkSwitch_IsChecked
+        WatermarkSystem.enabled = EnableWatermarkSwitch_IsChecked
         WatermarkSystem:SetVisible(EnableWatermarkSwitch_IsChecked)
     end
     if ESPkeycardSwitch_IsChecked and not Settings.keycardESPEnabled then StartKeycardESP()
@@ -2346,9 +2407,12 @@ local onSwitch=function(val)
     elseif not ESPswitchToCurrency_IsChecked and Settings.currencyESPEnabled then CleanupCurrencyESP() end
 end
 
-local onChanged=function(val) Settings.espMaxDistance=math.max(25,math.floor(val)) end
-local onClick=function() end
-local onKeyChanged=function(i) end
+local onChanged = function(val)
+    Settings.espMaxDistance = math.max(25, math.floor(val))
+end
+
+local onClick = function() end
+local onKeyChanged = function(i) end
 
 local dragging = nil
 local dragStart = nil
