@@ -164,8 +164,70 @@ local _DL2=Drawing.new("Square") _DL2.Visible=false _DL2.Transparency=1 _DL2.ZIn
 local _W8=Drawing.new("Circle") _W8.Visible=false _W8.Transparency=1 _W8.ZIndex=50 _W8.Color=Color3.fromHex("#5c61e3") _W8.Position=_wm+Vector2.new(543,29) _W8.Radius=3 _W8.NumSides=32 _W8.Thickness=1 _W8.Filled=true
 local _W7=Drawing.new("Circle") _W7.Visible=false _W7.Transparency=1 _W7.ZIndex=60 _W7.Color=Color3.fromHex("#8b5df6") _W7.Position=_wm+Vector2.new(552,29) _W7.Radius=3 _W7.NumSides=32 _W7.Thickness=1 _W7.Filled=true
 local _W9=Drawing.new("Circle") _W9.Visible=false _W9.Transparency=1 _W9.ZIndex=80 _W9.Color=Color3.fromHex("#a68afa") _W9.Position=_wm+Vector2.new(562,29) _W9.Radius=3 _W9.NumSides=32 _W9.Thickness=1 _W9.Filled=true
+
+-- Watermark Glow Layers
+_W1_glow1=Drawing.new("Circle") _W1_glow1.Visible=false _W1_glow1.Transparency=0.25 _W1_glow1.ZIndex=15 _W1_glow1.Color=Color3.fromHex("#5c61e3") _W1_glow1.Position=_wm+Vector2.new(39,29) _W1_glow1.Radius=5 _W1_glow1.NumSides=32 _W1_glow1.Thickness=2 _W1_glow1.Filled=false
+_W1_glow2=Drawing.new("Circle") _W1_glow2.Visible=false _W1_glow2.Transparency=0.12 _W1_glow2.ZIndex=14 _W1_glow2.Color=Color3.fromHex("#5c61e3") _W1_glow2.Position=_wm+Vector2.new(39,29) _W1_glow2.Radius=8 _W1_glow2.NumSides=32 _W1_glow2.Thickness=1 _W1_glow2.Filled=false
+_W1_glow3=Drawing.new("Circle") _W1_glow3.Visible=false _W1_glow3.Transparency=0.05 _W1_glow3.ZIndex=13 _W1_glow3.Color=Color3.fromHex("#5c61e3") _W1_glow3.Position=_wm+Vector2.new(39,29) _W1_glow3.Radius=11 _W1_glow3.NumSides=32 _W1_glow3.Thickness=1 _W1_glow3.Filled=false
+_W2_glow1=Drawing.new("Circle") _W2_glow1.Visible=false _W2_glow1.Transparency=0.25 _W2_glow1.ZIndex=15 _W2_glow1.Color=Color3.fromHex("#8b5df6") _W2_glow1.Position=_wm+Vector2.new(48,29) _W2_glow1.Radius=5 _W2_glow1.NumSides=32 _W2_glow1.Thickness=2 _W2_glow1.Filled=false
+_W2_glow2=Drawing.new("Circle") _W2_glow2.Visible=false _W2_glow2.Transparency=0.12 _W2_glow2.ZIndex=14 _W2_glow2.Color=Color3.fromHex("#8b5df6") _W2_glow2.Position=_wm+Vector2.new(48,29) _W2_glow2.Radius=8 _W2_glow2.NumSides=32 _W2_glow2.Thickness=1 _W2_glow2.Filled=false
+_W2_glow3=Drawing.new("Circle") _W2_glow3.Visible=false _W2_glow3.Transparency=0.05 _W2_glow3.ZIndex=13 _W2_glow3.Color=Color3.fromHex("#8b5df6") _W2_glow3.Position=_wm+Vector2.new(48,29) _W2_glow3.Radius=11 _W2_glow3.NumSides=32 _W2_glow3.Thickness=1 _W2_glow3.Filled=false
+_W3_glow1=Drawing.new("Circle") _W3_glow1.Visible=false _W3_glow1.Transparency=0.25 _W3_glow1.ZIndex=15 _W3_glow1.Color=Color3.fromHex("#a68afa") _W3_glow1.Position=_wm+Vector2.new(59,29) _W3_glow1.Radius=5 _W3_glow1.NumSides=32 _W3_glow1.Thickness=2 _W3_glow1.Filled=false
+_W3_glow2=Drawing.new("Circle") _W3_glow2.Visible=false _W3_glow2.Transparency=0.12 _W3_glow2.ZIndex=14 _W3_glow2.Color=Color3.fromHex("#a68afa") _W3_glow2.Position=_wm+Vector2.new(59,29) _W3_glow2.Radius=8 _W3_glow2.NumSides=32 _W3_glow2.Thickness=1 _W3_glow2.Filled=false
+_W3_glow3=Drawing.new("Circle") _W3_glow3.Visible=false _W3_glow3.Transparency=0.05 _W3_glow3.ZIndex=13 _W3_glow3.Color=Color3.fromHex("#a68afa") _W3_glow3.Position=_wm+Vector2.new(59,29) _W3_glow3.Radius=11 _W3_glow3.NumSides=32 _W3_glow3.Thickness=1 _W3_glow3.Filled=false
+_W4_glow1=Drawing.new("Circle") _W4_glow1.Visible=false _W4_glow1.Transparency=0.25 _W4_glow1.ZIndex=15 _W4_glow1.Color=Color3.fromHex("#5c61e3") _W4_glow1.Position=_wm+Vector2.new(123,29) _W4_glow1.Radius=5 _W4_glow1.NumSides=32 _W4_glow1.Thickness=2 _W4_glow1.Filled=false
+_W4_glow2=Drawing.new("Circle") _W4_glow2.Visible=false _W4_glow2.Transparency=0.12 _W4_glow2.ZIndex=14 _W4_glow2.Color=Color3.fromHex("#5c61e3") _W4_glow2.Position=_wm+Vector2.new(123,29) _W4_glow2.Radius=8 _W4_glow2.NumSides=32 _W4_glow2.Thickness=1 _W4_glow2.Filled=false
+_W4_glow3=Drawing.new("Circle") _W4_glow3.Visible=false _W4_glow3.Transparency=0.05 _W4_glow3.ZIndex=13 _W4_glow3.Color=Color3.fromHex("#5c61e3") _W4_glow3.Position=_wm+Vector2.new(123,29) _W4_glow3.Radius=11 _W4_glow3.NumSides=32 _W4_glow3.Thickness=1 _W4_glow3.Filled=false
+_W5_glow1=Drawing.new("Circle") _W5_glow1.Visible=false _W5_glow1.Transparency=0.25 _W5_glow1.ZIndex=15 _W5_glow1.Color=Color3.fromHex("#8b5df6") _W5_glow1.Position=_wm+Vector2.new(133,29) _W5_glow1.Radius=5 _W5_glow1.NumSides=32 _W5_glow1.Thickness=2 _W5_glow1.Filled=false
+_W5_glow2=Drawing.new("Circle") _W5_glow2.Visible=false _W5_glow2.Transparency=0.12 _W5_glow2.ZIndex=14 _W5_glow2.Color=Color3.fromHex("#8b5df6") _W5_glow2.Position=_wm+Vector2.new(133,29) _W5_glow2.Radius=8 _W5_glow2.NumSides=32 _W5_glow2.Thickness=1 _W5_glow2.Filled=false
+_W5_glow3=Drawing.new("Circle") _W5_glow3.Visible=false _W5_glow3.Transparency=0.05 _W5_glow3.ZIndex=13 _W5_glow3.Color=Color3.fromHex("#8b5df6") _W5_glow3.Position=_wm+Vector2.new(133,29) _W5_glow3.Radius=11 _W5_glow3.NumSides=32 _W5_glow3.Thickness=1 _W5_glow3.Filled=false
+_W6_glow1=Drawing.new("Circle") _W6_glow1.Visible=false _W6_glow1.Transparency=0.25 _W6_glow1.ZIndex=15 _W6_glow1.Color=Color3.fromHex("#a68afa") _W6_glow1.Position=_wm+Vector2.new(144,29) _W6_glow1.Radius=5 _W6_glow1.NumSides=32 _W6_glow1.Thickness=2 _W6_glow1.Filled=false
+_W6_glow2=Drawing.new("Circle") _W6_glow2.Visible=false _W6_glow2.Transparency=0.12 _W6_glow2.ZIndex=14 _W6_glow2.Color=Color3.fromHex("#a68afa") _W6_glow2.Position=_wm+Vector2.new(144,29) _W6_glow2.Radius=8 _W6_glow2.NumSides=32 _W6_glow2.Thickness=1 _W6_glow2.Filled=false
+_W6_glow3=Drawing.new("Circle") _W6_glow3.Visible=false _W6_glow3.Transparency=0.05 _W6_glow3.ZIndex=13 _W6_glow3.Color=Color3.fromHex("#a68afa") _W6_glow3.Position=_wm+Vector2.new(144,29) _W6_glow3.Radius=11 _W6_glow3.NumSides=32 _W6_glow3.Thickness=1 _W6_glow3.Filled=false
+_W8_glow1=Drawing.new("Circle") _W8_glow1.Visible=false _W8_glow1.Transparency=0.25 _W8_glow1.ZIndex=15 _W8_glow1.Color=Color3.fromHex("#5c61e3") _W8_glow1.Position=_wm+Vector2.new(543,29) _W8_glow1.Radius=5 _W8_glow1.NumSides=32 _W8_glow1.Thickness=2 _W8_glow1.Filled=false
+_W8_glow2=Drawing.new("Circle") _W8_glow2.Visible=false _W8_glow2.Transparency=0.12 _W8_glow2.ZIndex=14 _W8_glow2.Color=Color3.fromHex("#5c61e3") _W8_glow2.Position=_wm+Vector2.new(543,29) _W8_glow2.Radius=8 _W8_glow2.NumSides=32 _W8_glow2.Thickness=1 _W8_glow2.Filled=false
+_W8_glow3=Drawing.new("Circle") _W8_glow3.Visible=false _W8_glow3.Transparency=0.05 _W8_glow3.ZIndex=13 _W8_glow3.Color=Color3.fromHex("#5c61e3") _W8_glow3.Position=_wm+Vector2.new(543,29) _W8_glow3.Radius=11 _W8_glow3.NumSides=32 _W8_glow3.Thickness=1 _W8_glow3.Filled=false
+_W7_glow1=Drawing.new("Circle") _W7_glow1.Visible=false _W7_glow1.Transparency=0.25 _W7_glow1.ZIndex=15 _W7_glow1.Color=Color3.fromHex("#8b5df6") _W7_glow1.Position=_wm+Vector2.new(552,29) _W7_glow1.Radius=5 _W7_glow1.NumSides=32 _W7_glow1.Thickness=2 _W7_glow1.Filled=false
+_W7_glow2=Drawing.new("Circle") _W7_glow2.Visible=false _W7_glow2.Transparency=0.12 _W7_glow2.ZIndex=14 _W7_glow2.Color=Color3.fromHex("#8b5df6") _W7_glow2.Position=_wm+Vector2.new(552,29) _W7_glow2.Radius=8 _W7_glow2.NumSides=32 _W7_glow2.Thickness=1 _W7_glow2.Filled=false
+_W7_glow3=Drawing.new("Circle") _W7_glow3.Visible=false _W7_glow3.Transparency=0.05 _W7_glow3.ZIndex=13 _W7_glow3.Color=Color3.fromHex("#8b5df6") _W7_glow3.Position=_wm+Vector2.new(552,29) _W7_glow3.Radius=11 _W7_glow3.NumSides=32 _W7_glow3.Thickness=1 _W7_glow3.Filled=false
+_W9_glow1=Drawing.new("Circle") _W9_glow1.Visible=false _W9_glow1.Transparency=0.25 _W9_glow1.ZIndex=15 _W9_glow1.Color=Color3.fromHex("#a68afa") _W9_glow1.Position=_wm+Vector2.new(562,29) _W9_glow1.Radius=5 _W9_glow1.NumSides=32 _W9_glow1.Thickness=2 _W9_glow1.Filled=false
+_W9_glow2=Drawing.new("Circle") _W9_glow2.Visible=false _W9_glow2.Transparency=0.12 _W9_glow2.ZIndex=14 _W9_glow2.Color=Color3.fromHex("#a68afa") _W9_glow2.Position=_wm+Vector2.new(562,29) _W9_glow2.Radius=8 _W9_glow2.NumSides=32 _W9_glow2.Thickness=1 _W9_glow2.Filled=false
+_W9_glow3=Drawing.new("Circle") _W9_glow3.Visible=false _W9_glow3.Transparency=0.05 _W9_glow3.ZIndex=13 _W9_glow3.Color=Color3.fromHex("#a68afa") _W9_glow3.Position=_wm+Vector2.new(562,29) _W9_glow3.Radius=11 _W9_glow3.NumSides=32 _W9_glow3.Thickness=1 _W9_glow3.Filled=false
 _NNP.Text=game.Players.LocalPlayer.Name
-WatermarkSystem.elements={_WM1,_WM1B,_W1,_W2,_W3,_W4,_W5,_W6,_W7,_W8,_W9,_WRT,_DL1,_NNP,_MSE,_MSEB,_CET,_SE,_CDR,_DL2}
+WatermarkSystem.elements={_WM1,_WM1B,_W1,_W2,_W3,_W4,_W5,_W6,_W7,_W8,_W9,_WRT,_DL1,_NNP,_MSE,_MSEB,_CET,_SE,_CDR,_DL2,_W1_glow1,_W1_glow2,_W1_glow3,_W2_glow1,_W2_glow2,_W2_glow3,_W3_glow1,_W3_glow2,_W3_glow3,_W4_glow1,_W4_glow2,_W4_glow3,_W5_glow1,_W5_glow2,_W5_glow3,_W6_glow1,_W6_glow2,_W6_glow3,_W8_glow1,_W8_glow2,_W8_glow3,_W7_glow1,_W7_glow2,_W7_glow3,_W9_glow1,_W9_glow2,_W9_glow3}
+spawn(function()
+    local bd={
+        {core=_W1,g1=_W1_glow1,g2=_W1_glow2,g3=_W1_glow3,phase=0.0},
+        {core=_W2,g1=_W2_glow1,g2=_W2_glow2,g3=_W2_glow3,phase=0.6981},
+        {core=_W3,g1=_W3_glow1,g2=_W3_glow2,g3=_W3_glow3,phase=1.3963},
+        {core=_W4,g1=_W4_glow1,g2=_W4_glow2,g3=_W4_glow3,phase=2.0944},
+        {core=_W5,g1=_W5_glow1,g2=_W5_glow2,g3=_W5_glow3,phase=2.7925},
+        {core=_W6,g1=_W6_glow1,g2=_W6_glow2,g3=_W6_glow3,phase=3.4907},
+        {core=_W8,g1=_W8_glow1,g2=_W8_glow2,g3=_W8_glow3,phase=4.1888},
+        {core=_W7,g1=_W7_glow1,g2=_W7_glow2,g3=_W7_glow3,phase=4.8869},
+        {core=_W9,g1=_W9_glow1,g2=_W9_glow2,g3=_W9_glow3,phase=5.5851},
+    }
+    while true do
+        if WatermarkSystem.enabled then
+            local t=os.clock()
+            for _,d in ipairs(bd) do
+                local s01=(math.sin(t*1.8+d.phase)+1)/2
+                d.core.Radius = 3   + s01*0.25
+                d.g1.Radius   = 5   + s01*0.8
+                d.g2.Radius   = 8   + s01*1.0
+                d.g3.Radius   = 11  + s01*1.2
+                d.g1.Transparency = 0.10 + (1-s01)*0.50
+                d.g2.Transparency = 0.05 + (1-s01)*0.50
+                d.g3.Transparency = 0.02 + (1-s01)*0.48
+                d.g1.Position=d.core.Position
+                d.g2.Position=d.core.Position
+                d.g3.Position=d.core.Position
+            end
+        end
+        wait(0.016)
+    end
+end)
+
 function WatermarkSystem:SetVisible(v) for _,el in pairs(self.elements) do if el then el.Visible=v and self.enabled end end end
 function WatermarkSystem:CheckForMobs()
     for _,obj in ipairs(workspace:GetChildren()) do for _,m in ipairs(TrackedMobs) do if obj.Name==m then return m end end end return nil
@@ -201,6 +263,15 @@ spawn(function()
                 _SE.Position=np+Vector2.new(329,24) _CDR.Position=np+Vector2.new(423,24)
                 _DL2.Position=np+Vector2.new(534,19) _W8.Position=np+Vector2.new(543,29)
                 _W7.Position=np+Vector2.new(552,29) _W9.Position=np+Vector2.new(562,29)
+                _W1_glow1.Position=np+Vector2.new(39,29) _W1_glow2.Position=np+Vector2.new(39,29) _W1_glow3.Position=np+Vector2.new(39,29)
+                _W2_glow1.Position=np+Vector2.new(48,29) _W2_glow2.Position=np+Vector2.new(48,29) _W2_glow3.Position=np+Vector2.new(48,29)
+                _W3_glow1.Position=np+Vector2.new(59,29) _W3_glow2.Position=np+Vector2.new(59,29) _W3_glow3.Position=np+Vector2.new(59,29)
+                _W4_glow1.Position=np+Vector2.new(123,29) _W4_glow2.Position=np+Vector2.new(123,29) _W4_glow3.Position=np+Vector2.new(123,29)
+                _W5_glow1.Position=np+Vector2.new(133,29) _W5_glow2.Position=np+Vector2.new(133,29) _W5_glow3.Position=np+Vector2.new(133,29)
+                _W6_glow1.Position=np+Vector2.new(144,29) _W6_glow2.Position=np+Vector2.new(144,29) _W6_glow3.Position=np+Vector2.new(144,29)
+                _W8_glow1.Position=np+Vector2.new(543,29) _W8_glow2.Position=np+Vector2.new(543,29) _W8_glow3.Position=np+Vector2.new(543,29)
+                _W7_glow1.Position=np+Vector2.new(552,29) _W7_glow2.Position=np+Vector2.new(552,29) _W7_glow3.Position=np+Vector2.new(552,29)
+                _W9_glow1.Position=np+Vector2.new(562,29) _W9_glow2.Position=np+Vector2.new(562,29) _W9_glow3.Position=np+Vector2.new(562,29)
             end
             lwm=m1
         end
@@ -209,12 +280,13 @@ end)
 
 loadstring(game:HttpGet("https://www.arcanecheats.xyz/api/matcha/esplib"))()
 
-activeChunkedESPs = { KeyCard={}, InnerKeyCard={}, ItemBase={}, CurrencyBase={} }
+activeChunkedESPs = { KeyCard={}, InnerKeyCard={}, PasswordPaper={}, ItemBase={}, CurrencyBase={} }
 activeDoorESPs = {}
 
 local ChunkedColors = {
     KeyCard      = Color3.fromRGB(0, 255, 100),
     InnerKeyCard = Color3.fromRGB(102, 0, 255),
+    PasswordPaper= Color3.fromRGB(229, 228, 226),
     ItemBase     = Color3.fromRGB(0, 200, 255),
     CurrencyBase = Color3.fromRGB(255, 215, 0),
 }
@@ -297,6 +369,8 @@ ChunkedScan = function()
         if iType then
             if (iType=="KeyCard" or iType=="InnerKeyCard") and Settings.keycardESPEnabled then
                 CreateChunkedESP(obj,iType)
+            elseif iType=="PasswordPaper" and Settings.keycardESPEnabled then
+                CreateChunkedESP(obj,"PasswordPaper")
             elseif iType=="ItemBase" and Settings.itemsESPEnabled then
                 CreateChunkedESP(obj,"ItemBase")
             elseif iType=="CurrencyBase" and Settings.currencyESPEnabled then
@@ -313,6 +387,7 @@ CleanupKeycardESP = function()
     Settings.keycardESPEnabled=false
     CleanupChunkedESP("KeyCard")
     CleanupChunkedESP("InnerKeyCard")
+    CleanupChunkedESP("PasswordPaper")
 end
 StartItemsESP      = function() if Settings.itemsESPEnabled    then return end Settings.itemsESPEnabled=true    end
 CleanupItemsESP    = function() Settings.itemsESPEnabled=false    CleanupChunkedESP("ItemBase")    end
@@ -437,29 +512,23 @@ Main1.Size = Vector2.new(604, 560)
 Main1.Filled = true
 Main1.Corner = 0
 
--- VeryTopPlace Gradient (50 slices: #1a1530 -> #0f1428)
 VeryTopPlace_Parts = {}
 do
-    local gSteps = 50
-    local gW = 604
-    local gH = 46
-    local r1,g1,b1 = 0x1a/255, 0x15/255, 0x30/255
-    local r2,g2,b2 = 0x0f/255, 0x14/255, 0x28/255
-    for i = 0, gSteps-1 do
-        local t = i/(gSteps-1)
-        local sq = Drawing.new("Square")
-        sq.Visible = true
-        sq.Transparency = 1
-        sq.ZIndex = 20
-        sq.Color = Color3.new(r1+(r2-r1)*t, g1+(g2-g1)*t, b1+(b2-b1)*t)
-        sq.Position = Vector2.new(Main1.Position.X + i*math.floor(gW/gSteps), Main1.Position.Y)
-        sq.Size = Vector2.new(math.floor(gW/gSteps)+1, gH)
-        sq.Filled = true
-        sq.Corner = 0
-        VeryTopPlace_Parts[i+1] = sq
+    local gSteps=50 local gW=604 local gH=46
+    local r1,g1,b1=0x1a/255,0x15/255,0x30/255
+    local r2,g2,b2=0x0f/255,0x14/255,0x28/255
+    for i=0,gSteps-1 do
+        local t=i/(gSteps-1)
+        local sq=Drawing.new("Square")
+        sq.Visible=true sq.Transparency=1 sq.ZIndex=20
+        sq.Color=Color3.new(r1+(r2-r1)*t,g1+(g2-g1)*t,b1+(b2-b1)*t)
+        sq.Position=Vector2.new(Main1.Position.X+i*math.floor(gW/gSteps),Main1.Position.Y)
+        sq.Size=Vector2.new(math.floor(gW/gSteps)+1,gH)
+        sq.Filled=true sq.Corner=0
+        VeryTopPlace_Parts[i+1]=sq
     end
 end
-local VeryTopPlace = VeryTopPlace_Parts[1]
+local VeryTopPlace=VeryTopPlace_Parts[1]
 
 local Circle5 = Drawing.new("Circle")
 Circle5.Visible = true
@@ -577,23 +646,11 @@ SettingsTab_Text.Position = SettingsTab.Position + Vector2.new(73/2, 35/2)
 SettingsTab_Text.Visible = true
 SettingsTab_Text.ZIndex = 92
 
-
--- Active Tab System
-local function setActiveTab(activeBg, activeText)
-    local tabs = {
-        {bg=VisualsTab,  text=VisualsTab_Text},
-        {bg=ExploitsTab, text=ExploitsTab_Text},
-        {bg=MiscTab,     text=MiscTab_Text},
-        {bg=SettingsTab, text=SettingsTab_Text},
-    }
-    for _,t in ipairs(tabs) do
-        t.bg.Color   = Color3.fromHex("#0c1020")
-        t.text.Color = Color3.fromHex("#d5c0e4")
-    end
-    activeBg.Color   = Color3.fromHex("#6b12a9")
-    activeText.Color = Color3.fromHex("#e7feff")
+local function setActiveTab(activeBg,activeText)
+    local tabs={{bg=VisualsTab,text=VisualsTab_Text},{bg=ExploitsTab,text=ExploitsTab_Text},{bg=MiscTab,text=MiscTab_Text},{bg=SettingsTab,text=SettingsTab_Text}}
+    for _,t in ipairs(tabs) do t.bg.Color=Color3.fromHex("#0c1020") t.text.Color=Color3.fromHex("#d5c0e4") end
+    activeBg.Color=Color3.fromHex("#6b12a9") activeText.Color=Color3.fromHex("#e7feff")
 end
-
 local Line1 = Drawing.new("Square")
 Line1.Visible = true
 Line1.Transparency = 1
@@ -2556,7 +2613,7 @@ while true do
             if VisualsTab.Visible and mPos.X >= VisualsTab.Position.X and mPos.X <= VisualsTab.Position.X + VisualsTab.Size.X and
                mPos.Y >= VisualsTab.Position.Y and mPos.Y <= VisualsTab.Position.Y + VisualsTab.Size.Y then
                 pcall(function() onClick() end)
-                setActiveTab(VisualsTab, VisualsTab_Text)
+                setActiveTab(VisualsTab,VisualsTab_Text)
 
                 pcall(function() Tab_ContentPageVisuals2_SetVisible(false) end)
                 pcall(function() Tab_ContentPageVisuals3_SetVisible(false) end)
@@ -2570,7 +2627,7 @@ while true do
             if ExploitsTab.Visible and mPos.X >= ExploitsTab.Position.X and mPos.X <= ExploitsTab.Position.X + ExploitsTab.Size.X and
                mPos.Y >= ExploitsTab.Position.Y and mPos.Y <= ExploitsTab.Position.Y + ExploitsTab.Size.Y then
                 pcall(function() onClick() end)
-                setActiveTab(ExploitsTab, ExploitsTab_Text)
+                setActiveTab(ExploitsTab,ExploitsTab_Text)
 
                 pcall(function() Tab_ContentPageVisuals_SetVisible(false) end)
                 pcall(function() Tab_ContentPageVisuals2_SetVisible(false) end)
@@ -2584,7 +2641,7 @@ while true do
             if MiscTab.Visible and mPos.X >= MiscTab.Position.X and mPos.X <= MiscTab.Position.X + MiscTab.Size.X and
                mPos.Y >= MiscTab.Position.Y and mPos.Y <= MiscTab.Position.Y + MiscTab.Size.Y then
                 pcall(function() onClick() end)
-                setActiveTab(MiscTab, MiscTab_Text)
+                setActiveTab(MiscTab,MiscTab_Text)
 
                 pcall(function() Tab_ContentPageVisuals_SetVisible(false) end)
                 pcall(function() Tab_ContentPageVisuals2_SetVisible(false) end)
@@ -2598,7 +2655,7 @@ while true do
             if SettingsTab.Visible and mPos.X >= SettingsTab.Position.X and mPos.X <= SettingsTab.Position.X + SettingsTab.Size.X and
                mPos.Y >= SettingsTab.Position.Y and mPos.Y <= SettingsTab.Position.Y + SettingsTab.Size.Y then
                 pcall(function() onClick() end)
-                setActiveTab(SettingsTab, SettingsTab_Text)
+                setActiveTab(SettingsTab,SettingsTab_Text)
 
                 pcall(function() Tab_ContentPageVisuals_SetVisible(false) end)
                 pcall(function() Tab_ContentPageVisuals2_SetVisible(false) end)
@@ -2879,12 +2936,10 @@ while true do
                 pcall(function() onChanged(value) end)
             end
             if dragging == Main1 then
-                do
-                    local gSteps=50 local gW=604
+                do local gSteps=50 local gW=604
                     for i,sq in ipairs(VeryTopPlace_Parts) do
                         sq.Position=Vector2.new(dragging.Position.X+(i-1)*math.floor(gW/gSteps),dragging.Position.Y)
-                    end
-                end
+                    end end
                 Circle5.Position = dragging.Position + Vector2.new(25, 23)
                 TextRATHUB.Position = dragging.Position + Vector2.new(54, 17)
                 PlaceTabs.Position = dragging.Position + Vector2.new(2, 46)
