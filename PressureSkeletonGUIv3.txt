@@ -1,0 +1,620 @@
+do
+
+local Mouse = game.Players.LocalPlayer:GetMouse()
+
+-- ================================================
+-- RatHUB GUI Layout v2
+-- ================================================
+
+local Main1 = Drawing.new("Square")
+Main1.Visible = true
+Main1.Transparency = 1
+Main1.ZIndex = 10
+Main1.Color = Color3.fromHex("#0b0f1a")
+Main1.Position = Vector2.new(98, 20)
+Main1.Size = Vector2.new(604, 560)
+Main1.Filled = true
+Main1.Corner = 0
+
+local VeryTopPlace_Parts = {}
+do
+    local gSteps=50 local gW=604 local gH=46
+    local r1,g1,b1=0x1a/255,0x15/255,0x30/255
+    local r2,g2,b2=0x0f/255,0x14/255,0x28/255
+    for i=0,gSteps-1 do
+        local t=i/(gSteps-1)
+        local sq=Drawing.new("Square")
+        sq.Visible=true sq.Transparency=1 sq.ZIndex=20
+        sq.Color=Color3.new(r1+(r2-r1)*t,g1+(g2-g1)*t,b1+(b2-b1)*t)
+        sq.Position=Vector2.new(Main1.Position.X+i*math.floor(gW/gSteps),Main1.Position.Y)
+        sq.Size=Vector2.new(math.floor(gW/gSteps)+1,gH)
+        sq.Filled=true sq.Corner=0
+        VeryTopPlace_Parts[i+1]=sq
+    end
+end
+
+-- Circle5 + glow
+local Circle5 = Drawing.new("Circle")
+Circle5.Visible = true
+Circle5.Transparency = 1
+Circle5.ZIndex = 30
+Circle5.Color = Color3.fromHex("#ad47fe")
+Circle5.Position = Main1.Position + Vector2.new(25, 23)
+Circle5.Radius = 5
+Circle5.NumSides = 32
+Circle5.Thickness = 1
+Circle5.Filled = true
+
+local Circle5_glow1 = Drawing.new("Circle")
+Circle5_glow1.Visible = true
+Circle5_glow1.Transparency = 0.75
+Circle5_glow1.ZIndex = 29
+Circle5_glow1.Color = Color3.fromHex("#ad47fe")
+Circle5_glow1.Position = Circle5.Position
+Circle5_glow1.Radius = 9
+Circle5_glow1.NumSides = 32
+Circle5_glow1.Thickness = 2
+Circle5_glow1.Filled = false
+
+local Circle5_glow2 = Drawing.new("Circle")
+Circle5_glow2.Visible = true
+Circle5_glow2.Transparency = 0.88
+Circle5_glow2.ZIndex = 28
+Circle5_glow2.Color = Color3.fromHex("#7b2fd4")
+Circle5_glow2.Position = Circle5.Position
+Circle5_glow2.Radius = 13
+Circle5_glow2.NumSides = 32
+Circle5_glow2.Thickness = 1
+Circle5_glow2.Filled = false
+
+local Circle5_glow3 = Drawing.new("Circle")
+Circle5_glow3.Visible = true
+Circle5_glow3.Transparency = 0.93
+Circle5_glow3.ZIndex = 27
+Circle5_glow3.Color = Color3.fromHex("#4a1a8a")
+Circle5_glow3.Position = Circle5.Position
+Circle5_glow3.Radius = 17
+Circle5_glow3.NumSides = 32
+Circle5_glow3.Thickness = 1
+Circle5_glow3.Filled = false
+
+-- ===== НАДПИСЬ RATHUB =====
+-- Основной текст
+local TextRATHUB = Drawing.new("Text")
+TextRATHUB.Visible = true
+TextRATHUB.Transparency = 1
+TextRATHUB.ZIndex = 40
+TextRATHUB.Color = Color3.fromHex("#FFFFFF")
+TextRATHUB.Position = Main1.Position + Vector2.new(54, 17)
+TextRATHUB.Text = "RATHUB"
+TextRATHUB.Size = 14
+TextRATHUB.Center = false
+TextRATHUB.Outline = true
+TextRATHUB.Font = Drawing.Fonts.System
+
+-- "Тень-свечение" — тот же текст за основным, чуть смещён, полупрозрачный фиолетовый
+-- Создаём 4 слоя по диагоналям для имитации размытого свечения
+local TextRATHUB_g1 = Drawing.new("Text")
+TextRATHUB_g1.Visible = true
+TextRATHUB_g1.Transparency = 0.82
+TextRATHUB_g1.ZIndex = 38
+TextRATHUB_g1.Color = Color3.fromHex("#9d3df0")
+TextRATHUB_g1.Position = Main1.Position + Vector2.new(53, 16)
+TextRATHUB_g1.Text = "RATHUB"
+TextRATHUB_g1.Size = 14
+TextRATHUB_g1.Center = false
+TextRATHUB_g1.Outline = false
+TextRATHUB_g1.Font = Drawing.Fonts.System
+
+local TextRATHUB_g2 = Drawing.new("Text")
+TextRATHUB_g2.Visible = true
+TextRATHUB_g2.Transparency = 0.82
+TextRATHUB_g2.ZIndex = 38
+TextRATHUB_g2.Color = Color3.fromHex("#9d3df0")
+TextRATHUB_g2.Position = Main1.Position + Vector2.new(55, 18)
+TextRATHUB_g2.Text = "RATHUB"
+TextRATHUB_g2.Size = 14
+TextRATHUB_g2.Center = false
+TextRATHUB_g2.Outline = false
+TextRATHUB_g2.Font = Drawing.Fonts.System
+
+local TextRATHUB_g3 = Drawing.new("Text")
+TextRATHUB_g3.Visible = true
+TextRATHUB_g3.Transparency = 0.88
+TextRATHUB_g3.ZIndex = 37
+TextRATHUB_g3.Color = Color3.fromHex("#6b1db0")
+TextRATHUB_g3.Position = Main1.Position + Vector2.new(52, 15)
+TextRATHUB_g3.Text = "RATHUB"
+TextRATHUB_g3.Size = 14
+TextRATHUB_g3.Center = false
+TextRATHUB_g3.Outline = false
+TextRATHUB_g3.Font = Drawing.Fonts.System
+
+local TextRATHUB_g4 = Drawing.new("Text")
+TextRATHUB_g4.Visible = true
+TextRATHUB_g4.Transparency = 0.88
+TextRATHUB_g4.ZIndex = 37
+TextRATHUB_g4.Color = Color3.fromHex("#6b1db0")
+TextRATHUB_g4.Position = Main1.Position + Vector2.new(56, 19)
+TextRATHUB_g4.Text = "RATHUB"
+TextRATHUB_g4.Size = 14
+TextRATHUB_g4.Center = false
+TextRATHUB_g4.Outline = false
+TextRATHUB_g4.Font = Drawing.Fonts.System
+
+local PlaceTabs = Drawing.new("Square")
+PlaceTabs.Visible = true
+PlaceTabs.Transparency = 1
+PlaceTabs.ZIndex = 50
+PlaceTabs.Color = Color3.fromHex("#0c1020")
+PlaceTabs.Position = Main1.Position + Vector2.new(2, 46)
+PlaceTabs.Size = Vector2.new(600, 43)
+PlaceTabs.Filled = true
+
+local VisualsTab = Drawing.new("Square")
+VisualsTab.Visible = true
+VisualsTab.Transparency = 1
+VisualsTab.ZIndex = 60
+VisualsTab.Color = Color3.fromHex("#0c1020")
+VisualsTab.Position = Main1.Position + Vector2.new(8, 50)
+VisualsTab.Size = Vector2.new(77, 36)
+VisualsTab.Filled = true
+VisualsTab.Corner = 8
+
+local VisualsTab_Text = Drawing.new("Text")
+VisualsTab_Text.Text = "Visuals"
+VisualsTab_Text.Size = 14
+VisualsTab_Text.Center = true
+VisualsTab_Text.Outline = true
+VisualsTab_Text.Font = 2
+VisualsTab_Text.Color = Color3.fromHex("#d5c0e4")
+VisualsTab_Text.Position = VisualsTab.Position + Vector2.new(77/2, 36/2)
+VisualsTab_Text.Visible = true
+VisualsTab_Text.ZIndex = 62
+
+local ExploitsTab = Drawing.new("Square")
+ExploitsTab.Visible = true
+ExploitsTab.Transparency = 1
+ExploitsTab.ZIndex = 70
+ExploitsTab.Color = Color3.fromHex("#0c1020")
+ExploitsTab.Position = Main1.Position + Vector2.new(100, 50)
+ExploitsTab.Size = Vector2.new(71, 35)
+ExploitsTab.Filled = true
+ExploitsTab.Corner = 8
+
+local ExploitsTab_Text = Drawing.new("Text")
+ExploitsTab_Text.Text = "Exploits"
+ExploitsTab_Text.Size = 14
+ExploitsTab_Text.Center = true
+ExploitsTab_Text.Outline = true
+ExploitsTab_Text.Font = 2
+ExploitsTab_Text.Color = Color3.fromHex("#d5c0e4")
+ExploitsTab_Text.Position = ExploitsTab.Position + Vector2.new(71/2, 35/2)
+ExploitsTab_Text.Visible = true
+ExploitsTab_Text.ZIndex = 72
+
+local MiscTab = Drawing.new("Square")
+MiscTab.Visible = true
+MiscTab.Transparency = 1
+MiscTab.ZIndex = 80
+MiscTab.Color = Color3.fromHex("#0c1020")
+MiscTab.Position = Main1.Position + Vector2.new(186, 50)
+MiscTab.Size = Vector2.new(73, 35)
+MiscTab.Filled = true
+MiscTab.Corner = 8
+
+local MiscTab_Text = Drawing.new("Text")
+MiscTab_Text.Text = "Misc"
+MiscTab_Text.Size = 14
+MiscTab_Text.Center = true
+MiscTab_Text.Outline = true
+MiscTab_Text.Font = 2
+MiscTab_Text.Color = Color3.fromHex("#d5c0e4")
+MiscTab_Text.Position = MiscTab.Position + Vector2.new(73/2, 35/2)
+MiscTab_Text.Visible = true
+MiscTab_Text.ZIndex = 82
+
+local SettingsTab = Drawing.new("Square")
+SettingsTab.Visible = true
+SettingsTab.Transparency = 1
+SettingsTab.ZIndex = 90
+SettingsTab.Color = Color3.fromHex("#0c1020")
+SettingsTab.Position = Main1.Position + Vector2.new(273, 50)
+SettingsTab.Size = Vector2.new(73, 35)
+SettingsTab.Filled = true
+SettingsTab.Corner = 8
+
+local SettingsTab_Text = Drawing.new("Text")
+SettingsTab_Text.Text = "Settings"
+SettingsTab_Text.Size = 14
+SettingsTab_Text.Center = true
+SettingsTab_Text.Outline = true
+SettingsTab_Text.Font = 2
+SettingsTab_Text.Color = Color3.fromHex("#d5c0e4")
+SettingsTab_Text.Position = SettingsTab.Position + Vector2.new(73/2, 35/2)
+SettingsTab_Text.Visible = true
+SettingsTab_Text.ZIndex = 92
+
+local Line1 = Drawing.new("Square")
+Line1.Visible = true
+Line1.Transparency = 1
+Line1.ZIndex = 100
+Line1.Color = Color3.fromHex("#171b2e")
+Line1.Position = Main1.Position + Vector2.new(0, 45)
+Line1.Size = Vector2.new(602, 2)
+Line1.Filled = true
+Line1.Corner = 1
+
+local Line2 = Drawing.new("Square")
+Line2.Visible = true
+Line2.Transparency = 1
+Line2.ZIndex = 110
+Line2.Color = Color3.fromHex("#171b2e")
+Line2.Position = Main1.Position + Vector2.new(0, 89)
+Line2.Size = Vector2.new(602, 2)
+Line2.Filled = true
+Line2.Corner = 1
+
+local ContentPageVisuals = Drawing.new("Square")
+ContentPageVisuals.Visible = false
+ContentPageVisuals.Transparency = 1
+ContentPageVisuals.ZIndex = 120
+ContentPageVisuals.Color = Color3.fromHex("#0c1020")
+ContentPageVisuals.Position = Main1.Position + Vector2.new(25, 114)
+ContentPageVisuals.Size = Vector2.new(554, 420)
+ContentPageVisuals.Filled = true
+ContentPageVisuals.Corner = 5
+
+local ContentPageVisuals_Border = Drawing.new("Square")
+ContentPageVisuals_Border.Visible = false
+ContentPageVisuals_Border.Transparency = 1
+ContentPageVisuals_Border.ZIndex = 121
+ContentPageVisuals_Border.Color = Color3.fromHex("#13172a")
+ContentPageVisuals_Border.Filled = false
+ContentPageVisuals_Border.Thickness = 3
+ContentPageVisuals_Border.Position = ContentPageVisuals.Position
+ContentPageVisuals_Border.Size = ContentPageVisuals.Size
+ContentPageVisuals_Border.Corner = 5
+
+local ContentPageExploits = Drawing.new("Square")
+ContentPageExploits.Visible = false
+ContentPageExploits.Transparency = 1
+ContentPageExploits.ZIndex = 120
+ContentPageExploits.Color = Color3.fromHex("#0c1020")
+ContentPageExploits.Position = Main1.Position + Vector2.new(25, 114)
+ContentPageExploits.Size = Vector2.new(554, 420)
+ContentPageExploits.Filled = true
+ContentPageExploits.Corner = 5
+
+local ContentPageExploits_Border = Drawing.new("Square")
+ContentPageExploits_Border.Visible = false
+ContentPageExploits_Border.Transparency = 1
+ContentPageExploits_Border.ZIndex = 121
+ContentPageExploits_Border.Color = Color3.fromHex("#13172a")
+ContentPageExploits_Border.Filled = false
+ContentPageExploits_Border.Thickness = 3
+ContentPageExploits_Border.Position = ContentPageExploits.Position
+ContentPageExploits_Border.Size = ContentPageExploits.Size
+ContentPageExploits_Border.Corner = 5
+
+local ContentPageMisc = Drawing.new("Square")
+ContentPageMisc.Visible = false
+ContentPageMisc.Transparency = 1
+ContentPageMisc.ZIndex = 120
+ContentPageMisc.Color = Color3.fromHex("#0c1020")
+ContentPageMisc.Position = Main1.Position + Vector2.new(25, 114)
+ContentPageMisc.Size = Vector2.new(554, 420)
+ContentPageMisc.Filled = true
+ContentPageMisc.Corner = 5
+
+local ContentPageMisc_Border = Drawing.new("Square")
+ContentPageMisc_Border.Visible = false
+ContentPageMisc_Border.Transparency = 1
+ContentPageMisc_Border.ZIndex = 121
+ContentPageMisc_Border.Color = Color3.fromHex("#13172a")
+ContentPageMisc_Border.Filled = false
+ContentPageMisc_Border.Thickness = 3
+ContentPageMisc_Border.Position = ContentPageMisc.Position
+ContentPageMisc_Border.Size = ContentPageMisc.Size
+ContentPageMisc_Border.Corner = 5
+
+local ContentPageSettings = Drawing.new("Square")
+ContentPageSettings.Visible = false
+ContentPageSettings.Transparency = 1
+ContentPageSettings.ZIndex = 120
+ContentPageSettings.Color = Color3.fromHex("#0c1020")
+ContentPageSettings.Position = Main1.Position + Vector2.new(25, 114)
+ContentPageSettings.Size = Vector2.new(554, 420)
+ContentPageSettings.Filled = true
+ContentPageSettings.Corner = 5
+
+local ContentPageSettings_Border = Drawing.new("Square")
+ContentPageSettings_Border.Visible = false
+ContentPageSettings_Border.Transparency = 1
+ContentPageSettings_Border.ZIndex = 121
+ContentPageSettings_Border.Color = Color3.fromHex("#13172a")
+ContentPageSettings_Border.Filled = false
+ContentPageSettings_Border.Thickness = 3
+ContentPageSettings_Border.Position = ContentPageSettings.Position
+ContentPageSettings_Border.Size = ContentPageSettings.Size
+ContentPageSettings_Border.Corner = 5
+
+local allObjs = {
+    Main1,
+    Circle5, Circle5_glow1, Circle5_glow2, Circle5_glow3,
+    TextRATHUB, TextRATHUB_g1, TextRATHUB_g2, TextRATHUB_g3, TextRATHUB_g4,
+    PlaceTabs,
+    VisualsTab,  VisualsTab_Text,
+    ExploitsTab, ExploitsTab_Text,
+    MiscTab,     MiscTab_Text,
+    SettingsTab, SettingsTab_Text,
+    Line1, Line2,
+    ContentPageVisuals,   ContentPageVisuals_Border,
+    ContentPageExploits,  ContentPageExploits_Border,
+    ContentPageMisc,      ContentPageMisc_Border,
+    ContentPageSettings,  ContentPageSettings_Border,
+}
+
+local tabPages = {
+    {tab=VisualsTab,  txt=VisualsTab_Text,  pages={ContentPageVisuals,   ContentPageVisuals_Border}},
+    {tab=ExploitsTab, txt=ExploitsTab_Text, pages={ContentPageExploits,  ContentPageExploits_Border}},
+    {tab=MiscTab,     txt=MiscTab_Text,     pages={ContentPageMisc,      ContentPageMisc_Border}},
+    {tab=SettingsTab, txt=SettingsTab_Text, pages={ContentPageSettings,  ContentPageSettings_Border}},
+}
+
+local function switchTab(index)
+    for _,td in ipairs(tabPages) do
+        td.tab.Color = Color3.fromHex("#0c1020")
+        td.txt.Color = Color3.fromHex("#d5c0e4")
+        for _,p in ipairs(td.pages) do p.Visible = false end
+    end
+    local active = tabPages[index]
+    active.tab.Color = Color3.fromHex("#6b12a9")
+    active.txt.Color = Color3.fromHex("#e7feff")
+    for _,p in ipairs(active.pages) do p.Visible = true end
+end
+
+switchTab(1)
+
+-- ===== ЭФФЕКТ CIRCLE5: RIPPLE BURST каждые 10 сек =====
+spawn(function()
+    local IDLE_PERIOD = 10
+    local BASE_RADIUS = 5
+    local BASE_COLOR  = Color3.fromHex("#ad47fe")
+    local lastBurst   = os.clock() - IDLE_PERIOD
+
+    while true do
+        wait(0.016)
+        if not Circle5.Visible then continue end
+        local now = os.clock()
+        local timeSinceBurst = now - lastBurst
+
+        local breath = math.sin(now * 1.2) * 0.8
+        Circle5.Radius        = BASE_RADIUS + breath
+        Circle5_glow1.Transparency = 0.75 + math.sin(now * 1.2) * 0.15
+        Circle5_glow1.Radius  = 9 + breath
+        Circle5_glow2.Transparency = 0.88
+        Circle5_glow2.Radius  = 13
+        Circle5_glow3.Transparency = 0.93
+        Circle5_glow3.Radius  = 17
+
+        if timeSinceBurst >= IDLE_PERIOD then
+            lastBurst = now
+            local flashDur   = 0.25
+            local flashStart = os.clock()
+            while os.clock() - flashStart < flashDur do
+                wait(0.016)
+                if not Circle5.Visible then break end
+                local p  = (os.clock() - flashStart) / flashDur
+                local r  = BASE_RADIUS + math.sin(p * math.pi) * 4
+                Circle5.Radius = r
+                local lp = math.sin(p * math.pi)
+                Circle5.Color  = Color3.new(
+                    0xad/255 + (1 - 0xad/255) * lp,
+                    0x47/255 + (1 - 0x47/255) * lp,
+                    0xfe/255 + (1 - 0xfe/255) * lp
+                )
+                Circle5_glow1.Radius = 10 + lp * 8  Circle5_glow1.Transparency = 0.3  - lp * 0.25
+                Circle5_glow2.Radius = 15 + lp * 10 Circle5_glow2.Transparency = 0.6  - lp * 0.4
+                Circle5_glow3.Radius = 20 + lp * 14 Circle5_glow3.Transparency = 0.75 - lp * 0.5
+            end
+            Circle5.Color  = BASE_COLOR
+            Circle5.Radius = BASE_RADIUS
+
+            local rippleDur = 0.7
+            local delays    = {0, 0.12, 0.24}
+            for _, delay in ipairs(delays) do
+                spawn(function()
+                    wait(delay)
+                    if not Circle5.Visible then return end
+                    local rStart = os.clock()
+                    while os.clock() - rStart < rippleDur do
+                        wait(0.016)
+                        if not Circle5.Visible then break end
+                        local rp    = (os.clock() - rStart) / rippleDur
+                        local ringR = 6 + rp * 22
+                        Circle5_glow1.Position = Circle5.Position
+                        Circle5_glow2.Position = Circle5.Position
+                        Circle5_glow3.Position = Circle5.Position
+                        if delay == 0 then
+                            Circle5_glow1.Radius = ringR Circle5_glow1.Transparency = 0.2 + rp * 0.8
+                        elseif delay == 0.12 then
+                            Circle5_glow2.Radius = ringR Circle5_glow2.Transparency = 0.3 + rp * 0.7
+                        else
+                            Circle5_glow3.Radius = ringR Circle5_glow3.Transparency = 0.4 + rp * 0.6
+                        end
+                    end
+                    if delay == 0 then
+                        Circle5_glow1.Radius = 9  Circle5_glow1.Transparency = 0.75
+                    elseif delay == 0.12 then
+                        Circle5_glow2.Radius = 13 Circle5_glow2.Transparency = 0.88
+                    else
+                        Circle5_glow3.Radius = 17 Circle5_glow3.Transparency = 0.93
+                    end
+                end)
+            end
+        end
+    end
+end)
+
+-- ===== ЭФФЕКТ ТЕКСТА RATHUB: слабое свечение + slow color breathe =====
+-- Прозрачность glow-слоёв тихо колышется через sin с малой амплитудой
+-- Раз в ~8 сек текст делает короткий "shimmer" — цвет проходит белый и возвращается
+spawn(function()
+    local SHIMMER_PERIOD = 8
+    local lastShimmer    = os.clock() - SHIMMER_PERIOD
+
+    -- базовые офсеты glow-слоёв от Main1.Position + (54,17)
+    local offsets = {
+        {obj=TextRATHUB_g1, dx=-1, dy=-1},
+        {obj=TextRATHUB_g2, dx= 1, dy= 1},
+        {obj=TextRATHUB_g3, dx=-2, dy=-2},
+        {obj=TextRATHUB_g4, dx= 2, dy= 2},
+    }
+    -- базовые прозрачности
+    local baseTrans = {0.82, 0.82, 0.88, 0.88}
+
+    while true do
+        wait(0.016)
+        if not TextRATHUB.Visible then continue end
+
+        local now  = os.clock()
+        local wave = math.sin(now * 0.9)  -- медленная волна -1..1
+
+        -- idle: glow чуть дышит (амплитуда ±0.06)
+        for i, g in ipairs(offsets) do
+            g.obj.Transparency = baseTrans[i] + wave * 0.06
+        end
+
+        -- shimmer каждые SHIMMER_PERIOD сек
+        if now - lastShimmer >= SHIMMER_PERIOD then
+            lastShimmer = now
+            local shimDur   = 0.5
+            local shimStart = os.clock()
+            while os.clock() - shimStart < shimDur do
+                wait(0.016)
+                if not TextRATHUB.Visible then break end
+                local p  = (os.clock() - shimStart) / shimDur  -- 0..1
+                -- арка: sin(p*pi) = 0→1→0
+                local lp = math.sin(p * math.pi)
+
+                -- основной текст: белеет чуть-чуть
+                TextRATHUB.Color = Color3.new(
+                    1,
+                    1 - lp * 0.15,  -- слегка теряет G и B → лёгкий тёплый оттенок
+                    1 - lp * 0.05
+                )
+
+                -- glow-слои: ярче и чуть крупнее смещение во время shimmer
+                for i, g in ipairs(offsets) do
+                    g.obj.Transparency = baseTrans[i] - lp * 0.35
+                    g.obj.Color = Color3.new(
+                        0x9d/255 + lp * (1 - 0x9d/255),
+                        0x3d/255 + lp * (1 - 0x3d/255),
+                        0xf0/255 + lp * (1 - 0xf0/255)
+                    )
+                end
+            end
+            -- сброс
+            TextRATHUB.Color = Color3.fromHex("#FFFFFF")
+            for i, g in ipairs(offsets) do
+                if i <= 2 then g.obj.Color = Color3.fromHex("#9d3df0")
+                else            g.obj.Color = Color3.fromHex("#6b1db0") end
+                g.obj.Transparency = baseTrans[i]
+            end
+        end
+    end
+end)
+
+-- ===== DRAG + КЛИКИ =====
+spawn(function()
+    local dragging = false
+    local dragStart, startPos
+    local lastMouse1 = false
+    local lastF1     = false
+    local guiVisible = true
+
+    while true do
+        wait(0.01)
+        if not isrbxactive() then lastMouse1=false lastF1=false continue end
+
+        local mouse1 = ismouse1pressed()
+        local mPos   = Vector2.new(Mouse.X, Mouse.Y)
+        local f1     = iskeypressed(0x70)
+
+        if f1 and not lastF1 then
+            guiVisible = not guiVisible
+            for _,o in ipairs(allObjs) do o.Visible = guiVisible end
+            for _,sq in ipairs(VeryTopPlace_Parts) do sq.Visible = guiVisible end
+            if not guiVisible then
+                ContentPageVisuals.Visible   = false ContentPageVisuals_Border.Visible   = false
+                ContentPageExploits.Visible  = false ContentPageExploits_Border.Visible  = false
+                ContentPageMisc.Visible      = false ContentPageMisc_Border.Visible      = false
+                ContentPageSettings.Visible  = false ContentPageSettings_Border.Visible  = false
+            end
+        end
+
+        if mouse1 and not lastMouse1 and guiVisible then
+            local tp = VeryTopPlace_Parts[1]
+            if mPos.X >= tp.Position.X and mPos.X <= tp.Position.X+604 and
+               mPos.Y >= tp.Position.Y and mPos.Y <= tp.Position.Y+46 then
+                dragging  = true
+                dragStart = mPos
+                startPos  = Main1.Position
+            end
+            for i,td in ipairs(tabPages) do
+                local t = td.tab
+                if mPos.X >= t.Position.X and mPos.X <= t.Position.X+t.Size.X and
+                   mPos.Y >= t.Position.Y and mPos.Y <= t.Position.Y+t.Size.Y then
+                    switchTab(i)
+                end
+            end
+        end
+
+        if not mouse1 then dragging = false end
+
+        if dragging and mouse1 then
+            local np  = startPos + (mPos - dragStart)
+            Main1.Position = np
+            local gW = 604
+            for i,sq in ipairs(VeryTopPlace_Parts) do
+                sq.Position = Vector2.new(np.X+(i-1)*math.floor(gW/50), np.Y)
+            end
+            -- Circle5
+            local c5p = np + Vector2.new(25,23)
+            Circle5.Position       = c5p
+            Circle5_glow1.Position = c5p
+            Circle5_glow2.Position = c5p
+            Circle5_glow3.Position = c5p
+            -- TextRATHUB glow слои
+            local tp = np + Vector2.new(54,17)
+            TextRATHUB.Position    = tp
+            TextRATHUB_g1.Position = np + Vector2.new(53,16)
+            TextRATHUB_g2.Position = np + Vector2.new(55,18)
+            TextRATHUB_g3.Position = np + Vector2.new(52,15)
+            TextRATHUB_g4.Position = np + Vector2.new(56,19)
+            -- Остальное
+            PlaceTabs.Position  = np + Vector2.new(2,46)
+            VisualsTab.Position = np + Vector2.new(8,50)
+            VisualsTab_Text.Position  = VisualsTab.Position  + Vector2.new(77/2,36/2)
+            ExploitsTab.Position = np + Vector2.new(100,50)
+            ExploitsTab_Text.Position = ExploitsTab.Position + Vector2.new(71/2,35/2)
+            MiscTab.Position     = np + Vector2.new(186,50)
+            MiscTab_Text.Position    = MiscTab.Position      + Vector2.new(73/2,35/2)
+            SettingsTab.Position = np + Vector2.new(273,50)
+            SettingsTab_Text.Position = SettingsTab.Position + Vector2.new(73/2,35/2)
+            Line1.Position = np + Vector2.new(0,45)
+            Line2.Position = np + Vector2.new(0,89)
+            local cp = np + Vector2.new(25,114)
+            ContentPageVisuals.Position   = cp ContentPageVisuals_Border.Position   = cp
+            ContentPageExploits.Position  = cp ContentPageExploits_Border.Position  = cp
+            ContentPageMisc.Position      = cp ContentPageMisc_Border.Position      = cp
+            ContentPageSettings.Position  = cp ContentPageSettings_Border.Position  = cp
+        end
+
+        lastMouse1 = mouse1
+        lastF1     = f1
+    end
+end)
+
+end
