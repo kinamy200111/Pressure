@@ -1,7 +1,3 @@
-Print ("ChangelogsVer3.4")
-Print ("Small changes for watermark")
-Print ("Small changes for UI")
-Print ("Fix error with no worked paper password")
 
 do
 
