@@ -435,17 +435,31 @@ Main1.Color = Color3.fromHex("#0b0f1a")
 Main1.Position = Vector2.new(98, 20)
 Main1.Size = Vector2.new(604, 560)
 Main1.Filled = true
-Main1.Corner = 7
+Main1.Corner = 0
 
-local VeryTopPlace = Drawing.new("Square")
-VeryTopPlace.Visible = true
-VeryTopPlace.Transparency = 1
-VeryTopPlace.ZIndex = 20
-VeryTopPlace.Color = Color3.fromHex("#17142d")
-VeryTopPlace.Position = Main1.Position + Vector2.new(0, 0)
-VeryTopPlace.Size = Vector2.new(604, 46)
-VeryTopPlace.Filled = true
-VeryTopPlace.Corner = 7
+-- VeryTopPlace Gradient (50 slices: #1a1530 -> #0f1428)
+VeryTopPlace_Parts = {}
+do
+    local gSteps = 50
+    local gW = 604
+    local gH = 46
+    local r1,g1,b1 = 0x1a/255, 0x15/255, 0x30/255
+    local r2,g2,b2 = 0x0f/255, 0x14/255, 0x28/255
+    for i = 0, gSteps-1 do
+        local t = i/(gSteps-1)
+        local sq = Drawing.new("Square")
+        sq.Visible = true
+        sq.Transparency = 1
+        sq.ZIndex = 20
+        sq.Color = Color3.new(r1+(r2-r1)*t, g1+(g2-g1)*t, b1+(b2-b1)*t)
+        sq.Position = Vector2.new(Main1.Position.X + i*math.floor(gW/gSteps), Main1.Position.Y)
+        sq.Size = Vector2.new(math.floor(gW/gSteps)+1, gH)
+        sq.Filled = true
+        sq.Corner = 0
+        VeryTopPlace_Parts[i+1] = sq
+    end
+end
+local VeryTopPlace = VeryTopPlace_Parts[1]
 
 local Circle5 = Drawing.new("Circle")
 Circle5.Visible = true
@@ -562,6 +576,23 @@ SettingsTab_Text.Color = Color3.fromHex("#d5c0e4")
 SettingsTab_Text.Position = SettingsTab.Position + Vector2.new(73/2, 35/2)
 SettingsTab_Text.Visible = true
 SettingsTab_Text.ZIndex = 92
+
+
+-- Active Tab System
+local function setActiveTab(activeBg, activeText)
+    local tabs = {
+        {bg=VisualsTab,  text=VisualsTab_Text},
+        {bg=ExploitsTab, text=ExploitsTab_Text},
+        {bg=MiscTab,     text=MiscTab_Text},
+        {bg=SettingsTab, text=SettingsTab_Text},
+    }
+    for _,t in ipairs(tabs) do
+        t.bg.Color   = Color3.fromHex("#0c1020")
+        t.text.Color = Color3.fromHex("#d5c0e4")
+    end
+    activeBg.Color   = Color3.fromHex("#6b12a9")
+    activeText.Color = Color3.fromHex("#e7feff")
+end
 
 local Line1 = Drawing.new("Square")
 Line1.Visible = true
@@ -2369,7 +2400,7 @@ while true do
 
                  local newState = not Main1.Visible
                  Main1.Visible = newState
-                 VeryTopPlace.Visible = newState
+                 for _,sq in ipairs(VeryTopPlace_Parts) do sq.Visible=newState end
                  Circle5.Visible = newState
                  TextRATHUB.Visible = newState
                  PlaceTabs.Visible = newState
@@ -2525,6 +2556,7 @@ while true do
             if VisualsTab.Visible and mPos.X >= VisualsTab.Position.X and mPos.X <= VisualsTab.Position.X + VisualsTab.Size.X and
                mPos.Y >= VisualsTab.Position.Y and mPos.Y <= VisualsTab.Position.Y + VisualsTab.Size.Y then
                 pcall(function() onClick() end)
+                setActiveTab(VisualsTab, VisualsTab_Text)
 
                 pcall(function() Tab_ContentPageVisuals2_SetVisible(false) end)
                 pcall(function() Tab_ContentPageVisuals3_SetVisible(false) end)
@@ -2538,6 +2570,7 @@ while true do
             if ExploitsTab.Visible and mPos.X >= ExploitsTab.Position.X and mPos.X <= ExploitsTab.Position.X + ExploitsTab.Size.X and
                mPos.Y >= ExploitsTab.Position.Y and mPos.Y <= ExploitsTab.Position.Y + ExploitsTab.Size.Y then
                 pcall(function() onClick() end)
+                setActiveTab(ExploitsTab, ExploitsTab_Text)
 
                 pcall(function() Tab_ContentPageVisuals_SetVisible(false) end)
                 pcall(function() Tab_ContentPageVisuals2_SetVisible(false) end)
@@ -2551,6 +2584,7 @@ while true do
             if MiscTab.Visible and mPos.X >= MiscTab.Position.X and mPos.X <= MiscTab.Position.X + MiscTab.Size.X and
                mPos.Y >= MiscTab.Position.Y and mPos.Y <= MiscTab.Position.Y + MiscTab.Size.Y then
                 pcall(function() onClick() end)
+                setActiveTab(MiscTab, MiscTab_Text)
 
                 pcall(function() Tab_ContentPageVisuals_SetVisible(false) end)
                 pcall(function() Tab_ContentPageVisuals2_SetVisible(false) end)
@@ -2564,6 +2598,7 @@ while true do
             if SettingsTab.Visible and mPos.X >= SettingsTab.Position.X and mPos.X <= SettingsTab.Position.X + SettingsTab.Size.X and
                mPos.Y >= SettingsTab.Position.Y and mPos.Y <= SettingsTab.Position.Y + SettingsTab.Size.Y then
                 pcall(function() onClick() end)
+                setActiveTab(SettingsTab, SettingsTab_Text)
 
                 pcall(function() Tab_ContentPageVisuals_SetVisible(false) end)
                 pcall(function() Tab_ContentPageVisuals2_SetVisible(false) end)
@@ -2844,7 +2879,12 @@ while true do
                 pcall(function() onChanged(value) end)
             end
             if dragging == Main1 then
-                VeryTopPlace.Position = dragging.Position + Vector2.new(0, 0)
+                do
+                    local gSteps=50 local gW=604
+                    for i,sq in ipairs(VeryTopPlace_Parts) do
+                        sq.Position=Vector2.new(dragging.Position.X+(i-1)*math.floor(gW/gSteps),dragging.Position.Y)
+                    end
+                end
                 Circle5.Position = dragging.Position + Vector2.new(25, 23)
                 TextRATHUB.Position = dragging.Position + Vector2.new(54, 17)
                 PlaceTabs.Position = dragging.Position + Vector2.new(2, 46)
