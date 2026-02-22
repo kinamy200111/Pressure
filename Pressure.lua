@@ -1,10 +1,15 @@
+Print ("ChangelogsVer3.4")
+Print ("Small changes for watermark")
+Print ("Small changes for UI")
+Print ("Fix error with no worked paper password")
+
 do
 
 local Mouse = game.Players.LocalPlayer:GetMouse()
 
 Settings={
     notificationsEnabled={Angler=false,Froger=false,Pinkie=false,Blitz=false,
-        Pandemonium=false,Chainsmoker=false,["A-60"]=false,Harbinger=false,Painter=false},
+        Pandemonium=false,Chainsmoker=false,["A60"]=false,Harbinger=false,Painter=false},
     keycardESPEnabled=false,doorESPEnabled=false,
     itemsESPEnabled=false,currencyESPEnabled=false,
     autoRescanEnabled=false,espMaxDistance=150
@@ -19,7 +24,7 @@ NotificationSystem = {
 }
 
 TrackedMobs = {"Angler", "Blitz", "Pinkie", "Pandemonium", "Froger", "Chainsmoker",
-    "RidgeAngler","RidgeBlitz","RidgePinkie","RidgePandemonium","RidgeFroger","RidgeChainsmoker","A-60","Harbinger"}
+    "RidgeAngler","RidgeBlitz","RidgePinkie","RidgePandemonium","RidgeFroger","RidgeChainsmoker","A60","Harbinger"}
 
 detectedMobs = {}
 
@@ -2404,7 +2409,7 @@ local onSwitch=function(val)
     Settings.notificationsEnabled.Blitz       = NoffiticationBlitzSwitch_IsChecked
     Settings.notificationsEnabled.Chainsmoker = NoffiticationChainsmokerSwitch_IsChecked
     Settings.notificationsEnabled.Pandemonium = NoffiticationPandemoniumSwitch_IsChecked
-    Settings.notificationsEnabled["A-60"]     = NoffiticationA60Switch_IsChecked
+    Settings.notificationsEnabled["A60"]     = NoffiticationA60Switch_IsChecked
     Settings.notificationsEnabled.Harbinger   = NoffiticationHarbingerSwitch_IsChecked
     Settings.notificationsEnabled.Painter     = NoffiticationPainterRoomSwitch_IsChecked
     AutoHideSystem.enabled = AutoHideSwitch_IsChecked
