@@ -1,4 +1,3 @@
-
 do
 
 local Mouse = game.Players.LocalPlayer:GetMouse()
