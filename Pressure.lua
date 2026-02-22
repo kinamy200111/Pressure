@@ -1,9 +1,11 @@
 do
 
-print("ChangelogsVer3.5")
+print("Changelogs")
+print("Version 4.2")
 print("Small changes for watermark")
 print("Small changes for UI")
 print("Fix error with no worked paper password")
+
 
 
 local Mouse = game.Players.LocalPlayer:GetMouse()
