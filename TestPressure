@@ -1,1 +1,34 @@
+do
 
+print("Changelogs for 22 february")
+print("Version 4.2")
+print("Small changes for watermark")
+print("Small changes for UI")
+print("Fix error with no worked paper password")
+
+
+
+local Mouse = game.Players.LocalPlayer:GetMouse()
+
+Settings={
+    notificationsEnabled={Angler=false,Froger=false,Pinkie=false,Blitz=false,
+        Pandemonium=false,Chainsmoker=false,["A60"]=false,Harbinger=false,Painter=false},
+    keycardESPEnabled=false,doorESPEnabled=false,
+    itemsESPEnabled=false,currencyESPEnabled=false,
+    autoRescanEnabled=false,espMaxDistance=150
+}
+
+NotificationSystem = {
+    activeNotifications = {},
+    nextYPosition = 0,
+    notificationHeight = 60,
+    spacing = 10,
+    maxNotifications = 5
+}
+
+TrackedMobs = {"Angler", "Blitz", "Pinkie", "Pandemonium", "Froger", "Chainsmoker",
+    "RidgeAngler","RidgeBlitz","RidgePinkie","RidgePandemonium","RidgeFroger","RidgeChainsmoker","A60","Harbinger"}
+
+detectedMobs = {}
+
+end
