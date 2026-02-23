@@ -5,6 +5,7 @@ print("Version 5.0")
 print("Most changes with UI, Tab settings")
 print("Fix bugs with no esp for paper password")
 print("Small changes for watermark")
+print("==SOON Support doors==")
 
 local Mouse = game.Players.LocalPlayer:GetMouse()
 
