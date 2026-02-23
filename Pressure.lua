@@ -1,12 +1,10 @@
 do
 
-print("Changelogs for 22 february")
-print("Version 4.2")
+print("Changelogs for 23 february, 4.0 - 5.0")
+print("Version 5.0")
+print("Most changes with UI, Tab settings")
+print("Fix bugs with no esp for paper password")
 print("Small changes for watermark")
-print("Small changes for UI")
-print("Fix error with no worked paper password")
-
-
 
 local Mouse = game.Players.LocalPlayer:GetMouse()
 
@@ -173,7 +171,6 @@ local _W8=Drawing.new("Circle") _W8.Visible=false _W8.Transparency=1 _W8.ZIndex=
 local _W7=Drawing.new("Circle") _W7.Visible=false _W7.Transparency=1 _W7.ZIndex=60 _W7.Color=Color3.fromHex("#8b5df6") _W7.Position=_wm+Vector2.new(552,29) _W7.Radius=3 _W7.NumSides=32 _W7.Thickness=1 _W7.Filled=true
 local _W9=Drawing.new("Circle") _W9.Visible=false _W9.Transparency=1 _W9.ZIndex=80 _W9.Color=Color3.fromHex("#a68afa") _W9.Position=_wm+Vector2.new(562,29) _W9.Radius=3 _W9.NumSides=32 _W9.Thickness=1 _W9.Filled=true
 
--- Watermark Glow Layers
 _W1_glow1=Drawing.new("Circle") _W1_glow1.Visible=false _W1_glow1.Transparency=0.25 _W1_glow1.ZIndex=15 _W1_glow1.Color=Color3.fromHex("#5c61e3") _W1_glow1.Position=_wm+Vector2.new(39,29) _W1_glow1.Radius=5 _W1_glow1.NumSides=32 _W1_glow1.Thickness=2 _W1_glow1.Filled=false
 _W1_glow2=Drawing.new("Circle") _W1_glow2.Visible=false _W1_glow2.Transparency=0.12 _W1_glow2.ZIndex=14 _W1_glow2.Color=Color3.fromHex("#5c61e3") _W1_glow2.Position=_wm+Vector2.new(39,29) _W1_glow2.Radius=8 _W1_glow2.NumSides=32 _W1_glow2.Thickness=1 _W1_glow2.Filled=false
 _W1_glow3=Drawing.new("Circle") _W1_glow3.Visible=false _W1_glow3.Transparency=0.05 _W1_glow3.ZIndex=13 _W1_glow3.Color=Color3.fromHex("#5c61e3") _W1_glow3.Position=_wm+Vector2.new(39,29) _W1_glow3.Radius=11 _W1_glow3.NumSides=32 _W1_glow3.Thickness=1 _W1_glow3.Filled=false
@@ -536,7 +533,6 @@ do
         VeryTopPlace_Parts[i+1]=sq
     end
 end
-local VeryTopPlace=VeryTopPlace_Parts[1]
 
 local Circle5 = Drawing.new("Circle")
 Circle5.Visible = true
@@ -549,6 +545,14 @@ Circle5.NumSides = 32
 Circle5.Thickness = 1
 Circle5.Filled = true
 
+_G.C5g1=Drawing.new("Circle") _G.C5g1.Visible=true _G.C5g1.Transparency=0.75 _G.C5g1.ZIndex=29 _G.C5g1.Color=Color3.fromHex("#ad47fe") _G.C5g1.Position=Circle5.Position _G.C5g1.Radius=9 _G.C5g1.NumSides=32 _G.C5g1.Thickness=2 _G.C5g1.Filled=false
+_G.C5g2=Drawing.new("Circle") _G.C5g2.Visible=true _G.C5g2.Transparency=0.88 _G.C5g2.ZIndex=28 _G.C5g2.Color=Color3.fromHex("#7b2fd4") _G.C5g2.Position=Circle5.Position _G.C5g2.Radius=13 _G.C5g2.NumSides=32 _G.C5g2.Thickness=1 _G.C5g2.Filled=false
+_G.C5g3=Drawing.new("Circle") _G.C5g3.Visible=true _G.C5g3.Transparency=0.93 _G.C5g3.ZIndex=27 _G.C5g3.Color=Color3.fromHex("#4a1a8a") _G.C5g3.Position=Circle5.Position _G.C5g3.Radius=17 _G.C5g3.NumSides=32 _G.C5g3.Thickness=1 _G.C5g3.Filled=false
+
+do local _ot={} for _i=1,12 do local _t=Drawing.new("Circle") _t.Visible=false _t.Transparency=1 _t.ZIndex=25 _t.Color=Color3.fromHex("#ad47fe") _t.Radius=2 _t.NumSides=16 _t.Thickness=1 _t.Filled=true _t.Position=Vector2.new(0,0) _ot[_i]=_t end _G.C5orbTrail=_ot end
+do local _ct={} for _i=1,8 do local _t=Drawing.new("Circle") _t.Visible=false _t.Transparency=1 _t.ZIndex=25 _t.Color=Color3.fromHex("#ad47fe") _t.Radius=2 _t.NumSides=16 _t.Thickness=1 _t.Filled=true _t.Position=Vector2.new(0,0) _ct[_i]=_t end _G.C5cometTrail=_ct end
+do local _cg=Drawing.new("Circle") _cg.Visible=false _cg.Transparency=0.82 _cg.ZIndex=29 _cg.Color=Color3.fromHex("#ad47fe") _cg.Radius=7 _cg.NumSides=32 _cg.Thickness=3 _cg.Filled=false _cg.Position=Vector2.new(0,0) _G.C5centerGlow=_cg end
+
 local TextRATHUB = Drawing.new("Text")
 TextRATHUB.Visible = true
 TextRATHUB.Transparency = 1
@@ -560,6 +564,11 @@ TextRATHUB.Size = 14
 TextRATHUB.Center = false
 TextRATHUB.Outline = true
 TextRATHUB.Font = Drawing.Fonts.System
+
+_G.RHg1=Drawing.new("Text") _G.RHg1.Visible=true _G.RHg1.Transparency=0.78 _G.RHg1.ZIndex=38 _G.RHg1.Color=Color3.fromHex("#9d3df0") _G.RHg1.Position=Main1.Position+Vector2.new(53,16) _G.RHg1.Text="RATHUB" _G.RHg1.Size=14 _G.RHg1.Center=false _G.RHg1.Outline=false _G.RHg1.Font=Drawing.Fonts.System
+_G.RHg2=Drawing.new("Text") _G.RHg2.Visible=true _G.RHg2.Transparency=0.78 _G.RHg2.ZIndex=38 _G.RHg2.Color=Color3.fromHex("#9d3df0") _G.RHg2.Position=Main1.Position+Vector2.new(55,18) _G.RHg2.Text="RATHUB" _G.RHg2.Size=14 _G.RHg2.Center=false _G.RHg2.Outline=false _G.RHg2.Font=Drawing.Fonts.System
+_G.RHg3=Drawing.new("Text") _G.RHg3.Visible=true _G.RHg3.Transparency=0.86 _G.RHg3.ZIndex=37 _G.RHg3.Color=Color3.fromHex("#6b1db0") _G.RHg3.Position=Main1.Position+Vector2.new(52,15) _G.RHg3.Text="RATHUB" _G.RHg3.Size=14 _G.RHg3.Center=false _G.RHg3.Outline=false _G.RHg3.Font=Drawing.Fonts.System
+_G.RHg4=Drawing.new("Text") _G.RHg4.Visible=true _G.RHg4.Transparency=0.86 _G.RHg4.ZIndex=37 _G.RHg4.Color=Color3.fromHex("#6b1db0") _G.RHg4.Position=Main1.Position+Vector2.new(56,19) _G.RHg4.Text="RATHUB" _G.RHg4.Size=14 _G.RHg4.Center=false _G.RHg4.Outline=false _G.RHg4.Font=Drawing.Fonts.System
 
 local PlaceTabs = Drawing.new("Square")
 PlaceTabs.Visible = true
@@ -655,9 +664,11 @@ SettingsTab_Text.Visible = true
 SettingsTab_Text.ZIndex = 92
 
 local function setActiveTab(activeBg,activeText)
+    local tc=(_G._th_tab or "#0c1020") local tt=(_G._th_txt or "#d5c0e4") local ta=(_G._th_tabActive or "#6b12a9") local tA=(_G._th_txtActive or "#e7feff")
     local tabs={{bg=VisualsTab,text=VisualsTab_Text},{bg=ExploitsTab,text=ExploitsTab_Text},{bg=MiscTab,text=MiscTab_Text},{bg=SettingsTab,text=SettingsTab_Text}}
-    for _,t in ipairs(tabs) do t.bg.Color=Color3.fromHex("#0c1020") t.text.Color=Color3.fromHex("#d5c0e4") end
-    activeBg.Color=Color3.fromHex("#6b12a9") activeText.Color=Color3.fromHex("#e7feff")
+    for _,t in ipairs(tabs) do t.bg.Color=Color3.fromHex(tc) t.text.Color=Color3.fromHex(tt) end
+    activeBg.Color=Color3.fromHex(ta) activeText.Color=Color3.fromHex(tA)
+    _G._activeTabBg=activeBg _G._activeTabTxt=activeText
 end
 local Line1 = Drawing.new("Square")
 Line1.Visible = true
@@ -699,13 +710,6 @@ ContentPageVisuals_Border.Thickness = 3
 ContentPageVisuals_Border.Position = ContentPageVisuals.Position
 ContentPageVisuals_Border.Size = ContentPageVisuals.Size
 ContentPageVisuals_Border.Corner = 5
-
-local ESPkeycardSwitch = Drawing.new("Switch")
-ESPkeycardSwitch.Visible = false
-ESPkeycardSwitch.Transparency = 1
-ESPkeycardSwitch.ZIndex = 150
-ESPkeycardSwitch.Color = Color3.fromHex("#212121")
-ESPkeycardSwitch.Position = ContentPageVisuals.Position + Vector2.new(481, 9)
 
 local ESPkeycardSwitch_IsChecked = false
 local ESPkeycardSwitch = Drawing.new("Square")
@@ -784,13 +788,6 @@ EspDoorText.Size = 14
 EspDoorText.Center = false
 EspDoorText.Outline = true
 EspDoorText.Font = Drawing.Fonts.Monospace
-
-local ESPDoorsSwitch = Drawing.new("Switch")
-ESPDoorsSwitch.Visible = false
-ESPDoorsSwitch.Transparency = 1
-ESPDoorsSwitch.ZIndex = 160
-ESPDoorsSwitch.Color = Color3.fromHex("#212121")
-ESPDoorsSwitch.Position = ContentPageVisuals.Position + Vector2.new(481, 35)
 
 local ESPDoorsSwitch_IsChecked = false
 local ESPDoorsSwitch = Drawing.new("Square")
@@ -878,13 +875,6 @@ TextNofiticationAngler.Size = 14
 TextNofiticationAngler.Center = false
 TextNofiticationAngler.Outline = true
 TextNofiticationAngler.Font = Drawing.Fonts.Monospace
-
-local NoffiticationAnglerSwitch = Drawing.new("Switch")
-NoffiticationAnglerSwitch.Visible = false
-NoffiticationAnglerSwitch.Transparency = 1
-NoffiticationAnglerSwitch.ZIndex = 190
-NoffiticationAnglerSwitch.Color = Color3.fromHex("#212121")
-NoffiticationAnglerSwitch.Position = ContentPageVisuals.Position + Vector2.new(491, 161)
 
 local NoffiticationAnglerSwitch_IsChecked = false
 local NoffiticationAnglerSwitch = Drawing.new("Square")
@@ -1036,13 +1026,6 @@ NofPainterRoomText.Center = false
 NofPainterRoomText.Outline = true
 NofPainterRoomText.Font = Drawing.Fonts.Monospace
 
-local NoffiticationFrogerSwitch = Drawing.new("Switch")
-NoffiticationFrogerSwitch.Visible = false
-NoffiticationFrogerSwitch.Transparency = 1
-NoffiticationFrogerSwitch.ZIndex = 200
-NoffiticationFrogerSwitch.Color = Color3.fromHex("#212121")
-NoffiticationFrogerSwitch.Position = ContentPageVisuals.Position + Vector2.new(491, 181)
-
 local NoffiticationFrogerSwitch_IsChecked = false
 local NoffiticationFrogerSwitch = Drawing.new("Square")
 NoffiticationFrogerSwitch.Visible = false
@@ -1096,13 +1079,6 @@ NoffiticationFrogerSwitch_Label.Outline = true
 NoffiticationFrogerSwitch_Label.Font = Drawing.Fonts.UI
 NoffiticationFrogerSwitch_Label.Position = NoffiticationFrogerSwitch.Position + Vector2.new(40, 0.5)
 NoffiticationFrogerSwitch_Label.ZIndex = 201
-
-local NoffiticationPinkieSwitch = Drawing.new("Switch")
-NoffiticationPinkieSwitch.Visible = false
-NoffiticationPinkieSwitch.Transparency = 1
-NoffiticationPinkieSwitch.ZIndex = 210
-NoffiticationPinkieSwitch.Color = Color3.fromHex("#212121")
-NoffiticationPinkieSwitch.Position = ContentPageVisuals.Position + Vector2.new(491, 201)
 
 local NoffiticationPinkieSwitch_IsChecked = false
 local NoffiticationPinkieSwitch = Drawing.new("Square")
@@ -1158,13 +1134,6 @@ NoffiticationPinkieSwitch_Label.Font = Drawing.Fonts.UI
 NoffiticationPinkieSwitch_Label.Position = NoffiticationPinkieSwitch.Position + Vector2.new(40, 0.5)
 NoffiticationPinkieSwitch_Label.ZIndex = 211
 
-local NoffiticationBlitzSwitch = Drawing.new("Switch")
-NoffiticationBlitzSwitch.Visible = false
-NoffiticationBlitzSwitch.Transparency = 1
-NoffiticationBlitzSwitch.ZIndex = 220
-NoffiticationBlitzSwitch.Color = Color3.fromHex("#212121")
-NoffiticationBlitzSwitch.Position = ContentPageVisuals.Position + Vector2.new(491, 221)
-
 local NoffiticationBlitzSwitch_IsChecked = false
 local NoffiticationBlitzSwitch = Drawing.new("Square")
 NoffiticationBlitzSwitch.Visible = false
@@ -1218,13 +1187,6 @@ NoffiticationBlitzSwitch_Label.Outline = true
 NoffiticationBlitzSwitch_Label.Font = Drawing.Fonts.UI
 NoffiticationBlitzSwitch_Label.Position = NoffiticationBlitzSwitch.Position + Vector2.new(40, 0.5)
 NoffiticationBlitzSwitch_Label.ZIndex = 221
-
-local NoffiticationChainsmokerSwitch = Drawing.new("Switch")
-NoffiticationChainsmokerSwitch.Visible = false
-NoffiticationChainsmokerSwitch.Transparency = 1
-NoffiticationChainsmokerSwitch.ZIndex = 230
-NoffiticationChainsmokerSwitch.Color = Color3.fromHex("#212121")
-NoffiticationChainsmokerSwitch.Position = ContentPageVisuals.Position + Vector2.new(491, 241)
 
 local NoffiticationChainsmokerSwitch_IsChecked = false
 local NoffiticationChainsmokerSwitch = Drawing.new("Square")
@@ -1280,13 +1242,6 @@ NoffiticationChainsmokerSwitch_Label.Font = Drawing.Fonts.UI
 NoffiticationChainsmokerSwitch_Label.Position = NoffiticationChainsmokerSwitch.Position + Vector2.new(40, 0.5)
 NoffiticationChainsmokerSwitch_Label.ZIndex = 231
 
-local NoffiticationPandemoniumSwitch = Drawing.new("Switch")
-NoffiticationPandemoniumSwitch.Visible = false
-NoffiticationPandemoniumSwitch.Transparency = 1
-NoffiticationPandemoniumSwitch.ZIndex = 240
-NoffiticationPandemoniumSwitch.Color = Color3.fromHex("#212121")
-NoffiticationPandemoniumSwitch.Position = ContentPageVisuals.Position + Vector2.new(491, 261)
-
 local NoffiticationPandemoniumSwitch_IsChecked = false
 local NoffiticationPandemoniumSwitch = Drawing.new("Square")
 NoffiticationPandemoniumSwitch.Visible = false
@@ -1340,13 +1295,6 @@ NoffiticationPandemoniumSwitch_Label.Outline = true
 NoffiticationPandemoniumSwitch_Label.Font = Drawing.Fonts.UI
 NoffiticationPandemoniumSwitch_Label.Position = NoffiticationPandemoniumSwitch.Position + Vector2.new(40, 0.5)
 NoffiticationPandemoniumSwitch_Label.ZIndex = 241
-
-local NoffiticationA60Switch = Drawing.new("Switch")
-NoffiticationA60Switch.Visible = false
-NoffiticationA60Switch.Transparency = 1
-NoffiticationA60Switch.ZIndex = 250
-NoffiticationA60Switch.Color = Color3.fromHex("#212121")
-NoffiticationA60Switch.Position = ContentPageVisuals.Position + Vector2.new(491, 281)
 
 local NoffiticationA60Switch_IsChecked = false
 local NoffiticationA60Switch = Drawing.new("Square")
@@ -1402,13 +1350,6 @@ NoffiticationA60Switch_Label.Font = Drawing.Fonts.UI
 NoffiticationA60Switch_Label.Position = NoffiticationA60Switch.Position + Vector2.new(40, 0.5)
 NoffiticationA60Switch_Label.ZIndex = 251
 
-local NoffiticationHarbingerSwitch = Drawing.new("Switch")
-NoffiticationHarbingerSwitch.Visible = false
-NoffiticationHarbingerSwitch.Transparency = 1
-NoffiticationHarbingerSwitch.ZIndex = 260
-NoffiticationHarbingerSwitch.Color = Color3.fromHex("#212121")
-NoffiticationHarbingerSwitch.Position = ContentPageVisuals.Position + Vector2.new(491, 301)
-
 local NoffiticationHarbingerSwitch_IsChecked = false
 local NoffiticationHarbingerSwitch = Drawing.new("Square")
 NoffiticationHarbingerSwitch.Visible = false
@@ -1462,13 +1403,6 @@ NoffiticationHarbingerSwitch_Label.Outline = true
 NoffiticationHarbingerSwitch_Label.Font = Drawing.Fonts.UI
 NoffiticationHarbingerSwitch_Label.Position = NoffiticationHarbingerSwitch.Position + Vector2.new(40, 0.5)
 NoffiticationHarbingerSwitch_Label.ZIndex = 261
-
-local NoffiticationPainterRoomSwitch = Drawing.new("Switch")
-NoffiticationPainterRoomSwitch.Visible = false
-NoffiticationPainterRoomSwitch.Transparency = 1
-NoffiticationPainterRoomSwitch.ZIndex = 270
-NoffiticationPainterRoomSwitch.Color = Color3.fromHex("#212121")
-NoffiticationPainterRoomSwitch.Position = ContentPageVisuals.Position + Vector2.new(491, 321)
 
 local NoffiticationPainterRoomSwitch_IsChecked = false
 local NoffiticationPainterRoomSwitch = Drawing.new("Square")
@@ -1557,13 +1491,6 @@ EnableWatermarkText.Center = false
 EnableWatermarkText.Outline = true
 EnableWatermarkText.Font = Drawing.Fonts.Monospace
 
-local EnableWatermarkSwitch = Drawing.new("Switch")
-EnableWatermarkSwitch.Visible = false
-EnableWatermarkSwitch.Transparency = 1
-EnableWatermarkSwitch.ZIndex = 280
-EnableWatermarkSwitch.Color = Color3.fromHex("#212121")
-EnableWatermarkSwitch.Position = ContentPageVisuals.Position + Vector2.new(491, 371)
-
 local EnableWatermarkSwitch_IsChecked = false
 local EnableWatermarkSwitch = Drawing.new("Square")
 EnableWatermarkSwitch.Visible = false
@@ -1639,13 +1566,6 @@ ContentPageExploits_Border.Position = ContentPageExploits.Position
 ContentPageExploits_Border.Size = ContentPageExploits.Size
 ContentPageExploits_Border.Corner = 5
 
-local AutoHideSwitch = Drawing.new("Switch")
-AutoHideSwitch.Visible = false
-AutoHideSwitch.Transparency = 1
-AutoHideSwitch.ZIndex = 450
-AutoHideSwitch.Color = Color3.fromHex("#212121")
-AutoHideSwitch.Position = ContentPageExploits.Position + Vector2.new(474, 18)
-
 local AutoHideSwitch_IsChecked = false
 local AutoHideSwitch = Drawing.new("Square")
 AutoHideSwitch.Visible = false
@@ -1718,7 +1638,7 @@ ContentPageMisc.Transparency = 1
 ContentPageMisc.ZIndex = 470
 ContentPageMisc.Color = Color3.fromHex("#0c1020")
 ContentPageMisc.Position = Main1.Position + Vector2.new(14, 106)
-ContentPageMisc.Size = Vector2.new(332, 150)
+ContentPageMisc.Size = Vector2.new(332, 175)
 ContentPageMisc.Filled = true
 ContentPageMisc.Corner = 5
 
@@ -1732,13 +1652,6 @@ ContentPageMisc_Border.Thickness = 3
 ContentPageMisc_Border.Position = ContentPageMisc.Position
 ContentPageMisc_Border.Size = ContentPageMisc.Size
 ContentPageMisc_Border.Corner = 5
-
-local AutoRescanSwitch = Drawing.new("Switch")
-AutoRescanSwitch.Visible = false
-AutoRescanSwitch.Transparency = 1
-AutoRescanSwitch.ZIndex = 500
-AutoRescanSwitch.Color = Color3.fromHex("#212121")
-AutoRescanSwitch.Position = ContentPageMisc.Position + Vector2.new(280, 18)
 
 local AutoRescanSwitch_IsChecked = false
 local AutoRescanSwitch = Drawing.new("Square")
@@ -1760,6 +1673,8 @@ AutoRescanSwitch_Bg.Size = AutoRescanSwitch.Size
 AutoRescanSwitch_Bg.Position = AutoRescanSwitch.Position
 AutoRescanSwitch_Bg.ZIndex = 500
 AutoRescanSwitch_Bg.Corner = 15
+_G._swBgs={ESPkeycardSwitch_Bg,ESPDoorsSwitch_Bg,NoffiticationAnglerSwitch_Bg,NoffiticationFrogerSwitch_Bg,NoffiticationPinkieSwitch_Bg,NoffiticationBlitzSwitch_Bg,NoffiticationChainsmokerSwitch_Bg,NoffiticationPandemoniumSwitch_Bg,NoffiticationA60Switch_Bg,NoffiticationHarbingerSwitch_Bg,NoffiticationPainterRoomSwitch_Bg,AutoHideSwitch_Bg,AutoRescanSwitch_Bg,EnableWatermarkSwitch_Bg}
+_G._swIsChecked={function() return ESPkeycardSwitch_IsChecked end,function() return ESPDoorsSwitch_IsChecked end,nil,nil,nil,nil,nil,nil,nil,nil,nil,function() return AutoHideSwitch_IsChecked end,function() return AutoRescanSwitch_IsChecked end,function() return EnableWatermarkSwitch_IsChecked end}
 local AutoRescanSwitch_IndBorder = Drawing.new("Square")
 AutoRescanSwitch_IndBorder.Visible = false
 AutoRescanSwitch_IndBorder.Transparency = 1
@@ -1849,6 +1764,280 @@ ToggleUIvisiblity_Text.ZIndex = 532
 local ToggleUIvisiblity_Key = 0x70
 local ToggleUIvisiblity_IsListening = false
 
+_G.uiThemes={
+{name="Dark Purple",bg="#0b0f1a",panel="#0c1020",tab="#0c1020",tabActive="#6b12a9",line="#171b2e",border="#1a1e35",accent="#ad47fe",swbg="#1a1a2e",swon="#6b12a9",txt="#d5c0e4",txtActive="#e7feff",wmbg="#0c0d1e",wmborder="#1a1e35",grad1="#1a1530",grad2="#0f1428"},
+{name="Midnight Blue",bg="#080d18",panel="#0a0f1c",tab="#0a0f1c",tabActive="#0f4fa8",line="#10172a",border="#131c35",accent="#2e8bff",swbg="#0d1627",swon="#0f4fa8",txt="#b8ccf0",txtActive="#ddeeff",wmbg="#080e1c",wmborder="#101828",grad1="#0d1530",grad2="#080d20"},
+{name="Acid Green",bg="#080f0a",panel="#091208",tab="#091208",tabActive="#1a7a12",line="#0f1e0d",border="#122010",accent="#39ff14",swbg="#0d1a0b",swon="#1a7a12",txt="#a8e8a0",txtActive="#d8ffd4",wmbg="#080f08",wmborder="#0e1e0c",grad1="#0d1f0c",grad2="#081408"},
+{name="Rose Dark",bg="#160a0e",panel="#190c10",tab="#190c10",tabActive="#8a1240",line="#2a0f16",border="#2e1018",accent="#ff3878",swbg="#251014",swon="#8a1240",txt="#e8b0c0",txtActive="#ffd8e4",wmbg="#130a0e",wmborder="#2a0f16",grad1="#2a0f18",grad2="#160a0e"},
+{name="Monochrome",bg="#101010",panel="#141414",tab="#141414",tabActive="#505050",line="#202020",border="#2a2a2a",accent="#cccccc",swbg="#1e1e1e",swon="#505050",txt="#aaaaaa",txtActive="#ffffff",wmbg="#0e0e0e",wmborder="#202020",grad1="#1a1a1a",grad2="#0e0e0e"},
+{name="Fire",bg="#140804",panel="#180a04",tab="#180a04",tabActive="#c43000",line="#251208",border="#2e1608",accent="#ff6a00",swbg="#221008",swon="#c43000",txt="#f0c090",txtActive="#ffe8c8",wmbg="#120703",wmborder="#2a1206",grad1="#2e1408",grad2="#180a04"},
+{name="Near Black",bg="#060606",panel="#080808",tab="#080808",tabActive="#2a2a2a",line="#0e0e0e",border="#181818",accent="#888888",swbg="#111111",swon="#2a2a2a",txt="#777777",txtActive="#cccccc",wmbg="#050505",wmborder="#111111",grad1="#0d0d0d",grad2="#060606"},
+{name="Ocean",bg="#040e18",panel="#051220",tab="#051220",tabActive="#0a6e8a",line="#0a1e30",border="#0d2440",accent="#00d4ff",swbg="#091825",swon="#0a6e8a",txt="#90d8f0",txtActive="#ccf4ff",wmbg="#040c16",wmborder="#0a1e30",grad1="#081830",grad2="#040e20"},
+{name="Sunset",bg="#12060e",panel="#180810",tab="#180810",tabActive="#8a2060",line="#220e1a",border="#2e1222",accent="#ff60a8",swbg="#1e0c16",swon="#8a2060",txt="#e8a8c8",txtActive="#ffd8e8",wmbg="#10060c",wmborder="#200e18",grad1="#240e1c",grad2="#12060e"},
+{name="Toxic",bg="#070e08",panel="#091209",tab="#091209",tabActive="#1a8c10",line="#0e200d",border="#122610",accent="#80ff00",swbg="#0e1a0c",swon="#1a8c10",txt="#b0e890",txtActive="#d8ffa8",wmbg="#070e07",wmborder="#0e200c",grad1="#0e2010",grad2="#070e08"},
+{name="Crimson",bg="#110408",panel="#15050a",tab="#15050a",tabActive="#8c0a1a",line="#200810",border="#2a0c14",accent="#ff2040",swbg="#1e0810",swon="#8c0a1a",txt="#e88898",txtActive="#ffc8d0",wmbg="#0e0406",wmborder="#200810",grad1="#220810",grad2="#110408"}
+}
+_G.uiThemeActive=1
+function _G._applyTheme(t)
+    _G._th_tab=t.tab _G._th_tabActive=t.tabActive _G._th_txt=t.txt _G._th_txtActive=t.txtActive
+    _G._th_swbg=t.swbg _G._th_swon=t.swon _G._th_accent=t.accent
+    local function hexDim(h,f) local r=tonumber(h:sub(2,3),16)/255*f local g=tonumber(h:sub(4,5),16)/255*f local b=tonumber(h:sub(6,7),16)/255*f return Color3.new(math.min(r,1),math.min(g,1),math.min(b,1)) end
+    Main1.Color=Color3.fromHex(t.bg)
+    PlaceTabs.Color=Color3.fromHex(t.panel)
+    Line1.Color=Color3.fromHex(t.line) Line2.Color=Color3.fromHex(t.line)
+    local g1r,g1g,g1b=tonumber(t.grad1:sub(2,3),16)/255,tonumber(t.grad1:sub(4,5),16)/255,tonumber(t.grad1:sub(6,7),16)/255
+    local g2r,g2g,g2b=tonumber(t.grad2:sub(2,3),16)/255,tonumber(t.grad2:sub(4,5),16)/255,tonumber(t.grad2:sub(6,7),16)/255
+    for i,sq in ipairs(VeryTopPlace_Parts) do local tt=(i-1)/49 sq.Color=Color3.new(g1r+(g2r-g1r)*tt,g1g+(g2g-g1g)*tt,g1b+(g2b-g1b)*tt) end
+    for _,cp in ipairs({ContentPageVisuals,ContentPageExploits,ContentPageMisc,ContentPageSettings}) do pcall(function() cp.Color=Color3.fromHex(t.panel) end) end
+    pcall(function()
+        if ContentPageVisuals2 then ContentPageVisuals2.Color=Color3.fromHex(t.panel) end
+        if ContentPageVisuals3 then ContentPageVisuals3.Color=Color3.fromHex(t.panel) end
+        if ContentPageMisc2 then ContentPageMisc2.Color=Color3.fromHex(t.panel) end
+        if _G._cm2 then _G._cm2.Color=Color3.fromHex(t.panel) _G._cm2b.Color=Color3.fromHex(t.border) end
+    end)
+    local _ab=_G._activeTabBg
+    for _,td in ipairs({{bg=VisualsTab,txt=VisualsTab_Text},{bg=ExploitsTab,txt=ExploitsTab_Text},{bg=MiscTab,txt=MiscTab_Text},{bg=SettingsTab,txt=SettingsTab_Text}}) do
+        if td.bg==_ab then td.bg.Color=Color3.fromHex(t.tabActive) td.txt.Color=Color3.fromHex(t.txtActive)
+        else td.bg.Color=Color3.fromHex(t.tab) td.txt.Color=Color3.fromHex(t.txt) end
+    end
+    pcall(function()
+        ContentPageVisuals_Border.Color=Color3.fromHex(t.border)
+        ContentPageExploits_Border.Color=Color3.fromHex(t.border)
+        ContentPageMisc_Border.Color=Color3.fromHex(t.border)
+        ContentPageSettings_Border.Color=Color3.fromHex(t.border)
+        if ContentPageVisuals2_Border then ContentPageVisuals2_Border.Color=Color3.fromHex(t.border) end
+        if ContentPageVisuals3_Border then ContentPageVisuals3_Border.Color=Color3.fromHex(t.border) end
+        if ContentPageMisc2_Border then ContentPageMisc2_Border.Color=Color3.fromHex(t.border) end
+    end)
+    pcall(function()
+        if _G._swBgs then
+            for i,sw in ipairs(_G._swBgs) do
+                local chk=_G._swIsChecked and _G._swIsChecked[i]
+                if chk and chk() then sw.Color=Color3.fromHex(t.swon)
+                else sw.Color=Color3.fromHex(t.swbg) end
+            end
+        end
+    end)
+    pcall(function()
+        if _G.C5orbTrail then for _,_tr in ipairs(_G.C5orbTrail) do _tr.Color=Color3.fromHex(t.accent) end end
+        if _G.C5cometTrail then for _,_tr in ipairs(_G.C5cometTrail) do _tr.Color=Color3.fromHex(t.accent) end end
+        if _G.C5centerGlow then _G.C5centerGlow.Color=Color3.fromHex(t.accent) end
+    end)
+    Circle5.Color=Color3.fromHex(t.accent)
+    if _G.C5g1 then _G.C5g1.Color=Color3.fromHex(t.accent) end
+    if _G.C5g2 then _G.C5g2.Color=hexDim(t.accent,0.55) end
+    if _G.C5g3 then _G.C5g3.Color=hexDim(t.accent,0.30) end
+    if _G.RHg1 then _G.RHg1.Color=Color3.fromHex(t.accent) end if _G.RHg2 then _G.RHg2.Color=Color3.fromHex(t.accent) end
+    if _G.RHg3 then _G.RHg3.Color=hexDim(t.accent,0.65) end if _G.RHg4 then _G.RHg4.Color=hexDim(t.accent,0.65) end
+    if _G.ThemeBtnText then _G.ThemeBtnText.Text=t.name end
+    if _G.EffStyleBtnText then _G.EffStyleBtnText.Color=Color3.fromHex(t.txtActive) end
+    if _G.TxtStyleBtnText then _G.TxtStyleBtnText.Color=Color3.fromHex(t.txtActive) end
+    if _G.ThemeBtnText then _G.ThemeBtnText.Color=Color3.fromHex(t.txtActive) end
+    if _G.EffStyleArrow then _G.EffStyleArrow.Color=Color3.fromHex(t.accent) end
+    if _G.TxtStyleArrow then _G.TxtStyleArrow.Color=Color3.fromHex(t.accent) end
+    if _G.ThemeArrow then _G.ThemeArrow.Color=Color3.fromHex(t.accent) end
+    if _G.EffStyleLabel then _G.EffStyleLabel.Color=Color3.fromHex(t.txt) end
+    if _G.TxtStyleLabel then _G.TxtStyleLabel.Color=Color3.fromHex(t.txt) end
+    if _G.ThemeLabel then _G.ThemeLabel.Color=Color3.fromHex(t.txt) end
+end
+_G.txtStyles={"Normal","UPPERCASE","lowercase","Glitch On","Rainbow Hue","Shadow Drift","Neon Pulse","Typewriter","Flicker"}
+_G.txtActive=1
+_G.TxtStyleLabel=Drawing.new("Text") _G.TxtStyleLabel.Visible=false _G.TxtStyleLabel.Transparency=1 _G.TxtStyleLabel.ZIndex=542 _G.TxtStyleLabel.Color=Color3.fromHex("#c4b5d4") _G.TxtStyleLabel.Position=ContentPageSettings.Position+Vector2.new(9,68) _G.TxtStyleLabel.Text="Title Text Style" _G.TxtStyleLabel.Size=13 _G.TxtStyleLabel.Center=false _G.TxtStyleLabel.Outline=true _G.TxtStyleLabel.Font=Drawing.Fonts.Monospace
+_G.TxtStyleBtn=Drawing.new("Square") _G.TxtStyleBtn.Visible=false _G.TxtStyleBtn.Transparency=1 _G.TxtStyleBtn.ZIndex=543 _G.TxtStyleBtn.Color=Color3.fromHex("#261640") _G.TxtStyleBtn.Filled=true _G.TxtStyleBtn.Size=Vector2.new(140,18) _G.TxtStyleBtn.Corner=5 _G.TxtStyleBtn.Position=ContentPageSettings.Position+Vector2.new(190,64)
+_G.TxtStyleBtnText=Drawing.new("Text") _G.TxtStyleBtnText.Visible=false _G.TxtStyleBtnText.Transparency=1 _G.TxtStyleBtnText.ZIndex=544 _G.TxtStyleBtnText.Color=Color3.fromHex("#e0d0f5") _G.TxtStyleBtnText.Position=_G.TxtStyleBtn.Position+Vector2.new(70,9) _G.TxtStyleBtnText.Text=_G.txtStyles[_G.txtActive] _G.TxtStyleBtnText.Size=12 _G.TxtStyleBtnText.Center=true _G.TxtStyleBtnText.Outline=false _G.TxtStyleBtnText.Font=Drawing.Fonts.System
+_G.TxtStyleArrow=Drawing.new("Text") _G.TxtStyleArrow.Visible=false _G.TxtStyleArrow.Transparency=1 _G.TxtStyleArrow.ZIndex=545 _G.TxtStyleArrow.Color=Color3.fromHex("#9d3df0") _G.TxtStyleArrow.Position=_G.TxtStyleBtn.Position+Vector2.new(125,9) _G.TxtStyleArrow.Text="v" _G.TxtStyleArrow.Size=10 _G.TxtStyleArrow.Center=true _G.TxtStyleArrow.Outline=false _G.TxtStyleArrow.Font=Drawing.Fonts.System
+_G.ThemeLabel=Drawing.new("Text") _G.ThemeLabel.Visible=false _G.ThemeLabel.Transparency=1 _G.ThemeLabel.ZIndex=552 _G.ThemeLabel.Color=Color3.fromHex("#c4b5d4") _G.ThemeLabel.Position=ContentPageSettings.Position+Vector2.new(9,94) _G.ThemeLabel.Text="UI Theme" _G.ThemeLabel.Size=13 _G.ThemeLabel.Center=false _G.ThemeLabel.Outline=true _G.ThemeLabel.Font=Drawing.Fonts.Monospace
+_G.ThemeBtn=Drawing.new("Square") _G.ThemeBtn.Visible=false _G.ThemeBtn.Transparency=1 _G.ThemeBtn.ZIndex=553 _G.ThemeBtn.Color=Color3.fromHex("#261640") _G.ThemeBtn.Filled=true _G.ThemeBtn.Size=Vector2.new(140,18) _G.ThemeBtn.Corner=5 _G.ThemeBtn.Position=ContentPageSettings.Position+Vector2.new(190,90)
+_G.ThemeBtnText=Drawing.new("Text") _G.ThemeBtnText.Visible=false _G.ThemeBtnText.Transparency=1 _G.ThemeBtnText.ZIndex=554 _G.ThemeBtnText.Color=Color3.fromHex("#e0d0f5") _G.ThemeBtnText.Position=_G.ThemeBtn.Position+Vector2.new(70,9) _G.ThemeBtnText.Text=_G.uiThemes[_G.uiThemeActive].name _G.ThemeBtnText.Size=12 _G.ThemeBtnText.Center=true _G.ThemeBtnText.Outline=false _G.ThemeBtnText.Font=Drawing.Fonts.System
+_G.ThemeArrow=Drawing.new("Text") _G.ThemeArrow.Visible=false _G.ThemeArrow.Transparency=1 _G.ThemeArrow.ZIndex=555 _G.ThemeArrow.Color=Color3.fromHex("#9d3df0") _G.ThemeArrow.Position=_G.ThemeBtn.Position+Vector2.new(125,9) _G.ThemeArrow.Text="v" _G.ThemeArrow.Size=10 _G.ThemeArrow.Center=true _G.ThemeArrow.Outline=false _G.ThemeArrow.Font=Drawing.Fonts.System
+_G.effStyles={"Ripple Burst","Breathing","Rainbow","Shimmer","Static","Orbit Spin","Heartbeat","Comet Trail","Double Ring"}
+_G.effActive=1
+_G.EffStyleLabel=Drawing.new("Text") _G.EffStyleLabel.Visible=false _G.EffStyleLabel.Transparency=1 _G.EffStyleLabel.ZIndex=532 _G.EffStyleLabel.Color=Color3.fromHex("#c4b5d4") _G.EffStyleLabel.Position=ContentPageSettings.Position+Vector2.new(9,42) _G.EffStyleLabel.Text="Circle Effect Style" _G.EffStyleLabel.Size=13 _G.EffStyleLabel.Center=false _G.EffStyleLabel.Outline=true _G.EffStyleLabel.Font=Drawing.Fonts.Monospace
+_G.EffStyleBtn=Drawing.new("Square") _G.EffStyleBtn.Visible=false _G.EffStyleBtn.Transparency=1 _G.EffStyleBtn.ZIndex=533 _G.EffStyleBtn.Color=Color3.fromHex("#261640") _G.EffStyleBtn.Filled=true _G.EffStyleBtn.Size=Vector2.new(140,18) _G.EffStyleBtn.Corner=5 _G.EffStyleBtn.Position=ContentPageSettings.Position+Vector2.new(190,38)
+_G.EffStyleBtnText=Drawing.new("Text") _G.EffStyleBtnText.Visible=false _G.EffStyleBtnText.Transparency=1 _G.EffStyleBtnText.ZIndex=534 _G.EffStyleBtnText.Color=Color3.fromHex("#e0d0f5") _G.EffStyleBtnText.Position=_G.EffStyleBtn.Position+Vector2.new(70,9) _G.EffStyleBtnText.Text=_G.effStyles[_G.effActive] _G.EffStyleBtnText.Size=12 _G.EffStyleBtnText.Center=true _G.EffStyleBtnText.Outline=false _G.EffStyleBtnText.Font=Drawing.Fonts.System
+_G.EffStyleArrow=Drawing.new("Text") _G.EffStyleArrow.Visible=false _G.EffStyleArrow.Transparency=1 _G.EffStyleArrow.ZIndex=535 _G.EffStyleArrow.Color=Color3.fromHex("#9d3df0") _G.EffStyleArrow.Position=_G.EffStyleBtn.Position+Vector2.new(125,9) _G.EffStyleArrow.Text="v" _G.EffStyleArrow.Size=10 _G.EffStyleArrow.Center=true _G.EffStyleArrow.Outline=false _G.EffStyleArrow.Font=Drawing.Fonts.System
+
+spawn(function()
+    local IDLE=10 local BR=5
+    local lastB=os.clock()-IDLE local rainT=0 local shimT=0
+    local _orbH={{},{},{}} local _cometH={} local _orbSteps=5 local _cometSteps=8
+    while true do
+        task.wait(0.016)
+        if not Circle5.Visible then continue end
+        local now=os.clock() local eff=_G.effActive
+        local BC=Color3.fromHex(_G._th_accent or "#ad47fe")
+        if eff==1 then
+            pcall(function() if _G.C5orbTrail then for _,_x in ipairs(_G.C5orbTrail) do _x.Visible=false end end if _G.C5cometTrail then for _,_x in ipairs(_G.C5cometTrail) do _x.Visible=false end end if _G.C5centerGlow then _G.C5centerGlow.Visible=false end end)
+            local br=math.sin(now*1.2)*0.8
+            Circle5.Radius=BR+br Circle5.Color=BC
+            _G.C5g1.Transparency=0.75+math.sin(now*1.2)*0.15 _G.C5g1.Radius=9+br _G.C5g1.Color=BC
+            _G.C5g2.Transparency=0.88 _G.C5g2.Radius=13
+            _G.C5g3.Transparency=0.93 _G.C5g3.Radius=17
+            _G.C5g1.Position=Circle5.Position _G.C5g2.Position=Circle5.Position _G.C5g3.Position=Circle5.Position
+            if os.clock()-lastB>=IDLE then
+                lastB=os.clock()
+                local fs=os.clock()
+                while os.clock()-fs<0.25 do
+                    task.wait(0.016) if not Circle5.Visible then break end
+                    local p2=(os.clock()-fs)/0.25 local lp=math.sin(p2*math.pi)
+                    Circle5.Radius=BR+lp*4
+                    _G.C5g1.Radius=10+lp*8 _G.C5g1.Transparency=0.3-lp*0.25
+                    _G.C5g2.Radius=15+lp*10 _G.C5g2.Transparency=0.6-lp*0.4
+                    _G.C5g3.Radius=20+lp*14 _G.C5g3.Transparency=0.75-lp*0.5
+                end
+                Circle5.Color=BC Circle5.Radius=BR
+                for _,d in ipairs({0,0.12,0.24}) do spawn(function()
+                    task.wait(d) if not Circle5.Visible then return end
+                    local rs=os.clock()
+                    while os.clock()-rs<0.7 do
+                        task.wait(0.016) if not Circle5.Visible then break end
+                        local rp=(os.clock()-rs)/0.7 local rr=6+rp*22
+                        _G.C5g1.Position=Circle5.Position _G.C5g2.Position=Circle5.Position _G.C5g3.Position=Circle5.Position
+                        if d==0 then _G.C5g1.Radius=rr _G.C5g1.Transparency=0.2+rp*0.8
+                        elseif d==0.12 then _G.C5g2.Radius=rr _G.C5g2.Transparency=0.3+rp*0.7
+                        else _G.C5g3.Radius=rr _G.C5g3.Transparency=0.4+rp*0.6 end
+                    end
+                    if d==0 then _G.C5g1.Radius=9 _G.C5g1.Transparency=0.75
+                    elseif d==0.12 then _G.C5g2.Radius=13 _G.C5g2.Transparency=0.88
+                    else _G.C5g3.Radius=17 _G.C5g3.Transparency=0.93 end
+                end) end
+            end
+        elseif eff==2 then
+            pcall(function() if _G.C5orbTrail then for _,_x in ipairs(_G.C5orbTrail) do _x.Visible=false end end if _G.C5cometTrail then for _,_x in ipairs(_G.C5cometTrail) do _x.Visible=false end end if _G.C5centerGlow then _G.C5centerGlow.Visible=false end end)
+            local br2=(math.sin(now*1.5)+1)/2
+            Circle5.Radius=4+br2*4 Circle5.Color=BC
+            _G.C5g1.Radius=9+br2*4 _G.C5g1.Transparency=0.5+br2*0.45 _G.C5g1.Color=BC
+            _G.C5g2.Radius=13+br2*5 _G.C5g2.Transparency=0.65+br2*0.3
+            _G.C5g3.Radius=17+br2*7 _G.C5g3.Transparency=0.78+br2*0.2
+            _G.C5g1.Position=Circle5.Position _G.C5g2.Position=Circle5.Position _G.C5g3.Position=Circle5.Position
+        elseif eff==3 then
+            pcall(function() if _G.C5orbTrail then for _,_x in ipairs(_G.C5orbTrail) do _x.Visible=false end end if _G.C5cometTrail then for _,_x in ipairs(_G.C5cometTrail) do _x.Visible=false end end if _G.C5centerGlow then _G.C5centerGlow.Visible=false end end)
+            rainT=rainT+0.016
+            local h2=(rainT*0.15)%1
+            local function hsvF(hh,s,v) local i=math.floor(hh*6) local f=hh*6-i local pp=v*(1-s) local q=v*(1-f*s) local t2=v*(1-(1-f)*s) i=i%6 if i==0 then return v,t2,pp elseif i==1 then return q,v,pp elseif i==2 then return pp,v,t2 elseif i==3 then return pp,q,v elseif i==4 then return t2,pp,v else return v,pp,q end end
+            local r3,g3,b3=hsvF(h2,0.8,1)
+            Circle5.Color=Color3.new(r3,g3,b3) Circle5.Radius=5
+            _G.C5g1.Color=Color3.new(r3,g3,b3) _G.C5g1.Radius=9 _G.C5g1.Transparency=0.7
+            _G.C5g2.Color=Color3.new(r3*0.7,g3*0.7,b3*0.7) _G.C5g2.Radius=13 _G.C5g2.Transparency=0.85
+            _G.C5g3.Color=Color3.new(r3*0.4,g3*0.4,b3*0.4) _G.C5g3.Radius=17 _G.C5g3.Transparency=0.92
+            _G.C5g1.Position=Circle5.Position _G.C5g2.Position=Circle5.Position _G.C5g3.Position=Circle5.Position
+        elseif eff==4 then
+            pcall(function() if _G.C5orbTrail then for _,_x in ipairs(_G.C5orbTrail) do _x.Visible=false end end if _G.C5cometTrail then for _,_x in ipairs(_G.C5cometTrail) do _x.Visible=false end end if _G.C5centerGlow then _G.C5centerGlow.Visible=false end end)
+            shimT=shimT+0.016
+            local fl=math.max(0,1-((shimT%4)*0.7))
+            Circle5.Color=BC Circle5.Radius=5
+            _G.C5g1.Radius=9+fl*8 _G.C5g1.Transparency=0.75-fl*0.65 _G.C5g1.Color=Color3.fromHex("#ffffff")
+            _G.C5g2.Radius=13+fl*12 _G.C5g2.Transparency=0.88-fl*0.7
+            _G.C5g3.Radius=17+fl*16 _G.C5g3.Transparency=0.93-fl*0.75 _G.C5g3.Color=BC
+            _G.C5g1.Position=Circle5.Position _G.C5g2.Position=Circle5.Position _G.C5g3.Position=Circle5.Position
+        elseif eff==6 then
+            pcall(function() if _G.C5orbTrail then for _,_x in ipairs(_G.C5orbTrail) do _x.Visible=false end end if _G.C5cometTrail then for _,_x in ipairs(_G.C5cometTrail) do _x.Visible=false end end if _G.C5centerGlow then _G.C5centerGlow.Visible=false end end)
+            if _G.C5centerGlow then _G.C5centerGlow.Position=Circle5.Position _G.C5centerGlow.Color=BC _G.C5centerGlow.Visible=Circle5.Visible _G.C5centerGlow.Radius=7+math.sin(now*2) _G.C5centerGlow.Transparency=0.80 end
+            if _G.C5cometTrail then for _,_x in ipairs(_G.C5cometTrail) do _x.Visible=false end end
+            local _oR={11,15,20} local _oS={1.8,-2.5,1.1} local _gd={_G.C5g1,_G.C5g2,_G.C5g3}
+            for _di=1,3 do local _ang=now*_oS[_di] local _pos=Circle5.Position+Vector2.new(math.cos(_ang)*_oR[_di],math.sin(_ang)*_oR[_di]) table.insert(_orbH[_di],_pos) if #_orbH[_di]>_orbSteps then table.remove(_orbH[_di],1) end if _gd[_di] then _gd[_di].Position=_pos _gd[_di].Radius=3 _gd[_di].Transparency=0.15 _gd[_di].Color=BC end if _G.C5orbTrail then for _si=1,#_orbH[_di] do local _ti=(_di-1)*4+_si if _G.C5orbTrail[_ti] then local _fd=_si/_orbSteps _G.C5orbTrail[_ti].Position=_orbH[_di][_si] _G.C5orbTrail[_ti].Radius=math.max(1,3*_fd) _G.C5orbTrail[_ti].Transparency=1-_fd*0.75 _G.C5orbTrail[_ti].Color=BC _G.C5orbTrail[_ti].Visible=Circle5.Visible end end for _si=#_orbH[_di]+1,4 do local _ti=(_di-1)*4+_si if _G.C5orbTrail[_ti] then _G.C5orbTrail[_ti].Visible=false end end end end
+            Circle5.Radius=5 Circle5.Color=BC
+        elseif eff==7 then
+            pcall(function() if _G.C5orbTrail then for _,_x in ipairs(_G.C5orbTrail) do _x.Visible=false end end if _G.C5cometTrail then for _,_x in ipairs(_G.C5cometTrail) do _x.Visible=false end end if _G.C5centerGlow then _G.C5centerGlow.Visible=false end end)
+            if _G.C5centerGlow then _G.C5centerGlow.Position=Circle5.Position _G.C5centerGlow.Color=BC _G.C5centerGlow.Visible=Circle5.Visible _G.C5centerGlow.Radius=7 _G.C5centerGlow.Transparency=0.82 end
+            local _tp=(now%1.4)/1.4 local _hp=0 if _tp<0.08 then _hp=_tp/0.08 elseif _tp<0.16 then _hp=1-(_tp-0.08)/0.08 elseif _tp<0.22 then _hp=(_tp-0.16)/0.06*0.6 elseif _tp<0.28 then _hp=0.6-(_tp-0.22)/0.06*0.6 end
+            Circle5.Radius=5+_hp*7 Circle5.Color=BC _G.C5g1.Radius=9+_hp*11 _G.C5g1.Transparency=math.max(0.05,0.75-_hp*0.65) _G.C5g1.Color=BC _G.C5g2.Radius=14+_hp*15 _G.C5g2.Transparency=math.max(0.05,0.88-_hp*0.75) _G.C5g3.Radius=19+_hp*19 _G.C5g3.Transparency=math.max(0.05,0.93-_hp*0.82) _G.C5g1.Position=Circle5.Position _G.C5g2.Position=Circle5.Position _G.C5g3.Position=Circle5.Position
+        elseif eff==8 then
+            pcall(function() if _G.C5orbTrail then for _,_x in ipairs(_G.C5orbTrail) do _x.Visible=false end end if _G.C5cometTrail then for _,_x in ipairs(_G.C5cometTrail) do _x.Visible=false end end if _G.C5centerGlow then _G.C5centerGlow.Visible=false end end)
+            if _G.C5centerGlow then _G.C5centerGlow.Position=Circle5.Position _G.C5centerGlow.Color=BC _G.C5centerGlow.Visible=Circle5.Visible _G.C5centerGlow.Radius=6+math.sin(now*2.4) _G.C5centerGlow.Transparency=0.78 end
+            local _a8=now*2.4 local _hp8=Vector2.new(Circle5.Position.X+math.cos(_a8)*15,Circle5.Position.Y+math.sin(_a8)*15)
+            table.insert(_cometH,_hp8) if #_cometH>_cometSteps then table.remove(_cometH,1) end
+            _G.C5g1.Position=_hp8 _G.C5g1.Radius=4 _G.C5g1.Transparency=0.05 _G.C5g1.Color=BC _G.C5g2.Position=_hp8 _G.C5g2.Radius=7 _G.C5g2.Transparency=0.65 _G.C5g3.Position=_hp8 _G.C5g3.Radius=10 _G.C5g3.Transparency=0.85
+            if _G.C5cometTrail then for _si=1,#_cometH do local _fd=_si/_cometSteps _G.C5cometTrail[_si].Position=_cometH[_si] _G.C5cometTrail[_si].Radius=math.max(1,4*_fd) _G.C5cometTrail[_si].Transparency=1-_fd*0.88 _G.C5cometTrail[_si].Color=BC _G.C5cometTrail[_si].Visible=Circle5.Visible end for _si=#_cometH+1,_cometSteps do _G.C5cometTrail[_si].Visible=false end end
+            Circle5.Radius=5 Circle5.Color=BC
+        elseif eff==9 then
+            pcall(function() if _G.C5orbTrail then for _,_x in ipairs(_G.C5orbTrail) do _x.Visible=false end end if _G.C5cometTrail then for _,_x in ipairs(_G.C5cometTrail) do _x.Visible=false end end if _G.C5centerGlow then _G.C5centerGlow.Visible=false end end)
+            if _G.C5centerGlow then _G.C5centerGlow.Position=Circle5.Position _G.C5centerGlow.Color=BC _G.C5centerGlow.Visible=Circle5.Visible _G.C5centerGlow.Radius=7 _G.C5centerGlow.Transparency=0.82 end
+            local _rp=(math.sin(now*1.1)+1)/2
+            _G.C5g1.Position=Circle5.Position _G.C5g1.Radius=10+_rp*3 _G.C5g1.Transparency=0.55 _G.C5g1.Color=BC _G.C5g2.Position=Circle5.Position _G.C5g2.Radius=16+_rp*2 _G.C5g2.Transparency=0.72 _G.C5g2.Color=BC _G.C5g3.Position=Circle5.Position _G.C5g3.Radius=13 _G.C5g3.Transparency=0.80 _G.C5g3.Color=BC
+            Circle5.Radius=5+_rp*2 Circle5.Color=BC
+        else
+            Circle5.Radius=5 Circle5.Color=BC
+            _G.C5g1.Radius=9 _G.C5g1.Transparency=0.75 _G.C5g1.Color=BC
+            _G.C5g2.Radius=13 _G.C5g2.Transparency=0.88
+            _G.C5g3.Radius=17 _G.C5g3.Transparency=0.93
+            _G.C5g1.Position=Circle5.Position _G.C5g2.Position=Circle5.Position _G.C5g3.Position=Circle5.Position
+            pcall(function() if _G.C5orbTrail then for _,_x in ipairs(_G.C5orbTrail) do _x.Visible=false end end if _G.C5cometTrail then for _,_x in ipairs(_G.C5cometTrail) do _x.Visible=false end end if _G.C5centerGlow then _G.C5centerGlow.Visible=false end end)
+
+        end
+    end
+end)
+spawn(function()
+    local T_TR={0.78,0.78,0.86,0.86}
+    local glowT={_G.RHg1,_G.RHg2,_G.RHg3,_G.RHg4}
+    local DT=0.05 local breathT=0 local glitchTicks=0 local glitchCooldown=0 local rainHue=0
+    local shadowDriftT=0 local neonHue=0 local twIdx=0 local twDir=1 local twStr="RATHUB" local twT=0 local twLastVis=false local flickT=0
+    local GCOL={Color3.fromHex("#ad47fe"),Color3.fromHex("#5c61e3"),Color3.fromHex("#ff3cac"),Color3.fromHex("#00f0ff"),Color3.fromHex("#c084fc"),Color3.fromHex("#FFFFFF"),Color3.fromHex("#FFFFFF"),Color3.fromHex("#FFFFFF")}
+    local GOFF={Vector2.new(-4,-1),Vector2.new(4,1),Vector2.new(-3,1),Vector2.new(3,-1),Vector2.new(-5,0),Vector2.new(5,0),Vector2.new(0,-2),Vector2.new(0,2)}
+    while true do
+        task.wait(DT) breathT=breathT+DT
+        local ts=_G.txtActive
+        if ts==3 then TextRATHUB.Text="rathub" for _,g in ipairs(glowT) do g.Text="rathub" end
+        elseif ts==4 then
+            local col=GCOL[math.random(1,#GCOL)] local off=GOFF[math.random(1,#GOFF)]
+            TextRATHUB.Color=col TextRATHUB.Position=Main1.Position+Vector2.new(54,17)+off TextRATHUB.Outline=(math.random(1,2)==1)
+            for i,g in ipairs(glowT) do g.Color=GCOL[math.random(1,#GCOL)] g.Position=Main1.Position+Vector2.new(54,17)+GOFF[math.random(1,#GOFF)] end
+        elseif ts==5 then
+            rainHue=(rainHue+DT*0.3)%1
+            local function hsv2(h,s,v) local i=math.floor(h*6) local f=h*6-i local pp=v*(1-s) local q=v*(1-f*s) local t2=v*(1-(1-f)*s) i=i%6 if i==0 then return v,t2,pp elseif i==1 then return q,v,pp elseif i==2 then return pp,v,t2 elseif i==3 then return pp,q,v elseif i==4 then return t2,pp,v else return v,pp,q end end
+            local r5,g5,b5=hsv2(rainHue,0.7,1)
+            TextRATHUB.Color=Color3.new(r5,g5,b5) TextRATHUB.Text="RATHUB"
+            for _,gw in ipairs(glowT) do gw.Color=Color3.new(r5*0.6,g5*0.6,b5*0.6) gw.Text="RATHUB" end
+        elseif ts==6 then
+            shadowDriftT=shadowDriftT+DT local _sx=math.sin(shadowDriftT*0.7)*3 local _sy=math.cos(shadowDriftT*0.5)*2
+            local _so={Vector2.new(_sx+2,_sy+2),Vector2.new(_sx-2,_sy+1),Vector2.new(_sx+1,_sy-2),Vector2.new(_sx-1,_sy-1)}
+            TextRATHUB.Text="RATHUB" TextRATHUB.Color=Color3.fromHex("#FFFFFF") TextRATHUB.Outline=false TextRATHUB.Position=Main1.Position+Vector2.new(54,17)
+            for _i,_g in ipairs(glowT) do _g.Text="RATHUB" _g.Color=Color3.fromHex(_G._th_accent or "#6b12a9") _g.Transparency=0.55 _g.Position=Main1.Position+Vector2.new(54,17)+_so[_i] end
+        elseif ts==7 then
+            neonHue=(neonHue+DT*0.4)%1 local _ph=(math.sin(breathT*3)+1)/2
+            local _hn=neonHue local _h6n=math.floor(_hn*6) local _hfn=_hn*6-_h6n local _r7,_g7,_b7
+            if _h6n==0 then _r7=1 _g7=_hfn _b7=0 elseif _h6n==1 then _r7=1-_hfn _g7=1 _b7=0 elseif _h6n==2 then _r7=0 _g7=1 _b7=_hfn elseif _h6n==3 then _r7=0 _g7=1-_hfn _b7=1 elseif _h6n==4 then _r7=_hfn _g7=0 _b7=1 else _r7=1 _g7=0 _b7=1-_hfn end
+            local _sc=0.7+_ph*0.3 _r7=_r7*_sc _g7=_g7*_sc _b7=_b7*_sc
+            TextRATHUB.Text="RATHUB" TextRATHUB.Color=Color3.new(_r7,_g7,_b7) TextRATHUB.Outline=true TextRATHUB.Position=Main1.Position+Vector2.new(54,17)
+            for _i,_gw in ipairs(glowT) do _gw.Text="RATHUB" _gw.Color=Color3.new(_r7*0.5,_g7*0.5,_b7*0.5) _gw.Transparency=0.5+_ph*0.2 _gw.Position=Main1.Position+Vector2.new(53+(_i%2==0 and 2 or -1),16+(_i>2 and 2 or -1)) end
+        elseif ts==8 then
+            local _cv=TextRATHUB.Visible if _cv~=twLastVis then twIdx=0 twDir=1 twT=0 end
+            twLastVis=_cv twT=twT+DT if twT>=0.10 then twT=0 if twDir==1 then twIdx=twIdx+1 if twIdx>=#twStr then twIdx=#twStr twDir=0 end end end
+            local _sh=twStr:sub(1,twIdx) TextRATHUB.Text=_sh TextRATHUB.Color=Color3.fromHex("#FFFFFF") TextRATHUB.Outline=true TextRATHUB.Position=Main1.Position+Vector2.new(54,17)
+            for _,_g in ipairs(glowT) do _g.Text=_sh _g.Color=Color3.fromHex(_G._th_accent or "#9d3df0") end
+        elseif ts==9 then
+            flickT=flickT+DT local _fs=not(math.random(1,8)==1 and flickT>0.05) if not _fs then flickT=0 end
+            local _ft=_fs and "RATHUB" or "" TextRATHUB.Text=_ft TextRATHUB.Color=Color3.fromHex("#FFFFFF") TextRATHUB.Outline=true TextRATHUB.Position=Main1.Position+Vector2.new(54,17)
+            for _,_g in ipairs(glowT) do _g.Text=_ft _g.Color=Color3.fromHex(_G._th_accent or "#9d3df0") end
+        else TextRATHUB.Text="RATHUB" for _,g in ipairs(glowT) do g.Text="RATHUB" end end
+        if ts~=4 then
+            if glitchTicks<=0 then local w=math.sin(breathT*1.5)*0.05 for i,g in ipairs(glowT) do g.Transparency=T_TR[i]+w end end
+            if glitchCooldown>0 then glitchCooldown=glitchCooldown-1 end
+            if glitchTicks<=0 and glitchCooldown<=0 and math.random(1,55)==1 then glitchTicks=math.random(3,7) glitchCooldown=math.random(30,80) end
+            if glitchTicks>0 and TextRATHUB.Visible then
+                glitchTicks=glitchTicks-1
+                local col2=GCOL[math.random(1,#GCOL)] local off2=GOFF[math.random(1,#GOFF)]
+                if ts~=5 then TextRATHUB.Color=col2 end
+                TextRATHUB.Position=Main1.Position+Vector2.new(54,17)+off2 TextRATHUB.Outline=(math.random(1,3)~=1)
+                local gp={Main1.Position+Vector2.new(53,16),Main1.Position+Vector2.new(55,18),Main1.Position+Vector2.new(52,15),Main1.Position+Vector2.new(56,19)}
+                for i,g in ipairs(glowT) do
+                    g.Position=gp[i]+GOFF[math.random(1,#GOFF)] g.Transparency=T_TR[i]-0.25
+                    if ts~=5 then g.Color=GCOL[math.random(1,#GCOL)] end
+                end
+                if glitchTicks<=0 then
+                    if ts~=5 then TextRATHUB.Color=Color3.fromHex("#FFFFFF") end
+                    TextRATHUB.Position=Main1.Position+Vector2.new(54,17) TextRATHUB.Outline=true
+                    local gn={Vector2.new(53,16),Vector2.new(55,18),Vector2.new(52,15),Vector2.new(56,19)}
+                    for i,g in ipairs(glowT) do
+                        g.Position=Main1.Position+gn[i] g.Transparency=T_TR[i]
+                        if ts~=5 then if i<=2 then g.Color=Color3.fromHex(_G._th_accent or "#9d3df0") else g.Color=Color3.fromHex(_G._th_accent or "#6b1db0") end end
+                    end
+                end
+            end
+        end
+    end
+end)
+
 local TextToRescanForce = Drawing.new("Text")
 TextToRescanForce.Visible = false
 TextToRescanForce.Transparency = 1
@@ -1872,13 +2061,6 @@ EspItemsText.Size = 14
 EspItemsText.Center = false
 EspItemsText.Outline = true
 EspItemsText.Font = Drawing.Fonts.Monospace
-
-local SwitchForESPitems = Drawing.new("Switch")
-SwitchForESPitems.Visible = false
-SwitchForESPitems.Transparency = 1
-SwitchForESPitems.ZIndex = 170
-SwitchForESPitems.Color = Color3.fromHex("#212121")
-SwitchForESPitems.Position = ContentPageVisuals.Position + Vector2.new(481, 58)
 
 local SwitchForESPitems_IsChecked = false
 local SwitchForESPitems = Drawing.new("Square")
@@ -1946,13 +2128,6 @@ TextESPCurrency.Center = false
 TextESPCurrency.Outline = true
 TextESPCurrency.Font = Drawing.Fonts.Monospace
 
-local ESPswitchToCurrency = Drawing.new("Switch")
-ESPswitchToCurrency.Visible = false
-ESPswitchToCurrency.Transparency = 1
-ESPswitchToCurrency.ZIndex = 180
-ESPswitchToCurrency.Color = Color3.fromHex("#212121")
-ESPswitchToCurrency.Position = ContentPageVisuals.Position + Vector2.new(481, 84)
-
 local ESPswitchToCurrency_IsChecked = false
 local ESPswitchToCurrency = Drawing.new("Square")
 ESPswitchToCurrency.Visible = false
@@ -2012,8 +2187,8 @@ ContentPageMisc2.Visible = false
 ContentPageMisc2.Transparency = 1
 ContentPageMisc2.ZIndex = 480
 ContentPageMisc2.Color = Color3.fromHex("#0c1020")
-ContentPageMisc2.Position = ContentPageMisc.Position + Vector2.new(0, 165)
-ContentPageMisc2.Size = Vector2.new(325, 116)
+ContentPageMisc2.Position = ContentPageMisc.Position + Vector2.new(0, 190)
+ContentPageMisc2.Size = Vector2.new(332, 80)
 ContentPageMisc2.Filled = true
 ContentPageMisc2.Corner = 5
 
@@ -2023,7 +2198,7 @@ ContentPageMisc2_Border.Transparency = 1
 ContentPageMisc2_Border.ZIndex = 481
 ContentPageMisc2_Border.Color = Color3.fromHex("#13172a")
 ContentPageMisc2_Border.Filled = false
-ContentPageMisc2_Border.Thickness = 1
+ContentPageMisc2_Border.Thickness = 3
 ContentPageMisc2_Border.Position = ContentPageMisc2.Position
 ContentPageMisc2_Border.Size = ContentPageMisc2.Size
 ContentPageMisc2_Border.Corner = 5
@@ -2034,7 +2209,7 @@ SliderForESPdistance.Transparency = 1
 SliderForESPdistance.Color = Color3.fromHex("#444444")
 SliderForESPdistance.Filled = true
 SliderForESPdistance.Size = Vector2.new(200, 10)
-SliderForESPdistance.Position = Vector2.new(118, 313)
+SliderForESPdistance.Position = Vector2.new(118, 338)
 SliderForESPdistance.ZIndex = 490
 SliderForESPdistance.Corner = 15
 local SliderForESPdistance_Value = 150
@@ -2056,6 +2231,11 @@ SliderForESPdistance_ValueText.Outline = true
 SliderForESPdistance_ValueText.Color = Color3.new(1, 1, 1)
 SliderForESPdistance_ValueText.Position = SliderForESPdistance.Position + Vector2.new(200/2, -10)
 SliderForESPdistance_ValueText.ZIndex = 492
+_G._cm2=ContentPageMisc2 _G._cm2b=ContentPageMisc2_Border
+table.insert(_G._swBgs, SwitchForESPitems_Bg)
+table.insert(_G._swIsChecked, function() return SwitchForESPitems_IsChecked end)
+table.insert(_G._swBgs, ESPswitchToCurrency_Bg)
+table.insert(_G._swIsChecked, function() return ESPswitchToCurrency_IsChecked end)
 
 local TextUnderSliderEspDis = Drawing.new("Text")
 TextUnderSliderEspDis.Visible = false
@@ -2380,6 +2560,7 @@ Tab_ContentPageSettings_SetVisible = function(visible)
         ToggleUIvisiblity.Visible = visible
         if ToggleUIvisiblity_Text then ToggleUIvisiblity_Text.Visible = visible end
     end
+    pcall(function() if _G.EffStyleLabel then _G.EffStyleLabel.Visible=visible _G.EffStyleBtn.Visible=visible _G.EffStyleBtnText.Visible=visible _G.EffStyleArrow.Visible=visible _G.TxtStyleLabel.Visible=visible _G.TxtStyleBtn.Visible=visible _G.TxtStyleBtnText.Visible=visible _G.TxtStyleArrow.Visible=visible _G.ThemeLabel.Visible=visible _G.ThemeBtn.Visible=visible _G.ThemeBtnText.Visible=visible _G.ThemeArrow.Visible=visible end end)
 end
 
 local Tab_ContentPageMisc2_SetVisible
@@ -2438,7 +2619,6 @@ local onKeyChanged=function(i) end
 local dragging = nil
 local dragStart = nil
 local startPos = nil
-local knobStartPos = nil
 local lastMouse1 = false
 
 while true do
@@ -2587,6 +2767,10 @@ while true do
                  AutoRescanSwitch_Ind.Visible = newState
                  AutoRescanSwitch_Label.Visible = newState
                  AutoRescanText.Visible = newState
+                 if _G.C5g1 then _G.C5g1.Visible=newState _G.C5g2.Visible=newState _G.C5g3.Visible=newState _G.RHg1.Visible=newState _G.RHg2.Visible=newState _G.RHg3.Visible=newState _G.RHg4.Visible=newState end
+                 if _G.EffStyleLabel then _G.EffStyleLabel.Visible=newState _G.EffStyleBtn.Visible=newState _G.EffStyleBtnText.Visible=newState _G.EffStyleArrow.Visible=newState _G.TxtStyleLabel.Visible=newState _G.TxtStyleBtn.Visible=newState _G.TxtStyleBtnText.Visible=newState _G.TxtStyleArrow.Visible=newState _G.ThemeLabel.Visible=newState _G.ThemeBtn.Visible=newState _G.ThemeBtnText.Visible=newState _G.ThemeArrow.Visible=newState end
+                 if newState and _G._applyTheme and _G.uiThemes then _G._applyTheme(_G.uiThemes[_G.uiThemeActive or 1]) end
+                 if newState and _G._activeTabBg and setActiveTab then setActiveTab(_G._activeTabBg,_G._activeTabTxt) end
                  ContentPageSettings.Visible = newState
                  ContentPageSettings_Border.Visible = newState
                  ToggleUIvisiblity.Visible = newState
@@ -2678,6 +2862,7 @@ while true do
                mPos.Y >= ESPkeycardSwitch.Position.Y and mPos.Y <= ESPkeycardSwitch.Position.Y + ESPkeycardSwitch.Size.Y then
 
                 ESPkeycardSwitch_IsChecked = not ESPkeycardSwitch_IsChecked
+                if ESPkeycardSwitch_Bg then ESPkeycardSwitch_Bg.Color=(ESPkeycardSwitch_IsChecked and Color3.fromHex(_G._th_swon or "#6b12a9") or Color3.fromHex(_G._th_swbg or "#212121")) end
                 if ESPkeycardSwitch_IsChecked then
                     ESPkeycardSwitch_IndBorder.Position = ESPkeycardSwitch.Position + Vector2.new(21, 1)
                     ESPkeycardSwitch_Ind.Position = ESPkeycardSwitch.Position + Vector2.new(21, 1)
@@ -2692,6 +2877,7 @@ while true do
                mPos.Y >= ESPDoorsSwitch.Position.Y and mPos.Y <= ESPDoorsSwitch.Position.Y + ESPDoorsSwitch.Size.Y then
 
                 ESPDoorsSwitch_IsChecked = not ESPDoorsSwitch_IsChecked
+                if ESPDoorsSwitch_Bg then ESPDoorsSwitch_Bg.Color=(ESPDoorsSwitch_IsChecked and Color3.fromHex(_G._th_swon or "#6b12a9") or Color3.fromHex(_G._th_swbg or "#212121")) end
                 if ESPDoorsSwitch_IsChecked then
                     ESPDoorsSwitch_IndBorder.Position = ESPDoorsSwitch.Position + Vector2.new(21, 1)
                     ESPDoorsSwitch_Ind.Position = ESPDoorsSwitch.Position + Vector2.new(21, 1)
@@ -2706,6 +2892,7 @@ while true do
                mPos.Y >= NoffiticationAnglerSwitch.Position.Y and mPos.Y <= NoffiticationAnglerSwitch.Position.Y + NoffiticationAnglerSwitch.Size.Y then
 
                 NoffiticationAnglerSwitch_IsChecked = not NoffiticationAnglerSwitch_IsChecked
+                if NoffiticationAnglerSwitch_Bg then NoffiticationAnglerSwitch_Bg.Color=(NoffiticationAnglerSwitch_IsChecked and Color3.fromHex(_G._th_swon or "#6b12a9") or Color3.fromHex(_G._th_swbg or "#212121")) end
                 if NoffiticationAnglerSwitch_IsChecked then
                     NoffiticationAnglerSwitch_IndBorder.Position = NoffiticationAnglerSwitch.Position + Vector2.new(18, 1)
                     NoffiticationAnglerSwitch_Ind.Position = NoffiticationAnglerSwitch.Position + Vector2.new(18, 1)
@@ -2720,6 +2907,7 @@ while true do
                mPos.Y >= NoffiticationFrogerSwitch.Position.Y and mPos.Y <= NoffiticationFrogerSwitch.Position.Y + NoffiticationFrogerSwitch.Size.Y then
 
                 NoffiticationFrogerSwitch_IsChecked = not NoffiticationFrogerSwitch_IsChecked
+                if NoffiticationFrogerSwitch_Bg then NoffiticationFrogerSwitch_Bg.Color=(NoffiticationFrogerSwitch_IsChecked and Color3.fromHex(_G._th_swon or "#6b12a9") or Color3.fromHex(_G._th_swbg or "#212121")) end
                 if NoffiticationFrogerSwitch_IsChecked then
                     NoffiticationFrogerSwitch_IndBorder.Position = NoffiticationFrogerSwitch.Position + Vector2.new(18, 1)
                     NoffiticationFrogerSwitch_Ind.Position = NoffiticationFrogerSwitch.Position + Vector2.new(18, 1)
@@ -2734,6 +2922,7 @@ while true do
                mPos.Y >= NoffiticationPinkieSwitch.Position.Y and mPos.Y <= NoffiticationPinkieSwitch.Position.Y + NoffiticationPinkieSwitch.Size.Y then
 
                 NoffiticationPinkieSwitch_IsChecked = not NoffiticationPinkieSwitch_IsChecked
+                if NoffiticationPinkieSwitch_Bg then NoffiticationPinkieSwitch_Bg.Color=(NoffiticationPinkieSwitch_IsChecked and Color3.fromHex(_G._th_swon or "#6b12a9") or Color3.fromHex(_G._th_swbg or "#212121")) end
                 if NoffiticationPinkieSwitch_IsChecked then
                     NoffiticationPinkieSwitch_IndBorder.Position = NoffiticationPinkieSwitch.Position + Vector2.new(18, 1)
                     NoffiticationPinkieSwitch_Ind.Position = NoffiticationPinkieSwitch.Position + Vector2.new(18, 1)
@@ -2748,6 +2937,7 @@ while true do
                mPos.Y >= NoffiticationBlitzSwitch.Position.Y and mPos.Y <= NoffiticationBlitzSwitch.Position.Y + NoffiticationBlitzSwitch.Size.Y then
 
                 NoffiticationBlitzSwitch_IsChecked = not NoffiticationBlitzSwitch_IsChecked
+                if NoffiticationBlitzSwitch_Bg then NoffiticationBlitzSwitch_Bg.Color=(NoffiticationBlitzSwitch_IsChecked and Color3.fromHex(_G._th_swon or "#6b12a9") or Color3.fromHex(_G._th_swbg or "#212121")) end
                 if NoffiticationBlitzSwitch_IsChecked then
                     NoffiticationBlitzSwitch_IndBorder.Position = NoffiticationBlitzSwitch.Position + Vector2.new(18, 1)
                     NoffiticationBlitzSwitch_Ind.Position = NoffiticationBlitzSwitch.Position + Vector2.new(18, 1)
@@ -2762,6 +2952,7 @@ while true do
                mPos.Y >= NoffiticationChainsmokerSwitch.Position.Y and mPos.Y <= NoffiticationChainsmokerSwitch.Position.Y + NoffiticationChainsmokerSwitch.Size.Y then
 
                 NoffiticationChainsmokerSwitch_IsChecked = not NoffiticationChainsmokerSwitch_IsChecked
+                if NoffiticationChainsmokerSwitch_Bg then NoffiticationChainsmokerSwitch_Bg.Color=(NoffiticationChainsmokerSwitch_IsChecked and Color3.fromHex(_G._th_swon or "#6b12a9") or Color3.fromHex(_G._th_swbg or "#212121")) end
                 if NoffiticationChainsmokerSwitch_IsChecked then
                     NoffiticationChainsmokerSwitch_IndBorder.Position = NoffiticationChainsmokerSwitch.Position + Vector2.new(18, 1)
                     NoffiticationChainsmokerSwitch_Ind.Position = NoffiticationChainsmokerSwitch.Position + Vector2.new(18, 1)
@@ -2776,6 +2967,7 @@ while true do
                mPos.Y >= NoffiticationPandemoniumSwitch.Position.Y and mPos.Y <= NoffiticationPandemoniumSwitch.Position.Y + NoffiticationPandemoniumSwitch.Size.Y then
 
                 NoffiticationPandemoniumSwitch_IsChecked = not NoffiticationPandemoniumSwitch_IsChecked
+                if NoffiticationPandemoniumSwitch_Bg then NoffiticationPandemoniumSwitch_Bg.Color=(NoffiticationPandemoniumSwitch_IsChecked and Color3.fromHex(_G._th_swon or "#6b12a9") or Color3.fromHex(_G._th_swbg or "#212121")) end
                 if NoffiticationPandemoniumSwitch_IsChecked then
                     NoffiticationPandemoniumSwitch_IndBorder.Position = NoffiticationPandemoniumSwitch.Position + Vector2.new(18, 1)
                     NoffiticationPandemoniumSwitch_Ind.Position = NoffiticationPandemoniumSwitch.Position + Vector2.new(18, 1)
@@ -2790,6 +2982,7 @@ while true do
                mPos.Y >= NoffiticationA60Switch.Position.Y and mPos.Y <= NoffiticationA60Switch.Position.Y + NoffiticationA60Switch.Size.Y then
 
                 NoffiticationA60Switch_IsChecked = not NoffiticationA60Switch_IsChecked
+                if NoffiticationA60Switch_Bg then NoffiticationA60Switch_Bg.Color=(NoffiticationA60Switch_IsChecked and Color3.fromHex(_G._th_swon or "#6b12a9") or Color3.fromHex(_G._th_swbg or "#212121")) end
                 if NoffiticationA60Switch_IsChecked then
                     NoffiticationA60Switch_IndBorder.Position = NoffiticationA60Switch.Position + Vector2.new(18, 1)
                     NoffiticationA60Switch_Ind.Position = NoffiticationA60Switch.Position + Vector2.new(18, 1)
@@ -2804,6 +2997,7 @@ while true do
                mPos.Y >= NoffiticationHarbingerSwitch.Position.Y and mPos.Y <= NoffiticationHarbingerSwitch.Position.Y + NoffiticationHarbingerSwitch.Size.Y then
 
                 NoffiticationHarbingerSwitch_IsChecked = not NoffiticationHarbingerSwitch_IsChecked
+                if NoffiticationHarbingerSwitch_Bg then NoffiticationHarbingerSwitch_Bg.Color=(NoffiticationHarbingerSwitch_IsChecked and Color3.fromHex(_G._th_swon or "#6b12a9") or Color3.fromHex(_G._th_swbg or "#212121")) end
                 if NoffiticationHarbingerSwitch_IsChecked then
                     NoffiticationHarbingerSwitch_IndBorder.Position = NoffiticationHarbingerSwitch.Position + Vector2.new(18, 1)
                     NoffiticationHarbingerSwitch_Ind.Position = NoffiticationHarbingerSwitch.Position + Vector2.new(18, 1)
@@ -2818,6 +3012,7 @@ while true do
                mPos.Y >= NoffiticationPainterRoomSwitch.Position.Y and mPos.Y <= NoffiticationPainterRoomSwitch.Position.Y + NoffiticationPainterRoomSwitch.Size.Y then
 
                 NoffiticationPainterRoomSwitch_IsChecked = not NoffiticationPainterRoomSwitch_IsChecked
+                if NoffiticationPainterRoomSwitch_Bg then NoffiticationPainterRoomSwitch_Bg.Color=(NoffiticationPainterRoomSwitch_IsChecked and Color3.fromHex(_G._th_swon or "#6b12a9") or Color3.fromHex(_G._th_swbg or "#212121")) end
                 if NoffiticationPainterRoomSwitch_IsChecked then
                     NoffiticationPainterRoomSwitch_IndBorder.Position = NoffiticationPainterRoomSwitch.Position + Vector2.new(18, 1)
                     NoffiticationPainterRoomSwitch_Ind.Position = NoffiticationPainterRoomSwitch.Position + Vector2.new(18, 1)
@@ -2832,6 +3027,7 @@ while true do
                mPos.Y >= EnableWatermarkSwitch.Position.Y and mPos.Y <= EnableWatermarkSwitch.Position.Y + EnableWatermarkSwitch.Size.Y then
 
                 EnableWatermarkSwitch_IsChecked = not EnableWatermarkSwitch_IsChecked
+                if EnableWatermarkSwitch_Bg then EnableWatermarkSwitch_Bg.Color=(EnableWatermarkSwitch_IsChecked and Color3.fromHex(_G._th_swon or "#6b12a9") or Color3.fromHex(_G._th_swbg or "#212121")) end
                 if EnableWatermarkSwitch_IsChecked then
                     EnableWatermarkSwitch_IndBorder.Position = EnableWatermarkSwitch.Position + Vector2.new(18, 1)
                     EnableWatermarkSwitch_Ind.Position = EnableWatermarkSwitch.Position + Vector2.new(18, 1)
@@ -2846,6 +3042,7 @@ while true do
                mPos.Y >= AutoHideSwitch.Position.Y and mPos.Y <= AutoHideSwitch.Position.Y + AutoHideSwitch.Size.Y then
 
                 AutoHideSwitch_IsChecked = not AutoHideSwitch_IsChecked
+                if AutoHideSwitch_Bg then AutoHideSwitch_Bg.Color=(AutoHideSwitch_IsChecked and Color3.fromHex(_G._th_swon or "#6b12a9") or Color3.fromHex(_G._th_swbg or "#212121")) end
                 if AutoHideSwitch_IsChecked then
                     AutoHideSwitch_IndBorder.Position = AutoHideSwitch.Position + Vector2.new(26, 1)
                     AutoHideSwitch_Ind.Position = AutoHideSwitch.Position + Vector2.new(26, 1)
@@ -2860,6 +3057,7 @@ while true do
                mPos.Y >= AutoRescanSwitch.Position.Y and mPos.Y <= AutoRescanSwitch.Position.Y + AutoRescanSwitch.Size.Y then
 
                 AutoRescanSwitch_IsChecked = not AutoRescanSwitch_IsChecked
+                if AutoRescanSwitch_Bg then AutoRescanSwitch_Bg.Color=(AutoRescanSwitch_IsChecked and Color3.fromHex(_G._th_swon or "#6b12a9") or Color3.fromHex(_G._th_swbg or "#212121")) end
                 if AutoRescanSwitch_IsChecked then
                     AutoRescanSwitch_IndBorder.Position = AutoRescanSwitch.Position + Vector2.new(26, 1)
                     AutoRescanSwitch_Ind.Position = AutoRescanSwitch.Position + Vector2.new(26, 1)
@@ -2869,6 +3067,9 @@ while true do
                 end
                 if onSwitch then pcall(function() onSwitch(AutoRescanSwitch_IsChecked) end) end
             end
+            if _G.EffStyleBtn and _G.EffStyleBtn.Visible and mPos.X>=_G.EffStyleBtn.Position.X and mPos.X<=_G.EffStyleBtn.Position.X+140 and mPos.Y>=_G.EffStyleBtn.Position.Y and mPos.Y<=_G.EffStyleBtn.Position.Y+18 then _G.effActive=(_G.effActive%#_G.effStyles)+1 _G.EffStyleBtnText.Text=_G.effStyles[_G.effActive] end
+            if _G.TxtStyleBtn and _G.TxtStyleBtn.Visible and mPos.X>=_G.TxtStyleBtn.Position.X and mPos.X<=_G.TxtStyleBtn.Position.X+140 and mPos.Y>=_G.TxtStyleBtn.Position.Y and mPos.Y<=_G.TxtStyleBtn.Position.Y+18 then _G.txtActive=(_G.txtActive%#_G.txtStyles)+1 _G.TxtStyleBtnText.Text=_G.txtStyles[_G.txtActive] end
+            if _G.ThemeBtn and _G.ThemeBtn.Visible and mPos.X>=_G.ThemeBtn.Position.X and mPos.X<=_G.ThemeBtn.Position.X+140 and mPos.Y>=_G.ThemeBtn.Position.Y and mPos.Y<=_G.ThemeBtn.Position.Y+18 then _G.uiThemeActive=(_G.uiThemeActive%#_G.uiThemes)+1 _G._applyTheme(_G.uiThemes[_G.uiThemeActive]) end
 
             if ToggleUIvisiblity.Visible and mPos.X >= ToggleUIvisiblity.Position.X and mPos.X <= ToggleUIvisiblity.Position.X + ToggleUIvisiblity.Size.X and
                mPos.Y >= ToggleUIvisiblity.Position.Y and mPos.Y <= ToggleUIvisiblity.Position.Y + ToggleUIvisiblity.Size.Y then
@@ -2949,7 +3150,14 @@ while true do
                         sq.Position=Vector2.new(dragging.Position.X+(i-1)*math.floor(gW/gSteps),dragging.Position.Y)
                     end end
                 Circle5.Position = dragging.Position + Vector2.new(25, 23)
+                _G.C5g1.Position=dragging.Position+Vector2.new(25,23)
+                _G.C5g2.Position=dragging.Position+Vector2.new(25,23)
+                _G.C5g3.Position=dragging.Position+Vector2.new(25,23)
                 TextRATHUB.Position = dragging.Position + Vector2.new(54, 17)
+                _G.RHg1.Position=dragging.Position+Vector2.new(53,16)
+                _G.RHg2.Position=dragging.Position+Vector2.new(55,18)
+                _G.RHg3.Position=dragging.Position+Vector2.new(52,15)
+                _G.RHg4.Position=dragging.Position+Vector2.new(56,19)
                 PlaceTabs.Position = dragging.Position + Vector2.new(2, 46)
                 VisualsTab.Position = dragging.Position + Vector2.new(8, 50)
                 VisualsTab_Text.Position = VisualsTab.Position + Vector2.new(77/2, 36/2)
@@ -3148,17 +3356,18 @@ while true do
                     AutoRescanSwitch_Ind.Position = AutoRescanSwitch.Position + Vector2.new(1, 1)
                 end
                 AutoRescanText.Position = dragging.Position + Vector2.new(20, 124)
-                ContentPageMisc2.Position = dragging.Position + Vector2.new(14, 271)
+                ContentPageMisc2.Position = dragging.Position + Vector2.new(14, 296)
                 ContentPageMisc2_Border.Position = ContentPageMisc2.Position
-                SliderForESPdistance.Position = dragging.Position + Vector2.new(20, 293)
+                SliderForESPdistance.Position = dragging.Position + Vector2.new(20, 318)
                 local percent = (SliderForESPdistance_Value - 25) / (1488 - 25)
                 SliderForESPdistance_Knob.Position = SliderForESPdistance.Position + Vector2.new(200 * percent - 10, 5 - 10)
                 SliderForESPdistance_ValueText.Position = SliderForESPdistance.Position + Vector2.new(200/2, -10)
-                TextUnderSliderEspDis.Position = dragging.Position + Vector2.new(20, 317)
+                TextUnderSliderEspDis.Position = dragging.Position + Vector2.new(20, 342)
                 ContentPageSettings.Position = dragging.Position + Vector2.new(25, 111)
                 ContentPageSettings_Border.Position = ContentPageSettings.Position
                 ToggleUIvisiblity.Position = dragging.Position + Vector2.new(37, 125)
                 ToggleUIvisiblity_Text.Position = ToggleUIvisiblity.Position + Vector2.new(74/2, 16/2)
+                if _G.EffStyleLabel then _G.EffStyleLabel.Position=ContentPageSettings.Position+Vector2.new(9,42) _G.EffStyleBtn.Position=ContentPageSettings.Position+Vector2.new(190,38) _G.EffStyleBtnText.Position=_G.EffStyleBtn.Position+Vector2.new(70,9) _G.EffStyleArrow.Position=_G.EffStyleBtn.Position+Vector2.new(125,9) _G.TxtStyleLabel.Position=ContentPageSettings.Position+Vector2.new(9,68) _G.TxtStyleBtn.Position=ContentPageSettings.Position+Vector2.new(190,64) _G.TxtStyleBtnText.Position=_G.TxtStyleBtn.Position+Vector2.new(70,9) _G.TxtStyleArrow.Position=_G.TxtStyleBtn.Position+Vector2.new(125,9) _G.ThemeLabel.Position=ContentPageSettings.Position+Vector2.new(9,94) _G.ThemeBtn.Position=ContentPageSettings.Position+Vector2.new(190,90) _G.ThemeBtnText.Position=_G.ThemeBtn.Position+Vector2.new(70,9) _G.ThemeArrow.Position=_G.ThemeBtn.Position+Vector2.new(125,9) end
             end
         end
 
