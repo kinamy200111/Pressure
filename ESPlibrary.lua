@@ -1,19 +1,10 @@
--- Minimal ESP Library for Matcha
-local ESP = {}
+-- ESP Library для Matcha
+local ESPLib = {}
 
 local espObjects = {}
-local running = false
-local types = {}
-local config = {
-    offset = -30,
-    textSize = 16,
-    outline = true
-}
 
 local function getPosition(instance)
-    if instance.Position then
-        return instance.Position
-    end
+    if instance.Position then return instance.Position end
     for _, child in ipairs(instance:GetChildren()) do
         local pos = getPosition(child)
         if pos then return pos end
@@ -21,51 +12,33 @@ local function getPosition(instance)
     return nil
 end
 
-local function getObjectType(instance)
-    local success, attr = pcall(function()
-        return instance:GetAttribute("InteractionType")
-    end)
-    return success and attr or nil
-end
-
-function ESP.AddType(name, settings)
-    types[name] = {
-        color = settings.color or Color3.fromRGB(255, 255, 255),
-        displayName = settings.displayName or name,
-        enabled = true
-    }
-end
-
-function ESP.SetOffset(offset)
-    config.offset = offset or -30
-end
-
-function ESP.SetTextSize(size)
-    config.textSize = size or 16
-end
-
-function ESP.SetOutline(outline)
-    config.outline = outline ~= false
-end
-
-function ESP.Start()
-    if running then return end
-    running = true
+function ESPLib:Start(types)
+    types = types or {}
+    
+    local colors = {}
+    for name, color in pairs(types) do
+        colors[name] = color
+    end
+    
+    local function createESP(obj, objType)
+        if espObjects[obj] then return end
+        local text = Drawing.new("Text")
+        text.Text = objType
+        text.Color = colors[objType] or Color3.fromRGB(255, 255, 255)
+        text.Size = 16
+        text.Font = Drawing.Fonts.SystemBold
+        text.Outline = true
+        text.Center = true
+        text.Visible = true
+        espObjects[obj] = text
+    end
     
     local function scan()
         local descendants = workspace:GetDescendants()
         for _, obj in ipairs(descendants) do
-            local objType = getObjectType(obj)
-            if objType and types[objType] and not espObjects[obj] then
-                local text = Drawing.new("Text")
-                text.Text = types[objType].displayName
-                text.Color = types[objType].color
-                text.Size = config.textSize
-                text.Font = Drawing.Fonts.SystemBold
-                text.Outline = config.outline
-                text.Center = true
-                text.Visible = true
-                espObjects[obj] = text
+            local attr = obj:GetAttribute("InteractionType")
+            if attr and colors[attr] and not espObjects[obj] then
+                createESP(obj, attr)
             end
         end
     end
@@ -73,29 +46,25 @@ function ESP.Start()
     local function update()
         for obj, text in pairs(espObjects) do
             if obj and obj.Parent then
-                local pos = getPosition(obj)
-                if pos then
-                    local screenPos, onScreen = WorldToScreen(pos)
-                    if onScreen then
-                        text.Position = Vector2.new(screenPos.X, screenPos.Y + config.offset)
-                        text.Visible = true
+                local attr = obj:GetAttribute("InteractionType")
+                if not attr or not colors[attr] then
+                    text:Remove()
+                    espObjects[obj] = nil
+                else
+                    local pos = getPosition(obj)
+                    if pos then
+                        local screenPos, onScreen = WorldToScreen(pos)
+                        if onScreen then
+                            text.Position = Vector2.new(screenPos.X, screenPos.Y - 30)
+                            text.Visible = true
+                        else
+                            text.Visible = false
+                        end
                     else
                         text.Visible = false
                     end
-                else
-                    text.Visible = false
                 end
             else
-                text:Remove()
-                espObjects[obj] = nil
-            end
-        end
-    end
-    
-    local function cleanup()
-        for obj, text in pairs(espObjects) do
-            local objType = getObjectType(obj)
-            if not objType or not types[objType] then
                 text:Remove()
                 espObjects[obj] = nil
             end
@@ -105,23 +74,14 @@ function ESP.Start()
     scan()
     
     coroutine.wrap(function()
-        while running do
+        while true do
             update()
-            if tick() % 2 < 0.03 then
-                scan()
-                cleanup()
-            end
+            if tick() % 2 < 0.03 then scan() end
             task.wait(0.03)
         end
     end)()
+    
+    return espObjects
 end
 
-function ESP.Stop()
-    running = false
-    for _, text in pairs(espObjects) do
-        text:Remove()
-    end
-    espObjects = {}
-end
-
-return ESP
+return ESPLib
