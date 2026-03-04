@@ -1,9 +1,18 @@
--- ESP Library for Matcha
+-- ESP Library for Matcha (без setfenv)
 local ESP = {}
 
 local espObjects = {}
 local scanner = nil
 local running = false
+local types = {}
+local config = {
+    chunkSize = 30,
+    scanInterval = 30,
+    yOffset = -30,
+    font = Drawing.Fonts.SystemBold,
+    textSize = 16,
+    outline = true
+}
 
 local function tableLength(t)
     local count = 0
@@ -26,57 +35,51 @@ local function getPosition(instance)
     return nil
 end
 
-function ESP:AddType(interactionType, settings)
-    if not self.types then
-        self.types = {}
-    end
-
+function ESP.AddType(interactionType, settings)
     settings = settings or {}
-    self.types[interactionType] = {
+    types[interactionType] = {
         color = settings.color or Color3.fromRGB(255, 255, 255),
         displayName = settings.displayName or interactionType,
         enabled = settings.enabled ~= false
     }
 end
 
-function ESP:RemoveType(interactionType)
-    if self.types and self.types[interactionType] then
-        self.types[interactionType] = nil
-    end
+function ESP.RemoveType(interactionType)
+    types[interactionType] = nil
 end
 
-function ESP:SetTypes(types)
-    self.types = types
+function ESP.SetTypes(newTypes)
+    types = newTypes or {}
 end
 
-function ESP:SetChunkSize(size)
-    self.chunkSize = size or 30
+function ESP.SetChunkSize(size)
+    config.chunkSize = size or 30
     if scanner then
-        scanner.chunkSize = self.chunkSize
+        scanner.chunkSize = config.chunkSize
     end
 end
 
-function ESP:SetScanInterval(seconds)
-    self.scanInterval = seconds or 30
+function ESP.SetScanInterval(seconds)
+    config.scanInterval = seconds or 30
     if scanner then
-        scanner.scanInterval = self.scanInterval
+        scanner.scanInterval = config.scanInterval
     end
 end
 
-function ESP:SetOffset(yOffset)
-    self.yOffset = yOffset or -30
+function ESP.SetOffset(yOffset)
+    config.yOffset = yOffset or -30
 end
 
-function ESP:SetFont(font)
-    self.font = font or Drawing.Fonts.SystemBold
+function ESP.SetFont(font)
+    config.font = font or Drawing.Fonts.SystemBold
 end
 
-function ESP:SetTextSize(size)
-    self.textSize = size or 16
+function ESP.SetTextSize(size)
+    config.textSize = size or 16
 end
 
-function ESP:SetOutline(outline)
-    self.outline = outline ~= false
+function ESP.SetOutline(outline)
+    config.outline = outline ~= false
 end
 
 local function getObjectType(instance)
@@ -91,12 +94,12 @@ local function getObjectType(instance)
     return nil
 end
 
-local function createESPForObject(obj, objType, lib)
+local function createESPForObject(obj, objType)
     if espObjects[obj] then
         return false
     end
 
-    local typeSettings = lib.types and lib.types[objType] or {
+    local typeSettings = types[objType] or {
         color = Color3.fromRGB(255, 255, 255),
         displayName = objType or "Unknown"
     }
@@ -108,9 +111,9 @@ local function createESPForObject(obj, objType, lib)
     local text = Drawing.new("Text")
     text.Text = typeSettings.displayName
     text.Color = typeSettings.color
-    text.Size = lib.textSize or 16
-    text.Font = lib.font or Drawing.Fonts.SystemBold
-    text.Outline = lib.outline ~= false
+    text.Size = config.textSize
+    text.Font = config.font
+    text.Outline = config.outline
     text.Center = true
     text.Visible = true
 
@@ -132,15 +135,15 @@ local function removeESPForObject(obj)
     end
 end
 
-local function updateAllESP(lib)
+local function updateAllESP()
     for obj, espData in pairs(espObjects) do
         if obj and obj.Parent then
             local currentType = getObjectType(obj)
 
             if currentType ~= espData.objType then
                 removeESPForObject(obj)
-                if lib.types and lib.types[currentType] and lib.types[currentType].enabled then
-                    createESPForObject(obj, currentType, lib)
+                if types[currentType] and types[currentType].enabled then
+                    createESPForObject(obj, currentType)
                 end
             else
                 local pos = getPosition(obj)
@@ -152,8 +155,7 @@ local function updateAllESP(lib)
                         if screenPos.X > -500 and screenPos.X < 5000 and 
                            screenPos.Y > -500 and screenPos.Y < 5000 then
 
-                            local yOffset = lib.yOffset or -30
-                            espData.text.Position = Vector2.new(screenPos.X, screenPos.Y + yOffset)
+                            espData.text.Position = Vector2.new(screenPos.X, screenPos.Y + config.yOffset)
                             espData.text.Visible = true
 
                             espData.lastSeen = tick()
@@ -176,16 +178,15 @@ end
 local ChunkScanner = {}
 ChunkScanner.__index = ChunkScanner
 
-function ChunkScanner.new(lib)
+function ChunkScanner.new()
     local self = setmetatable({}, ChunkScanner)
-    self.lib = lib
     self.allFolders = {}
     self.currentChunk = 1
-    self.chunkSize = lib.chunkSize or 30
+    self.chunkSize = config.chunkSize
     self.scanComplete = false
     self.foundObjects = {}
     self.lastFullScan = 0
-    self.scanInterval = lib.scanInterval or 30
+    self.scanInterval = config.scanInterval
     return self
 end
 
@@ -244,12 +245,12 @@ function ChunkScanner:scanChunk()
             local descendants = folder:GetDescendants()
             for _, obj in ipairs(descendants) do
                 local objType = getObjectType(obj)
-                if objType and self.lib.types and self.lib.types[objType] and self.lib.types[objType].enabled then
+                if objType and types[objType] and types[objType].enabled then
                     self.foundObjects[obj] = true
                     found = found + 1
 
                     if not espObjects[obj] then
-                        createESPForObject(obj, objType, self.lib)
+                        createESPForObject(obj, objType)
                     end
                 end
             end
@@ -294,11 +295,11 @@ function ChunkScanner:update()
     end
 end
 
-function ESP:Start()
+function ESP.Start()
     if running then return end
     running = true
     
-    scanner = ChunkScanner.new(self)
+    scanner = ChunkScanner.new()
     scanner:fullScan()
 
     local frameCount = 0
@@ -308,7 +309,7 @@ function ESP:Start()
         while running do
             frameCount = frameCount + 1
 
-            updateAllESP(self)
+            updateAllESP()
 
             if scanner then
                 scanner:update()
@@ -327,7 +328,7 @@ function ESP:Start()
     end)()
 end
 
-function ESP:Stop()
+function ESP.Stop()
     running = false
     for obj, espData in pairs(espObjects) do
         if espData.text then
@@ -339,7 +340,7 @@ function ESP:Stop()
     print("ESP остановлен")
 end
 
-function ESP:Clear()
+function ESP.Clear()
     for obj, espData in pairs(espObjects) do
         if espData.text then
             espData.text:Remove()
@@ -351,7 +352,7 @@ function ESP:Clear()
     end
 end
 
-function ESP:GetActiveCount()
+function ESP.GetActiveCount()
     return tableLength(espObjects)
 end
 
