@@ -2,6 +2,7 @@
 local ESPLib = {}
 
 local espObjects = {}
+local running = false
 
 local function getPosition(instance)
     if instance.Position then return instance.Position end
@@ -12,7 +13,10 @@ local function getPosition(instance)
     return nil
 end
 
-function ESPLib:Start(types)
+function ESPLib.start(types)
+    if running then return end
+    running = true
+    
     types = types or {}
     
     local colors = {}
@@ -74,14 +78,26 @@ function ESPLib:Start(types)
     scan()
     
     coroutine.wrap(function()
-        while true do
+        while running do
             update()
             if tick() % 2 < 0.03 then scan() end
             task.wait(0.03)
         end
     end)()
-    
-    return espObjects
+end
+
+function ESPLib.stop()
+    running = false
+    for _, text in pairs(espObjects) do
+        text:Remove()
+    end
+    espObjects = {}
+end
+
+function ESPLib.count()
+    local count = 0
+    for _ in pairs(espObjects) do count = count + 1 end
+    return count
 end
 
 return ESPLib
