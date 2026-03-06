@@ -3147,7 +3147,7 @@ local loadMessages = {
 local totalSteps = 20
 local maxWidth = 367
 local logIndex = 1
-local duration = 4.0
+local duration = 7.0
 local startTime = tick()
 
 local logQueue = {}
