@@ -3123,14 +3123,14 @@ CountLoadScript.Font = Drawing.Fonts.Monospace
 
 local loadMessages = {
     "Loading core modules",
-    "Initializing ESP system",
-    "Connecting to game services",
-    "Setting up UI elements",
+    "Initializing ESP",
+    "Connecting to SuperZov",
+    "Loading UI",
     "Loading AutoHide module",
     "Loading Notification system",
     "Loading Watermark",
     "Applying configurations",
-    "Scanning for entities",
+    "Ask Urbanshade for using this script",
     "Loading Keycard ESP",
     "Loading Item ESP",
     "Loading Currency ESP",
@@ -3139,8 +3139,8 @@ local loadMessages = {
     "Finalizing",
     "Almost done",
     "Done",
-    "Verifying integrity",
-    "Starting services",
+    "Verifying MrShade",
+    "Starting ass script",
     "Ready"
 }
 
