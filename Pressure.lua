@@ -743,7 +743,7 @@ TextInfo3.Transparency = 1
 TextInfo3.ZIndex = 340
 TextInfo3.Color = Color3.fromHex("#00c950")
 TextInfo3.Position = ContentInfo2.Position + Vector2.new(15, 14)
-TextInfo3.Text = "Changelogs for ver 6.0:"
+TextInfo3.Text = "Changelogs for ver 6.2:"
 TextInfo3.Size = 14
 TextInfo3.Center = false
 TextInfo3.Outline = true
@@ -793,14 +793,14 @@ local Changelog4 = Drawing.new("Text")
 Changelog2.Visible = false
 Changelog2.Transparency = 1
 Changelog2.ZIndex = 340
-Changelog2.Color = Color3.fromHex("#00ff66")
+Changelog2.Color = Color3.fromHex("#FFCC00")
 Changelog2.Position = ContentInfo2.Position + Vector2.new(23, 75)
 Changelog2.Text = "[!] For now dropdowns bugged, i too lazy to fix it"
 Changelog2.Size = 14
 Changelog2.Center = false
 Changelog2.Outline = true
 Changelog2.Font = Drawing.Fonts.UI
-table.insert(uiElements, Changelog2)
+table.insert(uiElements, Changelog4)
 
 
 local MainWatermark = Drawing.new("Square")
