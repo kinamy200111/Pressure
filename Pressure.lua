@@ -789,6 +789,20 @@ Changelog2.Outline = true
 Changelog2.Font = Drawing.Fonts.UI
 table.insert(uiElements, Changelog2)
 
+local Changelog4 = Drawing.new("Text")
+Changelog2.Visible = false
+Changelog2.Transparency = 1
+Changelog2.ZIndex = 340
+Changelog2.Color = Color3.fromHex("#00ff66")
+Changelog2.Position = ContentInfo2.Position + Vector2.new(23, 75)
+Changelog2.Text = "[!] For now dropdowns bugged, i too lazy to fix it"
+Changelog2.Size = 14
+Changelog2.Center = false
+Changelog2.Outline = true
+Changelog2.Font = Drawing.Fonts.UI
+table.insert(uiElements, Changelog2)
+
+
 local MainWatermark = Drawing.new("Square")
 MainWatermark.Visible = false
 MainWatermark.Transparency = 1
