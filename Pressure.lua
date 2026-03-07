@@ -989,7 +989,7 @@ local function ShowNotification(msgType, entityName)
         TextScriptExecuted.Visible = true
         NotificationDesc.Visible = true
         LogoNotificatorExecut.Visible = true
-        task.spawn(function()
+        t.spawn(function()
             task.wait(3)
             MainNotificationScriptExecut.Visible = false
             MainNotificationScriptExecut_Border.Visible = false
@@ -3990,7 +3990,7 @@ CountLoadScript.Outline = true
 CountLoadScript.Font = Drawing.Fonts.Monospace
 
 local loadMessages = {
-    "Loading core modules",
+    "Loading skibidi toilet",
     "Initializing ESP",
     "Connecting to SuperZov",
     "Loading UI",
@@ -4004,10 +4004,10 @@ local loadMessages = {
     "Loading Currency ESP",
     "Loading Door ESP",
     "Loading Rich mode",
-    "Finalizing",
-    "Almost done",
+    "Kill Furry",
+    "Cook and eat Furry",
     "Done",
-    "Verifying MrShade",
+    "Verifying like MrShade",
     "Starting ass script",
     "Ready"
 }
