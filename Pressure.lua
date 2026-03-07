@@ -778,9 +778,9 @@ end
 
 ChangelogLines[1].Text = "+ Recode auto-rescan for ESP's, and make it better"
 ChangelogLines[1].Color = Color3.fromHex("#00ff66")
-ChangelogLines[2].Text = "Add new type for ESP: EntityESP "
-ChangelogLines[2].Color = Color3.fromHex("#b62020")
-ChangelogLines[3].Text = ""
+ChangelogLines[2].Text = "+ Add new type for ESP: EntityESP "
+ChangelogLines[2].Color = Color3.fromHex("#00ff66")
+ChangelogLines[3].Text = "+ Add new page for advanced settings and customizble auto-rescan"
 ChangelogLines[3].Color = Color3.fromHex("#00ff66")
 
 local MainWatermark = Drawing.new("Square")
