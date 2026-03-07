@@ -2185,7 +2185,7 @@ local function CreateAdvancedESP()
 
     local dropdownArrow = Drawing.new("Text")
     dropdownArrow.Visible = true
-    dropdownArrow.Text = "▼"
+    dropdownArrow.Text = ""
     dropdownArrow.Size = 12
     dropdownArrow.Outline = true
     dropdownArrow.Color = Color3.fromHex("#d1d4dd")
@@ -3500,7 +3500,7 @@ local function CreateAdvancedNotifications()
 
     local targetArrow = Drawing.new("Text")
     targetArrow.Visible = true
-    targetArrow.Text = "▼"
+    targetArrow.Text = ""
     targetArrow.Size = 12
     targetArrow.Outline = true
     targetArrow.Color = Color3.fromHex("#d1d4dd")
@@ -3757,7 +3757,7 @@ local function CreateAdvancedNotifications()
 
     local wmTargetArrow = Drawing.new("Text")
     wmTargetArrow.Visible = true
-    wmTargetArrow.Text = "▼"
+    wmTargetArrow.Text = ""
     wmTargetArrow.Size = 12
     wmTargetArrow.Outline = true
     wmTargetArrow.Color = Color3.fromHex("#d1d4dd")
