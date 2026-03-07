@@ -4,6 +4,7 @@ local Viewport = workspace.CurrentCamera.ViewportSize
 local activeTab = nil
 local advancedWindowOpen = false
 local closeKey = 0x70
+local currentPage = 1
 
 local function UpdateSwitchColor(sw, checked)
     if checked then
@@ -19,8 +20,16 @@ local MainSwitchAutoHide = { IsChecked = false, Bg = nil, Ind = nil, IndBorder =
 
 local AdvSwitchESP, AdvSwitchESP4, AdvSwitchItems, AdvSwitchCurrency, AdvSwitchKeycards, AdvSwitchDoors, AdvSwitchRich
 local AdvSwitchNotif, AdvSwitchWatermark, AdvSwitchNotifKeycards
+local AdvSwitchMobs
+local AdvAutoRescan
 
 local uiElements = {}
+
+local espPage1Elements = {}
+local espPage2Elements = {}
+local espPage1BaseY = 0
+local espPage2BaseY = 0
+local notifPageElements = {}
 
 local Overlay = Drawing.new("Square")
 Overlay.Visible = false
@@ -750,44 +759,29 @@ TextInfo3.Outline = true
 TextInfo3.Font = Drawing.Fonts.UI
 table.insert(uiElements, TextInfo3)
 
-local Changelog1 = Drawing.new("Text")
-Changelog1.Visible = false
-Changelog1.Transparency = 1
-Changelog1.ZIndex = 340
-Changelog1.Color = Color3.fromHex("#00ff66")
-Changelog1.Position = ContentInfo2.Position + Vector2.new(23, 30)
-Changelog1.Text = "+ Redesigned UI"
-Changelog1.Size = 14
-Changelog1.Center = false
-Changelog1.Outline = true
-Changelog1.Font = Drawing.Fonts.UI
-table.insert(uiElements, Changelog1)
+local ChangelogLines = {}
+for i=1,12 do
+    local line = Drawing.new("Text")
+    line.Visible = false
+    line.Transparency = 1
+    line.ZIndex = 340
+    line.Color = Color3.fromHex("#6b7382")
+    line.Position = ContentInfo2.Position + Vector2.new(23, 30 + (i-1)*15)
+    line.Text = ""
+    line.Size = 14
+    line.Center = false
+    line.Outline = true
+    line.Font = Drawing.Fonts.UI
+    table.insert(uiElements, line)
+    table.insert(ChangelogLines, line)
+end
 
-local Changelog3 = Drawing.new("Text")
-Changelog3.Visible = false
-Changelog3.Transparency = 1
-Changelog3.ZIndex = 340
-Changelog3.Color = Color3.fromHex("#b62020")
-Changelog3.Position = ContentInfo2.Position + Vector2.new(23, 45)
-Changelog3.Text = "- Removed themes, etc"
-Changelog3.Size = 14
-Changelog3.Center = false
-Changelog3.Outline = true
-Changelog3.Font = Drawing.Fonts.UI
-table.insert(uiElements, Changelog3)
-
-local Changelog2 = Drawing.new("Text")
-Changelog2.Visible = false
-Changelog2.Transparency = 1
-Changelog2.ZIndex = 340
-Changelog2.Color = Color3.fromHex("#00ff66")
-Changelog2.Position = ContentInfo2.Position + Vector2.new(23, 60)
-Changelog2.Text = "+ Recode ESP's, because library discount"
-Changelog2.Size = 14
-Changelog2.Center = false
-Changelog2.Outline = true
-Changelog2.Font = Drawing.Fonts.UI
-table.insert(uiElements, Changelog2)
+ChangelogLines[1].Text = "+ Redesigned UI"
+ChangelogLines[1].Color = Color3.fromHex("#00ff66")
+ChangelogLines[2].Text = "- Removed themes, etc"
+ChangelogLines[2].Color = Color3.fromHex("#b62020")
+ChangelogLines[3].Text = "+ Recode ESP's, because library discount"
+ChangelogLines[3].Color = Color3.fromHex("#00ff66")
 
 local MainWatermark = Drawing.new("Square")
 MainWatermark.Visible = false
@@ -1020,14 +1014,35 @@ local function ShowNotification(msgType, entityName)
 end
 
 Settings = {
+    globalESPEnabled = false,
     notificationsEnabled = { Angler = false, Froger = false, Pinkie = false, Blitz = false,
         Pandemonium = false, Chainsmoker = false, ["A60"] = false, Harbinger = false, Painter = false },
-    keycardESPEnabled = false,
+    keycardESPEnabled = true,
+    keycardTypes = {
+        Normal = true,
+        Inner = true,
+        Ridge = true,
+        Password = true
+    },
     doorESPEnabled = false,
     itemsESPEnabled = false,
     currencyESPEnabled = false,
     currencyRichEnabled = false,
+    mobsESPEnabled = false,
+    mobsESPList = {
+        Angler = true,
+        Blitz = true,
+        Pinkie = true,
+        Pandemonium = true,
+        Froger = true,
+        Chainsmoker = true,
+        A60 = true,
+        Harbinger = true,
+        Painter = true
+    },
     autoRescanEnabled = true,
+    rescanChunkSize = 50,
+    rescanInterval = 5,
     espDistance = 150,
     watermarkEnabled = false,
     watermarkMobsEnabled = { Angler = true, Blitz = true, Pinkie = true, Pandemonium = true, Froger = true,
@@ -1102,6 +1117,7 @@ end
 
 espObjects = {}
 espDoorObjects = {}
+espMobObjects = {}
 
 function getPosition(instance)
     if instance.Position then return instance.Position end
@@ -1123,8 +1139,17 @@ function parseCurrencyAmount(name)
     return amount and tonumber(amount) or nil
 end
 
+function getKeycardTypeFromObjType(objType)
+    if objType == "KeyCard" then return "Normal"
+    elseif objType == "InnerKeyCard" then return "Inner"
+    elseif objType == "RidgeKeyCard" then return "Ridge"
+    elseif objType == "PasswordPaper" then return "Password"
+    else return nil end
+end
+
 function createESPForObject(obj, objType)
-    if espObjects[obj] then return false end
+    local addr = tostring(obj.Address)
+    if espObjects[addr] then return false end
     local color = Color3.fromRGB(255,255,255)
     local displayName = obj.Name
     if objType == "KeyCard" then
@@ -1152,7 +1177,22 @@ function createESPForObject(obj, objType)
     text.Outline = true
     text.Center = true
     text.Visible = true
-    espObjects[obj] = { text = text, objType = objType, lastSeen = tick() }
+    espObjects[addr] = { text = text, objType = objType, lastSeen = tick(), obj = obj }
+    return true
+end
+
+function createMobESP(mobInstance, mobName)
+    local addr = tostring(mobInstance.Address)
+    if espMobObjects[addr] then return false end
+    local text = Drawing.new("Text")
+    text.Text = mobName
+    text.Color = Color3.fromRGB(255,0,0)
+    text.Size = 18
+    text.Font = Drawing.Fonts.SystemBold
+    text.Outline = true
+    text.Center = true
+    text.Visible = true
+    espMobObjects[addr] = { text = text, lastSeen = tick(), obj = mobInstance }
     return true
 end
 
@@ -1171,9 +1211,18 @@ function createDoorESP(doorPart, doorKey)
 end
 
 function removeESPForObject(obj)
-    if espObjects[obj] then
-        if espObjects[obj].text then espObjects[obj].text:Remove() end
-        espObjects[obj] = nil
+    local addr = tostring(obj.Address)
+    if espObjects[addr] then
+        if espObjects[addr].text then espObjects[addr].text:Remove() end
+        espObjects[addr] = nil
+    end
+end
+
+function removeMobESP(mobInstance)
+    local addr = tostring(mobInstance.Address)
+    if espMobObjects[addr] then
+        if espMobObjects[addr].text then espMobObjects[addr].text:Remove() end
+        espMobObjects[addr] = nil
     end
 end
 
@@ -1185,12 +1234,33 @@ function removeDoorESP(key)
 end
 
 function updateAllESP()
-    for obj, espData in pairs(espObjects) do
+    if not Settings.globalESPEnabled then
+        for addr,_ in pairs(espObjects) do
+            if espObjects[addr].text then espObjects[addr].text:Remove() end
+        end
+        espObjects = {}
+        for key,_ in pairs(espDoorObjects) do removeDoorESP(key) end
+        for addr,_ in pairs(espMobObjects) do
+            if espMobObjects[addr].text then espMobObjects[addr].text:Remove() end
+        end
+        espMobObjects = {}
+        return
+    end
+
+    for addr, espData in pairs(espObjects) do
+        local obj = espData.obj
         if obj and obj.Parent then
             local currentType = getObjectType(obj)
             local enabled = false
+            local keycardType = nil
             if currentType == "KeyCard" or currentType == "InnerKeyCard" or currentType == "RidgeKeyCard" or currentType == "PasswordPaper" then
                 enabled = Settings.keycardESPEnabled
+                if enabled then
+                    keycardType = getKeycardTypeFromObjType(currentType)
+                    if keycardType then
+                        enabled = Settings.keycardTypes[keycardType]
+                    end
+                end
             elseif currentType == "CurrencyBase" then
                 enabled = Settings.currencyESPEnabled
                 if enabled and Settings.currencyRichEnabled then
@@ -1224,8 +1294,12 @@ function updateAllESP()
                     else espData.text.Visible = false end
                 else espData.text.Visible = false end
             end
-        else removeESPForObject(obj) end
+        else
+            if espData.text then espData.text:Remove() end
+            espObjects[addr] = nil
+        end
     end
+
     for key, espData in pairs(espDoorObjects) do
         if espData.part and espData.part.Parent then
             if Settings.doorESPEnabled then
@@ -1241,107 +1315,108 @@ function updateAllESP()
             else espData.text.Visible = false end
         else removeDoorESP(key) end
     end
+
+    local playerPos = game.Players.LocalPlayer.Character and game.Players.LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
+    if playerPos then playerPos = playerPos.Position else playerPos = nil end
+
+    for addr, espData in pairs(espMobObjects) do
+        local mob = espData.obj
+        if mob and mob.Parent then
+            if Settings.mobsESPEnabled then
+                local pos = getPosition(mob)
+                if pos then
+                    local dist = playerPos and (pos - playerPos).Magnitude or 0
+                    if dist <= Settings.espDistance then
+                        local screenPos, onScreen = WorldToScreen(pos)
+                        if onScreen and screenPos.X>-500 and screenPos.X<5000 and screenPos.Y>-500 and screenPos.Y<5000 then
+                            espData.text.Position = screenPos
+                            espData.text.Visible = true
+                            espData.lastSeen = tick()
+                        else espData.text.Visible = false end
+                    else
+                        espData.text.Visible = false
+                    end
+                else espData.text.Visible = false end
+            else espData.text.Visible = false end
+        else
+            if espData.text then espData.text:Remove() end
+            espMobObjects[addr] = nil
+        end
+    end
 end
 
-ChunkScanner = {}
-ChunkScanner.__index = ChunkScanner
-function ChunkScanner.new()
-    local self = setmetatable({}, ChunkScanner)
-    self.allFolders = {}
-    self.currentChunk = 1
-    self.chunkSize = 30
-    self.scanComplete = false
-    self.foundObjects = {}
-    self.lastFullScan = 0
-    self.scanInterval = 30
-    return self
-end
+local progressiveScanning = false
+local lastProgressiveScan = 0
 
-function ChunkScanner:collectFolders()
-    self.allFolders = {}
-    self.foundObjects = {}
-    local gf = workspace:FindFirstChild("GameplayFolder")
-    if gf then
-        local rooms = gf:FindFirstChild("Rooms")
-        if rooms then
-            for _, room in ipairs(rooms:GetChildren()) do
-                table.insert(self.allFolders, room)
-                local exits = room:FindFirstChild("Exits")
-                if exits then
-                    for _, exit in ipairs(exits:GetChildren()) do table.insert(self.allFolders, exit) end
+local function ProgressiveScan()
+    if progressiveScanning then return end
+    progressiveScanning = true
+
+    local root = workspace:FindFirstChild("GameplayFolder")
+    if root then
+        root = root:FindFirstChild("Rooms") or root
+    else
+        root = workspace
+    end
+    local descendants = root:GetDescendants()
+    local count = 0
+    for _, obj in ipairs(descendants) do
+        local objType = getObjectType(obj)
+        if objType then
+            local enabled = false
+            local keycardType = nil
+            if objType == "KeyCard" or objType == "InnerKeyCard" or objType == "RidgeKeyCard" or objType == "PasswordPaper" then
+                enabled = Settings.keycardESPEnabled
+                if enabled then
+                    keycardType = getKeycardTypeFromObjType(objType)
+                    if keycardType then
+                        enabled = Settings.keycardTypes[keycardType]
+                    end
                 end
-                local interactables = room:FindFirstChild("Interactables")
-                if interactables then
-                    for _, obj in ipairs(interactables:GetChildren()) do table.insert(self.allFolders, obj) end
-                end
-                local spawnLocations = room:FindFirstChild("SpawnLocations")
-                if spawnLocations then
-                    for _, spawn in ipairs(spawnLocations:GetChildren()) do table.insert(self.allFolders, spawn) end
+            elseif objType == "CurrencyBase" then
+                enabled = Settings.currencyESPEnabled
+            elseif objType == "ItemBase" then
+                enabled = Settings.itemsESPEnabled
+            end
+            if enabled and not espObjects[tostring(obj.Address)] then
+                createESPForObject(obj, objType)
+            end
+        end
+        count = count + 1
+        if count % Settings.rescanChunkSize == 0 then
+            task.wait()
+        end
+    end
+
+    if Settings.mobsESPEnabled then
+        for _, obj in ipairs(workspace:GetChildren()) do
+            for mobName, enabled in pairs(Settings.mobsESPList) do
+                if enabled and (obj.Name == mobName or (mobName == "A60" and obj.Name == "A60")) then
+                    if not espMobObjects[tostring(obj.Address)] then
+                        createMobESP(obj, obj.Name)
+                    end
+                    break
                 end
             end
         end
     end
-    if #self.allFolders == 0 then
-        for _, child in ipairs(workspace:GetChildren()) do
-            if child:IsA("Folder") or child:IsA("Model") then table.insert(self.allFolders, child) end
-        end
-    end
-end
 
-function ChunkScanner:scanChunk()
-    if #self.allFolders == 0 then self:collectFolders() end
-    local startIdx = self.currentChunk
-    local endIdx = math.min(startIdx+self.chunkSize-1, #self.allFolders)
-    for i = startIdx, endIdx do
-        local folder = self.allFolders[i]
-        if folder and folder.Parent then
-            for _, obj in ipairs(folder:GetDescendants()) do
-                local objType = getObjectType(obj)
-                if objType == "KeyCard" or objType == "InnerKeyCard" or objType == "RidgeKeyCard" or objType == "PasswordPaper" or objType == "CurrencyBase" or objType == "ItemBase" then
-                    self.foundObjects[obj] = true
-                    if not espObjects[obj] then
-                        local enabled = false
-                        if objType == "KeyCard" or objType == "InnerKeyCard" or objType == "RidgeKeyCard" or objType == "PasswordPaper" then
-                            enabled = Settings.keycardESPEnabled
-                        elseif objType == "CurrencyBase" then
-                            enabled = Settings.currencyESPEnabled
-                        elseif objType == "ItemBase" then
-                            enabled = Settings.itemsESPEnabled
-                        end
-                        if enabled then createESPForObject(obj, objType) end
+    if Settings.mobsESPEnabled and Settings.mobsESPList.Painter then
+        local gf = workspace:FindFirstChild("GameplayFolder")
+        if gf then
+            local rooms = gf:FindFirstChild("Rooms")
+            if rooms then
+                for _, room in ipairs(rooms:GetChildren()) do
+                    local painter = room:FindFirstChild("Painter")
+                    if painter and not espMobObjects[tostring(painter.Address)] then
+                        createMobESP(painter, "Painter")
                     end
                 end
             end
         end
     end
-    self.currentChunk = endIdx+1
-    if self.currentChunk > #self.allFolders then
-        self.currentChunk = 1
-        self.scanComplete = true
-        self:cleanupRemoved()
-    end
-end
 
-function ChunkScanner:cleanupRemoved()
-    for obj,_ in pairs(espObjects) do
-        if not self.foundObjects[obj] then removeESPForObject(obj) end
-    end
-    self.foundObjects = {}
-end
-
-function ChunkScanner:fullScan()
-    self:collectFolders()
-    self.currentChunk = 1
-    self.scanComplete = false
-    self.lastFullScan = tick()
-end
-
-function ChunkScanner:update()
-    local ct = tick()
-    if ct - self.lastFullScan > self.scanInterval then
-        self:fullScan()
-    end
-    if not self.scanComplete then self:scanChunk() end
+    progressiveScanning = false
 end
 
 DoorScanner = {}
@@ -1349,7 +1424,7 @@ DoorScanner.__index = DoorScanner
 function DoorScanner.new()
     local self = setmetatable({}, DoorScanner)
     self.lastScan = 0
-    self.scanInterval = 5
+    self.scanInterval = 2
     return self
 end
 
@@ -1384,12 +1459,10 @@ function DoorScanner:scan()
     end
 end
 
-local scanner = ChunkScanner.new()
-scanner:fullScan()
 local doorScanner = DoorScanner.new()
 
 function ForceRescanESP()
-    scanner:fullScan()
+    task.spawn(ProgressiveScan)
 end
 
 AutoHideSystem = { enabled = false, isHiding = false, originalPosition = nil, checkInterval = 0.05, lastCheckTime = 0, holdLoop = false }
@@ -1492,8 +1565,10 @@ local function HideAllTabs()
     ContentInfo1.Visible = false; ContentInfo1_Border.Visible = false
     TextInfo1.Visible = false; TextInfo2.Visible = false
     ContentInfo2.Visible = false; ContentInfo2_Border.Visible = false
-    TextInfo3.Visible = false; Changelog1.Visible = false
-    Changelog3.Visible = false; Changelog2.Visible = false
+    TextInfo3.Visible = false
+    for _, line in ipairs(ChangelogLines) do
+        line.Visible = false
+    end
 end
 
 local function SetActiveTab(tabName, tabButton, tabBorder, tabText)
@@ -1540,10 +1615,14 @@ local function CloseAdvancedWindows()
     AdvSwitchESP4 = nil
     AdvSwitchItems = nil
     AdvSwitchCurrency = nil
+    AdvSwitchKeycards = nil
     AdvSwitchDoors = nil
     AdvSwitchRich = nil
+    AdvSwitchMobs = nil
     AdvSwitchNotif = nil
     AdvSwitchWatermark = nil
+    AdvAutoRescan = nil
+    currentPage = 1
 end
 
 local function UpdateAdvancedPositions()
@@ -1556,6 +1635,12 @@ local function UpdateAdvancedPositions()
                 el.Position = el.Position + delta
             end
         end
+        if _G.adv_esp.page1BaseY then
+            _G.adv_esp.page1BaseY = _G.adv_esp.page1BaseY + delta.Y
+        end
+        if _G.adv_esp.page2BaseY then
+            _G.adv_esp.page2BaseY = _G.adv_esp.page2BaseY + delta.Y
+        end
         _G.adv_esp.basePos = basePos
     end
     if _G.adv_notif and _G.adv_notif.basePos then
@@ -1566,6 +1651,44 @@ local function UpdateAdvancedPositions()
             end
         end
         _G.adv_notif.basePos = basePos
+    end
+end
+
+local function ShowESPPage(page)
+    currentPage = page
+    if not _G.adv_esp then return end
+
+    if _G.adv_esp.dropdownOpen then
+        _G.adv_esp.dropdownOpen = false
+        for _, box in ipairs(_G.adv_esp.dropdownBoxes) do
+            if box and box.Box then
+                box.Box.Visible = false
+                box.Check.Visible = false
+                box.Text.Visible = false
+            end
+        end
+    end
+    if _G.adv_esp.mobDropdownOpen then
+        _G.adv_esp.mobDropdownOpen = false
+        for _, box in ipairs(_G.adv_esp.mobDropdownBoxes) do
+            if box and box.Box then
+                box.Box.Visible = false
+                box.Check.Visible = false
+                box.Text.Visible = false
+            end
+        end
+    end
+
+    for _, el in ipairs(_G.adv_esp.page1Elements) do
+        el.Visible = (page == 1)
+    end
+    for _, el in ipairs(_G.adv_esp.page2Elements) do
+        el.Visible = (page == 2)
+    end
+
+    if _G.adv_esp.page1Btn then
+        _G.adv_esp.page1Btn.Color = (page == 1) and Color3.fromHex("#04c838") or Color3.fromHex("#1b1a1b")
+        _G.adv_esp.page2Btn.Color = (page == 2) and Color3.fromHex("#04c838") or Color3.fromHex("#1b1a1b")
     end
 end
 
@@ -1621,29 +1744,6 @@ local function CreateAdvancedESP()
     win.Filled = true
     table.insert(uiElements, win)
 
-    local s1 = Drawing.new("Square")
-    s1.Visible = true
-    s1.Transparency = 1
-    s1.ZIndex = 1040
-    s1.Color = Color3.fromHex("#111010")
-    s1.Position = win2.Position + Vector2.new(16, 52)
-    s1.Size = Vector2.new(247, 65)
-    s1.Filled = true
-    s1.Corner = 5
-    table.insert(uiElements, s1)
-
-    local s1b = Drawing.new("Square")
-    s1b.Visible = true
-    s1b.Transparency = 1
-    s1b.ZIndex = 1041
-    s1b.Color = Color3.fromHex("#1b1a1b")
-    s1b.Filled = false
-    s1b.Thickness = 1
-    s1b.Position = s1.Position
-    s1b.Size = s1.Size
-    s1b.Corner = 5
-    table.insert(uiElements, s1b)
-
     local title = Drawing.new("Text")
     title.Visible = true
     title.Transparency = 1
@@ -1657,31 +1757,105 @@ local function CreateAdvancedESP()
     title.Font = Drawing.Fonts.UI
     table.insert(uiElements, title)
 
+    local page1Btn = Drawing.new("Square")
+    page1Btn.Visible = true
+    page1Btn.Transparency = 1
+    page1Btn.ZIndex = 1080
+    page1Btn.Color = Color3.fromHex("#04c838")
+    page1Btn.Filled = true
+    page1Btn.Size = Vector2.new(40, 20)
+    page1Btn.Position = win2.Position + Vector2.new(16, 55)
+    page1Btn.Corner = 5
+    table.insert(uiElements, page1Btn)
+
+    local page1Text = Drawing.new("Text")
+    page1Text.Visible = true
+    page1Text.Text = "1"
+    page1Text.Size = 14
+    page1Text.Center = true
+    page1Text.Outline = true
+    page1Text.Color = Color3.fromHex("#ffffff")
+    page1Text.Position = page1Btn.Position + Vector2.new(20, 10)
+    page1Text.ZIndex = 1081
+    table.insert(uiElements, page1Text)
+
+    local page2Btn = Drawing.new("Square")
+    page2Btn.Visible = true
+    page2Btn.Transparency = 1
+    page2Btn.ZIndex = 1080
+    page2Btn.Color = Color3.fromHex("#1b1a1b")
+    page2Btn.Filled = true
+    page2Btn.Size = Vector2.new(40, 20)
+    page2Btn.Position = win2.Position + Vector2.new(66, 55)
+    page2Btn.Corner = 5
+    table.insert(uiElements, page2Btn)
+
+    local page2Text = Drawing.new("Text")
+    page2Text.Visible = true
+    page2Text.Text = "2"
+    page2Text.Size = 14
+    page2Text.Center = true
+    page2Text.Outline = true
+    page2Text.Color = Color3.fromHex("#ffffff")
+    page2Text.Position = page2Btn.Position + Vector2.new(20, 10)
+    page2Text.ZIndex = 1081
+    table.insert(uiElements, page2Text)
+
+    local scrollY = win2.Position.Y + 43 + 35
+    local page2StartY = win2.Position.Y + 43 + 35
+
+    local s1 = Drawing.new("Square")
+    s1.Visible = true
+    s1.Transparency = 1
+    s1.ZIndex = 1040
+    s1.Color = Color3.fromHex("#111010")
+    s1.Position = Vector2.new(win2.Position.X + 16, scrollY + 9)
+    s1.Size = Vector2.new(247, 65)
+    s1.Filled = true
+    s1.Corner = 5
+    table.insert(uiElements, s1)
+    table.insert(espPage1Elements, s1)
+
+    local s1b = Drawing.new("Square")
+    s1b.Visible = true
+    s1b.Transparency = 1
+    s1b.ZIndex = 1041
+    s1b.Color = Color3.fromHex("#1b1a1b")
+    s1b.Filled = false
+    s1b.Thickness = 1
+    s1b.Position = s1.Position
+    s1b.Size = s1.Size
+    s1b.Corner = 5
+    table.insert(uiElements, s1b)
+    table.insert(espPage1Elements, s1b)
+
     local espTxt = Drawing.new("Text")
     espTxt.Visible = true
     espTxt.Transparency = 1
     espTxt.ZIndex = 1080
     espTxt.Color = Color3.fromHex("#d1d4dd")
-    espTxt.Position = win2.Position + Vector2.new(27, 66)
+    espTxt.Position = s1.Position + Vector2.new(11, 14)
     espTxt.Text = "ESP"
     espTxt.Size = 14
     espTxt.Center = false
     espTxt.Outline = true
     espTxt.Font = Drawing.Fonts.UI
     table.insert(uiElements, espTxt)
+    table.insert(espPage1Elements, espTxt)
 
     local desc = Drawing.new("Text")
     desc.Visible = true
     desc.Transparency = 1
     desc.ZIndex = 1100
     desc.Color = Color3.fromHex("#6b7382")
-    desc.Position = win2.Position + Vector2.new(35, 90)
+    desc.Position = s1.Position + Vector2.new(19, 38)
     desc.Text = "Turn enable/disable ESP's"
     desc.Size = 11
     desc.Center = false
     desc.Outline = true
     desc.Font = Drawing.Fonts.UI
     table.insert(uiElements, desc)
+    table.insert(espPage1Elements, desc)
 
     local sw = Drawing.new("Square")
     sw.Visible = true
@@ -1690,10 +1864,11 @@ local function CreateAdvancedESP()
     sw.Thickness = 1
     sw.Filled = false
     sw.Size = Vector2.new(30, 15)
-    sw.Position = win2.Position + Vector2.new(223, 66)
+    sw.Position = s1.Position + Vector2.new(207, 14)
     sw.ZIndex = 1120
     sw.Corner = 10
     table.insert(uiElements, sw)
+    table.insert(espPage1Elements, sw)
 
     local swBg = Drawing.new("Square")
     swBg.Visible = true
@@ -1705,6 +1880,7 @@ local function CreateAdvancedESP()
     swBg.ZIndex = 1120
     swBg.Corner = 10
     table.insert(uiElements, swBg)
+    table.insert(espPage1Elements, swBg)
 
     local swIndBorder = Drawing.new("Square")
     swIndBorder.Visible = true
@@ -1716,6 +1892,7 @@ local function CreateAdvancedESP()
     swIndBorder.ZIndex = 1122
     swIndBorder.Corner = 10
     table.insert(uiElements, swIndBorder)
+    table.insert(espPage1Elements, swIndBorder)
 
     local swInd = Drawing.new("Square")
     swInd.Visible = true
@@ -1726,6 +1903,7 @@ local function CreateAdvancedESP()
     swInd.ZIndex = 1122
     swInd.Corner = 10
     table.insert(uiElements, swInd)
+    table.insert(espPage1Elements, swInd)
 
     local swLabel = Drawing.new("Text")
     swLabel.Visible = true
@@ -1737,8 +1915,9 @@ local function CreateAdvancedESP()
     swLabel.Position = sw.Position + Vector2.new(40, 7)
     swLabel.ZIndex = 1121
     table.insert(uiElements, swLabel)
+    table.insert(espPage1Elements, swLabel)
 
-    AdvSwitchESP4 = { Bg = swBg, Ind = swInd, IndBorder = swIndBorder, IsChecked = Settings.keycardESPEnabled }
+    AdvSwitchESP4 = { Bg = swBg, Ind = swInd, IndBorder = swIndBorder, IsChecked = Settings.globalESPEnabled }
     if AdvSwitchESP4.IsChecked then
         AdvSwitchESP4.IndBorder.Position = AdvSwitchESP4.Bg.Position + Vector2.new(16, 1)
         AdvSwitchESP4.Ind.Position = AdvSwitchESP4.Bg.Position + Vector2.new(16, 1)
@@ -1753,11 +1932,12 @@ local function CreateAdvancedESP()
     s2.Transparency = 1
     s2.ZIndex = 1050
     s2.Color = Color3.fromHex("#111010")
-    s2.Position = win2.Position + Vector2.new(16, 132)
+    s2.Position = s1.Position + Vector2.new(0, 80)
     s2.Size = Vector2.new(247, 90)
     s2.Filled = true
     s2.Corner = 5
     table.insert(uiElements, s2)
+    table.insert(espPage1Elements, s2)
 
     local s2b = Drawing.new("Square")
     s2b.Visible = true
@@ -1770,19 +1950,21 @@ local function CreateAdvancedESP()
     s2b.Size = s2.Size
     s2b.Corner = 5
     table.insert(uiElements, s2b)
+    table.insert(espPage1Elements, s2b)
 
     local distTxt = Drawing.new("Text")
     distTxt.Visible = true
     distTxt.Transparency = 1
     distTxt.ZIndex = 1090
     distTxt.Color = Color3.fromHex("#d1d4dd")
-    distTxt.Position = win2.Position + Vector2.new(35, 144)
+    distTxt.Position = s2.Position + Vector2.new(19, 12)
     distTxt.Text = "ESP distance"
     distTxt.Size = 14
     distTxt.Center = false
     distTxt.Outline = true
     distTxt.Font = Drawing.Fonts.UI
     table.insert(uiElements, distTxt)
+    table.insert(espPage1Elements, distTxt)
 
     local sliderVal = Settings.espDistance
     local sliderTrack = Drawing.new("Square")
@@ -1791,10 +1973,11 @@ local function CreateAdvancedESP()
     sliderTrack.Color = Color3.fromHex("#2a2a2a")
     sliderTrack.Filled = true
     sliderTrack.Size = Vector2.new(200, 4)
-    sliderTrack.Position = win2.Position + Vector2.new(35, 172)
+    sliderTrack.Position = s2.Position + Vector2.new(19, 40)
     sliderTrack.ZIndex = 1130
     sliderTrack.Corner = 2
     table.insert(uiElements, sliderTrack)
+    table.insert(espPage1Elements, sliderTrack)
 
     local sliderFill = Drawing.new("Square")
     sliderFill.Visible = true
@@ -1806,6 +1989,7 @@ local function CreateAdvancedESP()
     sliderFill.ZIndex = 1131
     sliderFill.Corner = 2
     table.insert(uiElements, sliderFill)
+    table.insert(espPage1Elements, sliderFill)
 
     local sliderKnob = Drawing.new("Circle")
     sliderKnob.Visible = true
@@ -1817,6 +2001,7 @@ local function CreateAdvancedESP()
     sliderKnob.Position = sliderTrack.Position + Vector2.new(200 * ((sliderVal-15)/(500-15)), 2)
     sliderKnob.ZIndex = 1132
     table.insert(uiElements, sliderKnob)
+    table.insert(espPage1Elements, sliderKnob)
 
     local sliderValText = Drawing.new("Text")
     sliderValText.Visible = true
@@ -1828,30 +2013,33 @@ local function CreateAdvancedESP()
     sliderValText.Position = sliderTrack.Position + Vector2.new(100, -20)
     sliderValText.ZIndex = 1133
     table.insert(uiElements, sliderValText)
+    table.insert(espPage1Elements, sliderValText)
 
     local sliderDesc = Drawing.new("Text")
     sliderDesc.Visible = true
     sliderDesc.Transparency = 1
     sliderDesc.ZIndex = 1110
     sliderDesc.Color = Color3.fromHex("#6b7382")
-    sliderDesc.Position = win2.Position + Vector2.new(48, 194)
+    sliderDesc.Position = s2.Position + Vector2.new(32, 62)
     sliderDesc.Text = "Distance for ESP"
     sliderDesc.Size = 11
     sliderDesc.Center = false
     sliderDesc.Outline = true
     sliderDesc.Font = Drawing.Fonts.UI
     table.insert(uiElements, sliderDesc)
+    table.insert(espPage1Elements, sliderDesc)
 
     local s3 = Drawing.new("Square")
     s3.Visible = true
     s3.Transparency = 1
     s3.ZIndex = 1060
     s3.Color = Color3.fromHex("#111010")
-    s3.Position = win2.Position + Vector2.new(16, 236)
-    s3.Size = Vector2.new(247, 65)
+    s3.Position = s2.Position + Vector2.new(0, 104)
+    s3.Size = Vector2.new(247, 90)
     s3.Filled = true
     s3.Corner = 5
     table.insert(uiElements, s3)
+    table.insert(espPage1Elements, s3)
 
     local s3b = Drawing.new("Square")
     s3b.Visible = true
@@ -1864,24 +2052,111 @@ local function CreateAdvancedESP()
     s3b.Size = s3.Size
     s3b.Corner = 5
     table.insert(uiElements, s3b)
+    table.insert(espPage1Elements, s3b)
 
     local kcTxt = Drawing.new("Text")
     kcTxt.Visible = true
     kcTxt.Transparency = 1
     kcTxt.ZIndex = 1080
     kcTxt.Color = Color3.fromHex("#d1d4dd")
-    kcTxt.Position = win2.Position + Vector2.new(27, 246)
+    kcTxt.Position = s3.Position + Vector2.new(11, 14)
     kcTxt.Text = "ESP Keycard"
     kcTxt.Size = 14
     kcTxt.Center = false
     kcTxt.Outline = true
     kcTxt.Font = Drawing.Fonts.UI
     table.insert(uiElements, kcTxt)
+    table.insert(espPage1Elements, kcTxt)
+
+    local swKc = Drawing.new("Square")
+    swKc.Visible = true
+    swKc.Transparency = 1
+    swKc.Color = Color3.fromHex("#000000")
+    swKc.Thickness = 1
+    swKc.Filled = false
+    swKc.Size = Vector2.new(30, 15)
+    swKc.Position = s3.Position + Vector2.new(207, 12)
+    swKc.ZIndex = 1120
+    swKc.Corner = 10
+    table.insert(uiElements, swKc)
+    table.insert(espPage1Elements, swKc)
+
+    local swKcBg = Drawing.new("Square")
+    swKcBg.Visible = true
+    swKcBg.Transparency = 1
+    swKcBg.Color = Color3.fromHex("#cbcfd5")
+    swKcBg.Filled = true
+    swKcBg.Size = swKc.Size
+    swKcBg.Position = swKc.Position
+    swKcBg.ZIndex = 1120
+    swKcBg.Corner = 10
+    table.insert(uiElements, swKcBg)
+    table.insert(espPage1Elements, swKcBg)
+
+    local swKcIndBorder = Drawing.new("Square")
+    swKcIndBorder.Visible = true
+    swKcIndBorder.Transparency = 1
+    swKcIndBorder.Color = Color3.fromHex("#000000")
+    swKcIndBorder.Thickness = 1
+    swKcIndBorder.Filled = false
+    swKcIndBorder.Size = Vector2.new(13, 13)
+    swKcIndBorder.ZIndex = 1122
+    swKcIndBorder.Corner = 10
+    table.insert(uiElements, swKcIndBorder)
+    table.insert(espPage1Elements, swKcIndBorder)
+
+    local swKcInd = Drawing.new("Square")
+    swKcInd.Visible = true
+    swKcInd.Transparency = 1
+    swKcInd.Color = Color3.fromHex("#ffffff")
+    swKcInd.Filled = true
+    swKcInd.Size = Vector2.new(13, 13)
+    swKcInd.ZIndex = 1122
+    swKcInd.Corner = 10
+    table.insert(uiElements, swKcInd)
+    table.insert(espPage1Elements, swKcInd)
+
+    local swKcLabel = Drawing.new("Text")
+    swKcLabel.Visible = true
+    swKcLabel.Text = ""
+    swKcLabel.Size = 1
+    swKcLabel.Color = Color3.fromHex("#FFFFFF")
+    swKcLabel.Outline = true
+    swKcLabel.Font = Drawing.Fonts.UI
+    swKcLabel.Position = swKc.Position + Vector2.new(40, 7)
+    swKcLabel.ZIndex = 1121
+    table.insert(uiElements, swKcLabel)
+    table.insert(espPage1Elements, swKcLabel)
+
+    AdvSwitchKeycards = { Bg = swKcBg, Ind = swKcInd, IndBorder = swKcIndBorder, IsChecked = Settings.keycardESPEnabled }
+    UpdateSwitchColor(AdvSwitchKeycards.Bg, AdvSwitchKeycards.IsChecked)
+    if AdvSwitchKeycards.IsChecked then
+        AdvSwitchKeycards.IndBorder.Position = AdvSwitchKeycards.Bg.Position + Vector2.new(16, 1)
+        AdvSwitchKeycards.Ind.Position = AdvSwitchKeycards.Bg.Position + Vector2.new(16, 1)
+    else
+        AdvSwitchKeycards.IndBorder.Position = AdvSwitchKeycards.Bg.Position + Vector2.new(1, 1)
+        AdvSwitchKeycards.Ind.Position = AdvSwitchKeycards.Bg.Position + Vector2.new(1, 1)
+    end
+
+    local kcDesc = Drawing.new("Text")
+    kcDesc.Visible = true
+    kcDesc.Transparency = 1
+    kcDesc.ZIndex = 1100
+    kcDesc.Color = Color3.fromHex("#6b7382")
+    kcDesc.Position = s3.Position + Vector2.new(19, 38)
+    kcDesc.Text = "Select keycard types to show"
+    kcDesc.Size = 11
+    kcDesc.Center = false
+    kcDesc.Outline = true
+    kcDesc.Font = Drawing.Fonts.UI
+    table.insert(uiElements, kcDesc)
+    table.insert(espPage1Elements, kcDesc)
 
     local dropdownItems = {
-        { name = "Normal keycard", checked = true },
-        { name = "Inner keycard", checked = true },
-        { name = "Ridge keycard", checked = true }
+        { name = "Normal keycard", checked = Settings.keycardTypes.Normal },
+        { name = "Inner keycard", checked = Settings.keycardTypes.Inner },
+        { name = "Ridge keycard", checked = Settings.keycardTypes.Ridge },
+        { name = "Password paper", checked = Settings.keycardTypes.Password }
     }
     local dropdownOpen = false
     local dropdownMain = Drawing.new("Square")
@@ -1890,10 +2165,11 @@ local function CreateAdvancedESP()
     dropdownMain.Color = Color3.fromHex("#1b1a1b")
     dropdownMain.Filled = true
     dropdownMain.Size = Vector2.new(140, 24)
-    dropdownMain.Position = win2.Position + Vector2.new(41, 261)
+    dropdownMain.Position = s3.Position + Vector2.new(25, 52)
     dropdownMain.ZIndex = 1140
     dropdownMain.Corner = 4
     table.insert(uiElements, dropdownMain)
+    table.insert(espPage1Elements, dropdownMain)
 
     local dropdownText = Drawing.new("Text")
     dropdownText.Visible = true
@@ -1905,6 +2181,7 @@ local function CreateAdvancedESP()
     dropdownText.Position = dropdownMain.Position + Vector2.new(8, 4)
     dropdownText.ZIndex = 1142
     table.insert(uiElements, dropdownText)
+    table.insert(espPage1Elements, dropdownText)
 
     local dropdownArrow = Drawing.new("Text")
     dropdownArrow.Visible = true
@@ -1915,6 +2192,7 @@ local function CreateAdvancedESP()
     dropdownArrow.Position = dropdownMain.Position + Vector2.new(120, 4)
     dropdownArrow.ZIndex = 1142
     table.insert(uiElements, dropdownArrow)
+    table.insert(espPage1Elements, dropdownArrow)
 
     local dropdownBoxes = {}
     for idx, item in ipairs(dropdownItems) do
@@ -1969,11 +2247,12 @@ local function CreateAdvancedESP()
     s4.Transparency = 1
     s4.ZIndex = 1060
     s4.Color = Color3.fromHex("#111010")
-    s4.Position = win2.Position + Vector2.new(16, 321)
+    s4.Position = s3.Position + Vector2.new(0, 104)
     s4.Size = Vector2.new(251, 46)
     s4.Filled = true
     s4.Corner = 5
     table.insert(uiElements, s4)
+    table.insert(espPage1Elements, s4)
 
     local s4b = Drawing.new("Square")
     s4b.Visible = true
@@ -1986,19 +2265,21 @@ local function CreateAdvancedESP()
     s4b.Size = s4.Size
     s4b.Corner = 5
     table.insert(uiElements, s4b)
+    table.insert(espPage1Elements, s4b)
 
     local itemsTxt = Drawing.new("Text")
     itemsTxt.Visible = true
     itemsTxt.Transparency = 1
     itemsTxt.ZIndex = 1080
     itemsTxt.Color = Color3.fromHex("#d1d4dd")
-    itemsTxt.Position = win2.Position + Vector2.new(27, 331)
+    itemsTxt.Position = s4.Position + Vector2.new(11, 12)
     itemsTxt.Text = "ESP Items"
     itemsTxt.Size = 14
     itemsTxt.Center = false
     itemsTxt.Outline = true
     itemsTxt.Font = Drawing.Fonts.UI
     table.insert(uiElements, itemsTxt)
+    table.insert(espPage1Elements, itemsTxt)
 
     local swItems = Drawing.new("Square")
     swItems.Visible = true
@@ -2007,10 +2288,11 @@ local function CreateAdvancedESP()
     swItems.Thickness = 1
     swItems.Filled = false
     swItems.Size = Vector2.new(30, 15)
-    swItems.Position = win2.Position + Vector2.new(223, 331)
+    swItems.Position = s4.Position + Vector2.new(207, 10)
     swItems.ZIndex = 1120
     swItems.Corner = 10
     table.insert(uiElements, swItems)
+    table.insert(espPage1Elements, swItems)
 
     local swItemsBg = Drawing.new("Square")
     swItemsBg.Visible = true
@@ -2022,6 +2304,7 @@ local function CreateAdvancedESP()
     swItemsBg.ZIndex = 1120
     swItemsBg.Corner = 10
     table.insert(uiElements, swItemsBg)
+    table.insert(espPage1Elements, swItemsBg)
 
     local swItemsIndBorder = Drawing.new("Square")
     swItemsIndBorder.Visible = true
@@ -2033,6 +2316,7 @@ local function CreateAdvancedESP()
     swItemsIndBorder.ZIndex = 1122
     swItemsIndBorder.Corner = 10
     table.insert(uiElements, swItemsIndBorder)
+    table.insert(espPage1Elements, swItemsIndBorder)
 
     local swItemsInd = Drawing.new("Square")
     swItemsInd.Visible = true
@@ -2043,6 +2327,7 @@ local function CreateAdvancedESP()
     swItemsInd.ZIndex = 1122
     swItemsInd.Corner = 10
     table.insert(uiElements, swItemsInd)
+    table.insert(espPage1Elements, swItemsInd)
 
     local swItemsLabel = Drawing.new("Text")
     swItemsLabel.Visible = true
@@ -2054,6 +2339,7 @@ local function CreateAdvancedESP()
     swItemsLabel.Position = swItems.Position + Vector2.new(40, 7)
     swItemsLabel.ZIndex = 1121
     table.insert(uiElements, swItemsLabel)
+    table.insert(espPage1Elements, swItemsLabel)
 
     AdvSwitchItems = { Bg = swItemsBg, Ind = swItemsInd, IndBorder = swItemsIndBorder, IsChecked = Settings.itemsESPEnabled }
     UpdateSwitchColor(AdvSwitchItems.Bg, AdvSwitchItems.IsChecked)
@@ -2070,24 +2356,26 @@ local function CreateAdvancedESP()
     itemsDesc.Transparency = 1
     itemsDesc.ZIndex = 1100
     itemsDesc.Color = Color3.fromHex("#6b7382")
-    itemsDesc.Position = win2.Position + Vector2.new(35, 346)
+    itemsDesc.Position = s4.Position + Vector2.new(19, 28)
     itemsDesc.Text = "Turn enable/disable ESP's for all items"
     itemsDesc.Size = 11
     itemsDesc.Center = false
     itemsDesc.Outline = true
     itemsDesc.Font = Drawing.Fonts.UI
     table.insert(uiElements, itemsDesc)
+    table.insert(espPage1Elements, itemsDesc)
 
     local s5 = Drawing.new("Square")
     s5.Visible = true
     s5.Transparency = 1
     s5.ZIndex = 1060
     s5.Color = Color3.fromHex("#111010")
-    s5.Position = win2.Position + Vector2.new(16, 380)
+    s5.Position = s4.Position + Vector2.new(0, 60)
     s5.Size = Vector2.new(251, 70)
     s5.Filled = true
     s5.Corner = 5
     table.insert(uiElements, s5)
+    table.insert(espPage1Elements, s5)
 
     local s5b = Drawing.new("Square")
     s5b.Visible = true
@@ -2100,19 +2388,21 @@ local function CreateAdvancedESP()
     s5b.Size = s5.Size
     s5b.Corner = 5
     table.insert(uiElements, s5b)
+    table.insert(espPage1Elements, s5b)
 
     local currTxt = Drawing.new("Text")
     currTxt.Visible = true
     currTxt.Transparency = 1
     currTxt.ZIndex = 1080
     currTxt.Color = Color3.fromHex("#d1d4dd")
-    currTxt.Position = win2.Position + Vector2.new(27, 388)
+    currTxt.Position = s5.Position + Vector2.new(11, 12)
     currTxt.Text = "ESP Currency"
     currTxt.Size = 14
     currTxt.Center = false
     currTxt.Outline = true
     currTxt.Font = Drawing.Fonts.UI
     table.insert(uiElements, currTxt)
+    table.insert(espPage1Elements, currTxt)
 
     local swCurr = Drawing.new("Square")
     swCurr.Visible = true
@@ -2121,10 +2411,11 @@ local function CreateAdvancedESP()
     swCurr.Thickness = 1
     swCurr.Filled = false
     swCurr.Size = Vector2.new(30, 15)
-    swCurr.Position = win2.Position + Vector2.new(223, 388)
+    swCurr.Position = s5.Position + Vector2.new(207, 10)
     swCurr.ZIndex = 1120
     swCurr.Corner = 10
     table.insert(uiElements, swCurr)
+    table.insert(espPage1Elements, swCurr)
 
     local swCurrBg = Drawing.new("Square")
     swCurrBg.Visible = true
@@ -2136,6 +2427,7 @@ local function CreateAdvancedESP()
     swCurrBg.ZIndex = 1120
     swCurrBg.Corner = 10
     table.insert(uiElements, swCurrBg)
+    table.insert(espPage1Elements, swCurrBg)
 
     local swCurrIndBorder = Drawing.new("Square")
     swCurrIndBorder.Visible = true
@@ -2147,6 +2439,7 @@ local function CreateAdvancedESP()
     swCurrIndBorder.ZIndex = 1122
     swCurrIndBorder.Corner = 10
     table.insert(uiElements, swCurrIndBorder)
+    table.insert(espPage1Elements, swCurrIndBorder)
 
     local swCurrInd = Drawing.new("Square")
     swCurrInd.Visible = true
@@ -2157,6 +2450,7 @@ local function CreateAdvancedESP()
     swCurrInd.ZIndex = 1122
     swCurrInd.Corner = 10
     table.insert(uiElements, swCurrInd)
+    table.insert(espPage1Elements, swCurrInd)
 
     local swCurrLabel = Drawing.new("Text")
     swCurrLabel.Visible = true
@@ -2168,6 +2462,7 @@ local function CreateAdvancedESP()
     swCurrLabel.Position = swCurr.Position + Vector2.new(40, 7)
     swCurrLabel.ZIndex = 1121
     table.insert(uiElements, swCurrLabel)
+    table.insert(espPage1Elements, swCurrLabel)
 
     AdvSwitchCurrency = { Bg = swCurrBg, Ind = swCurrInd, IndBorder = swCurrIndBorder, IsChecked = Settings.currencyESPEnabled }
     UpdateSwitchColor(AdvSwitchCurrency.Bg, AdvSwitchCurrency.IsChecked)
@@ -2184,13 +2479,14 @@ local function CreateAdvancedESP()
     richTxt.Transparency = 1
     richTxt.ZIndex = 1080
     richTxt.Color = Color3.fromHex("#d1d4dd")
-    richTxt.Position = win2.Position + Vector2.new(27, 415)
+    richTxt.Position = s5.Position + Vector2.new(11, 34)
     richTxt.Text = "Rich mode (>=25)"
     richTxt.Size = 12
     richTxt.Center = false
     richTxt.Outline = true
     richTxt.Font = Drawing.Fonts.UI
     table.insert(uiElements, richTxt)
+    table.insert(espPage1Elements, richTxt)
 
     local swRich = Drawing.new("Square")
     swRich.Visible = true
@@ -2199,10 +2495,11 @@ local function CreateAdvancedESP()
     swRich.Thickness = 1
     swRich.Filled = false
     swRich.Size = Vector2.new(30, 15)
-    swRich.Position = win2.Position + Vector2.new(223, 414)
+    swRich.Position = s5.Position + Vector2.new(207, 34)
     swRich.ZIndex = 1120
     swRich.Corner = 10
     table.insert(uiElements, swRich)
+    table.insert(espPage1Elements, swRich)
 
     local swRichBg = Drawing.new("Square")
     swRichBg.Visible = true
@@ -2214,6 +2511,7 @@ local function CreateAdvancedESP()
     swRichBg.ZIndex = 1120
     swRichBg.Corner = 10
     table.insert(uiElements, swRichBg)
+    table.insert(espPage1Elements, swRichBg)
 
     local swRichIndBorder = Drawing.new("Square")
     swRichIndBorder.Visible = true
@@ -2225,6 +2523,7 @@ local function CreateAdvancedESP()
     swRichIndBorder.ZIndex = 1122
     swRichIndBorder.Corner = 10
     table.insert(uiElements, swRichIndBorder)
+    table.insert(espPage1Elements, swRichIndBorder)
 
     local swRichInd = Drawing.new("Square")
     swRichInd.Visible = true
@@ -2235,6 +2534,7 @@ local function CreateAdvancedESP()
     swRichInd.ZIndex = 1122
     swRichInd.Corner = 10
     table.insert(uiElements, swRichInd)
+    table.insert(espPage1Elements, swRichInd)
 
     local swRichLabel = Drawing.new("Text")
     swRichLabel.Visible = true
@@ -2246,6 +2546,7 @@ local function CreateAdvancedESP()
     swRichLabel.Position = swRich.Position + Vector2.new(40, 7)
     swRichLabel.ZIndex = 1121
     table.insert(uiElements, swRichLabel)
+    table.insert(espPage1Elements, swRichLabel)
 
     AdvSwitchRich = { Bg = swRichBg, Ind = swRichInd, IndBorder = swRichIndBorder, IsChecked = Settings.currencyRichEnabled }
     UpdateSwitchColor(AdvSwitchRich.Bg, AdvSwitchRich.IsChecked)
@@ -2262,27 +2563,29 @@ local function CreateAdvancedESP()
     currDesc.Transparency = 1
     currDesc.ZIndex = 1100
     currDesc.Color = Color3.fromHex("#6b7382")
-    currDesc.Position = win2.Position + Vector2.new(35, 436)
+    currDesc.Position = s5.Position + Vector2.new(19, 49)
     currDesc.Text = "Show only currency >= 25"
     currDesc.Size = 11
     currDesc.Center = false
     currDesc.Outline = true
     currDesc.Font = Drawing.Fonts.UI
     table.insert(uiElements, currDesc)
+    table.insert(espPage1Elements, currDesc)
 
     local s6 = Drawing.new("Square")
-    s6.Visible = true
+    s6.Visible = false
     s6.Transparency = 1
     s6.ZIndex = 1060
     s6.Color = Color3.fromHex("#111010")
-    s6.Position = win2.Position + Vector2.new(16, 460)
+    s6.Position = Vector2.new(win2.Position.X + 16, page2StartY + 9)
     s6.Size = Vector2.new(251, 46)
     s6.Filled = true
     s6.Corner = 5
     table.insert(uiElements, s6)
+    table.insert(espPage2Elements, s6)
 
     local s6b = Drawing.new("Square")
-    s6b.Visible = true
+    s6b.Visible = false
     s6b.Transparency = 1
     s6b.ZIndex = 1061
     s6b.Color = Color3.fromHex("#1b1a1b")
@@ -2292,34 +2595,37 @@ local function CreateAdvancedESP()
     s6b.Size = s6.Size
     s6b.Corner = 5
     table.insert(uiElements, s6b)
+    table.insert(espPage2Elements, s6b)
 
     local doorsTxt = Drawing.new("Text")
-    doorsTxt.Visible = true
+    doorsTxt.Visible = false
     doorsTxt.Transparency = 1
     doorsTxt.ZIndex = 1080
     doorsTxt.Color = Color3.fromHex("#d1d4dd")
-    doorsTxt.Position = win2.Position + Vector2.new(27, 469)
+    doorsTxt.Position = s6.Position + Vector2.new(11, 12)
     doorsTxt.Text = "ESP Doors"
     doorsTxt.Size = 14
     doorsTxt.Center = false
     doorsTxt.Outline = true
     doorsTxt.Font = Drawing.Fonts.UI
     table.insert(uiElements, doorsTxt)
+    table.insert(espPage2Elements, doorsTxt)
 
     local swDoors = Drawing.new("Square")
-    swDoors.Visible = true
+    swDoors.Visible = false
     swDoors.Transparency = 1
     swDoors.Color = Color3.fromHex("#000000")
     swDoors.Thickness = 1
     swDoors.Filled = false
     swDoors.Size = Vector2.new(30, 15)
-    swDoors.Position = win2.Position + Vector2.new(223, 469)
+    swDoors.Position = s6.Position + Vector2.new(207, 10)
     swDoors.ZIndex = 1120
     swDoors.Corner = 10
     table.insert(uiElements, swDoors)
+    table.insert(espPage2Elements, swDoors)
 
     local swDoorsBg = Drawing.new("Square")
-    swDoorsBg.Visible = true
+    swDoorsBg.Visible = false
     swDoorsBg.Transparency = 1
     swDoorsBg.Color = Color3.fromHex("#cbcfd5")
     swDoorsBg.Filled = true
@@ -2328,9 +2634,10 @@ local function CreateAdvancedESP()
     swDoorsBg.ZIndex = 1120
     swDoorsBg.Corner = 10
     table.insert(uiElements, swDoorsBg)
+    table.insert(espPage2Elements, swDoorsBg)
 
     local swDoorsIndBorder = Drawing.new("Square")
-    swDoorsIndBorder.Visible = true
+    swDoorsIndBorder.Visible = false
     swDoorsIndBorder.Transparency = 1
     swDoorsIndBorder.Color = Color3.fromHex("#000000")
     swDoorsIndBorder.Thickness = 1
@@ -2339,9 +2646,10 @@ local function CreateAdvancedESP()
     swDoorsIndBorder.ZIndex = 1122
     swDoorsIndBorder.Corner = 10
     table.insert(uiElements, swDoorsIndBorder)
+    table.insert(espPage2Elements, swDoorsIndBorder)
 
     local swDoorsInd = Drawing.new("Square")
-    swDoorsInd.Visible = true
+    swDoorsInd.Visible = false
     swDoorsInd.Transparency = 1
     swDoorsInd.Color = Color3.fromHex("#ffffff")
     swDoorsInd.Filled = true
@@ -2349,9 +2657,10 @@ local function CreateAdvancedESP()
     swDoorsInd.ZIndex = 1122
     swDoorsInd.Corner = 10
     table.insert(uiElements, swDoorsInd)
+    table.insert(espPage2Elements, swDoorsInd)
 
     local swDoorsLabel = Drawing.new("Text")
-    swDoorsLabel.Visible = true
+    swDoorsLabel.Visible = false
     swDoorsLabel.Text = ""
     swDoorsLabel.Size = 1
     swDoorsLabel.Color = Color3.fromHex("#FFFFFF")
@@ -2360,6 +2669,7 @@ local function CreateAdvancedESP()
     swDoorsLabel.Position = swDoors.Position + Vector2.new(40, 7)
     swDoorsLabel.ZIndex = 1121
     table.insert(uiElements, swDoorsLabel)
+    table.insert(espPage2Elements, swDoorsLabel)
 
     AdvSwitchDoors = { Bg = swDoorsBg, Ind = swDoorsInd, IndBorder = swDoorsIndBorder, IsChecked = Settings.doorESPEnabled }
     UpdateSwitchColor(AdvSwitchDoors.Bg, AdvSwitchDoors.IsChecked)
@@ -2372,51 +2682,555 @@ local function CreateAdvancedESP()
     end
 
     local doorsDesc = Drawing.new("Text")
-    doorsDesc.Visible = true
+    doorsDesc.Visible = false
     doorsDesc.Transparency = 1
     doorsDesc.ZIndex = 1100
     doorsDesc.Color = Color3.fromHex("#6b7382")
-    doorsDesc.Position = win2.Position + Vector2.new(35, 484)
+    doorsDesc.Position = s6.Position + Vector2.new(19, 28)
     doorsDesc.Text = "Turn enable/disable ESP's for nearest doors"
     doorsDesc.Size = 11
     doorsDesc.Center = false
     doorsDesc.Outline = true
     doorsDesc.Font = Drawing.Fonts.UI
     table.insert(uiElements, doorsDesc)
+    table.insert(espPage2Elements, doorsDesc)
+
+    local s7 = Drawing.new("Square")
+    s7.Visible = false
+    s7.Transparency = 1
+    s7.ZIndex = 1060
+    s7.Color = Color3.fromHex("#111010")
+    s7.Position = s6.Position + Vector2.new(0, 60)
+    s7.Size = Vector2.new(251, 110)
+    s7.Filled = true
+    s7.Corner = 5
+    table.insert(uiElements, s7)
+    table.insert(espPage2Elements, s7)
+
+    local s7b = Drawing.new("Square")
+    s7b.Visible = false
+    s7b.Transparency = 1
+    s7b.ZIndex = 1061
+    s7b.Color = Color3.fromHex("#1b1a1b")
+    s7b.Filled = false
+    s7b.Thickness = 1
+    s7b.Position = s7.Position
+    s7b.Size = s7.Size
+    s7b.Corner = 5
+    table.insert(uiElements, s7b)
+    table.insert(espPage2Elements, s7b)
+
+    local mobsTxt = Drawing.new("Text")
+    mobsTxt.Visible = false
+    mobsTxt.Transparency = 1
+    mobsTxt.ZIndex = 1080
+    mobsTxt.Color = Color3.fromHex("#d1d4dd")
+    mobsTxt.Position = s7.Position + Vector2.new(11, 12)
+    mobsTxt.Text = "ESP Mobs"
+    mobsTxt.Size = 14
+    mobsTxt.Center = false
+    mobsTxt.Outline = true
+    mobsTxt.Font = Drawing.Fonts.UI
+    table.insert(uiElements, mobsTxt)
+    table.insert(espPage2Elements, mobsTxt)
+
+    local swMobs = Drawing.new("Square")
+    swMobs.Visible = false
+    swMobs.Transparency = 1
+    swMobs.Color = Color3.fromHex("#000000")
+    swMobs.Thickness = 1
+    swMobs.Filled = false
+    swMobs.Size = Vector2.new(30, 15)
+    swMobs.Position = s7.Position + Vector2.new(207, 10)
+    swMobs.ZIndex = 1120
+    swMobs.Corner = 10
+    table.insert(uiElements, swMobs)
+    table.insert(espPage2Elements, swMobs)
+
+    local swMobsBg = Drawing.new("Square")
+    swMobsBg.Visible = false
+    swMobsBg.Transparency = 1
+    swMobsBg.Color = Color3.fromHex("#cbcfd5")
+    swMobsBg.Filled = true
+    swMobsBg.Size = swMobs.Size
+    swMobsBg.Position = swMobs.Position
+    swMobsBg.ZIndex = 1120
+    swMobsBg.Corner = 10
+    table.insert(uiElements, swMobsBg)
+    table.insert(espPage2Elements, swMobsBg)
+
+    local swMobsIndBorder = Drawing.new("Square")
+    swMobsIndBorder.Visible = false
+    swMobsIndBorder.Transparency = 1
+    swMobsIndBorder.Color = Color3.fromHex("#000000")
+    swMobsIndBorder.Thickness = 1
+    swMobsIndBorder.Filled = false
+    swMobsIndBorder.Size = Vector2.new(13, 13)
+    swMobsIndBorder.ZIndex = 1122
+    swMobsIndBorder.Corner = 10
+    table.insert(uiElements, swMobsIndBorder)
+    table.insert(espPage2Elements, swMobsIndBorder)
+
+    local swMobsInd = Drawing.new("Square")
+    swMobsInd.Visible = false
+    swMobsInd.Transparency = 1
+    swMobsInd.Color = Color3.fromHex("#ffffff")
+    swMobsInd.Filled = true
+    swMobsInd.Size = Vector2.new(13, 13)
+    swMobsInd.ZIndex = 1122
+    swMobsInd.Corner = 10
+    table.insert(uiElements, swMobsInd)
+    table.insert(espPage2Elements, swMobsInd)
+
+    local swMobsLabel = Drawing.new("Text")
+    swMobsLabel.Visible = false
+    swMobsLabel.Text = ""
+    swMobsLabel.Size = 1
+    swMobsLabel.Color = Color3.fromHex("#FFFFFF")
+    swMobsLabel.Outline = true
+    swMobsLabel.Font = Drawing.Fonts.UI
+    swMobsLabel.Position = swMobs.Position + Vector2.new(40, 7)
+    swMobsLabel.ZIndex = 1121
+    table.insert(uiElements, swMobsLabel)
+    table.insert(espPage2Elements, swMobsLabel)
+
+    AdvSwitchMobs = { Bg = swMobsBg, Ind = swMobsInd, IndBorder = swMobsIndBorder, IsChecked = Settings.mobsESPEnabled }
+    UpdateSwitchColor(AdvSwitchMobs.Bg, AdvSwitchMobs.IsChecked)
+    if AdvSwitchMobs.IsChecked then
+        AdvSwitchMobs.IndBorder.Position = AdvSwitchMobs.Bg.Position + Vector2.new(16, 1)
+        AdvSwitchMobs.Ind.Position = AdvSwitchMobs.Bg.Position + Vector2.new(16, 1)
+    else
+        AdvSwitchMobs.IndBorder.Position = AdvSwitchMobs.Bg.Position + Vector2.new(1, 1)
+        AdvSwitchMobs.Ind.Position = AdvSwitchMobs.Bg.Position + Vector2.new(1, 1)
+    end
+
+    local mobItems = {
+        { name = "Angler", checked = Settings.mobsESPList.Angler },
+        { name = "Blitz", checked = Settings.mobsESPList.Blitz },
+        { name = "Pinkie", checked = Settings.mobsESPList.Pinkie },
+        { name = "Pandemonium", checked = Settings.mobsESPList.Pandemonium },
+        { name = "Froger", checked = Settings.mobsESPList.Froger },
+        { name = "Chainsmoker", checked = Settings.mobsESPList.Chainsmoker },
+        { name = "A60", checked = Settings.mobsESPList.A60 },
+        { name = "Harbinger", checked = Settings.mobsESPList.Harbinger },
+        { name = "Painter", checked = Settings.mobsESPList.Painter }
+    }
+    local mobDropdownOpen = false
+    local mobDropdownMain = Drawing.new("Square")
+    mobDropdownMain.Visible = false
+    mobDropdownMain.Transparency = 1
+    mobDropdownMain.Color = Color3.fromHex("#1b1a1b")
+    mobDropdownMain.Filled = true
+    mobDropdownMain.Size = Vector2.new(140, 24)
+    mobDropdownMain.Position = s7.Position + Vector2.new(25, 38)
+    mobDropdownMain.ZIndex = 1140
+    mobDropdownMain.Corner = 4
+    table.insert(uiElements, mobDropdownMain)
+    table.insert(espPage2Elements, mobDropdownMain)
+
+    local mobDropdownText = Drawing.new("Text")
+    mobDropdownText.Visible = false
+    mobDropdownText.Text = "Mobs: all"
+    mobDropdownText.Size = 14
+    mobDropdownText.Outline = true
+    mobDropdownText.Font = 0
+    mobDropdownText.Color = Color3.fromHex("#d1d4dd")
+    mobDropdownText.Position = mobDropdownMain.Position + Vector2.new(8, 4)
+    mobDropdownText.ZIndex = 1142
+    table.insert(uiElements, mobDropdownText)
+    table.insert(espPage2Elements, mobDropdownText)
+
+    local mobDropdownArrow = Drawing.new("Text")
+    mobDropdownArrow.Visible = false
+    mobDropdownArrow.Text = ""
+    mobDropdownArrow.Size = 12
+    mobDropdownArrow.Outline = true
+    mobDropdownArrow.Color = Color3.fromHex("#d1d4dd")
+    mobDropdownArrow.Position = mobDropdownMain.Position + Vector2.new(120, 4)
+    mobDropdownArrow.ZIndex = 1142
+    table.insert(uiElements, mobDropdownArrow)
+    table.insert(espPage2Elements, mobDropdownArrow)
+
+    local mobDropdownBoxes = {}
+    for idx, item in ipairs(mobItems) do
+        local box = Drawing.new("Square")
+        box.Visible = false
+        box.Transparency = 1
+        box.Color = Color3.fromHex("#111010")
+        box.Filled = true
+        box.Size = Vector2.new(140, 24)
+        box.Position = mobDropdownMain.Position + Vector2.new(0, 24 * idx)
+        box.ZIndex = 1145
+        box.Corner = 4
+        table.insert(uiElements, box)
+
+        local check = Drawing.new("Square")
+        check.Visible = false
+        check.Transparency = 1
+        check.Color = item.checked and Color3.fromHex("#04c838") or Color3.fromHex("#3a3a3a")
+        check.Filled = true
+        check.Size = Vector2.new(12, 12)
+        check.Position = box.Position + Vector2.new(6, 6)
+        check.ZIndex = 1146
+        check.Corner = 2
+        table.insert(uiElements, check)
+
+        local txt = Drawing.new("Text")
+        txt.Visible = false
+        txt.Text = item.name
+        txt.Size = 14
+        txt.Outline = true
+        txt.Font = 0
+        txt.Color = Color3.fromHex("#d1d4dd")
+        txt.Position = box.Position + Vector2.new(24, 4)
+        txt.ZIndex = 1146
+        table.insert(uiElements, txt)
+
+        table.insert(mobDropdownBoxes, { Box = box, Check = check, Text = txt, Data = item })
+    end
+
+    local function UpdateMobDropdownText()
+        local sel = {}
+        for _, it in ipairs(mobItems) do
+            if it.checked then table.insert(sel, it.name) end
+        end
+        if #sel == 0 then mobDropdownText.Text = "Mobs: none"
+        elseif #sel == #mobItems then mobDropdownText.Text = "Mobs: all"
+        else mobDropdownText.Text = "Mobs: " .. #sel .. "/" .. #mobItems end
+    end
+
+    local mobsDesc = Drawing.new("Text")
+    mobsDesc.Visible = false
+    mobsDesc.Transparency = 1
+    mobsDesc.ZIndex = 1100
+    mobsDesc.Color = Color3.fromHex("#6b7382")
+    mobsDesc.Position = s7.Position + Vector2.new(19, 70)
+    mobsDesc.Text = "Select which mobs to highlight"
+    mobsDesc.Size = 11
+    mobsDesc.Center = false
+    mobsDesc.Outline = true
+    mobsDesc.Font = Drawing.Fonts.UI
+    table.insert(uiElements, mobsDesc)
+    table.insert(espPage2Elements, mobsDesc)
+
+    local s8 = Drawing.new("Square")
+    s8.Visible = false
+    s8.Transparency = 1
+    s8.ZIndex = 1060
+    s8.Color = Color3.fromHex("#111010")
+    s8.Position = s7.Position + Vector2.new(0, 125)
+    s8.Size = Vector2.new(247, 120)
+    s8.Filled = true
+    s8.Corner = 5
+    table.insert(uiElements, s8)
+    table.insert(espPage2Elements, s8)
+
+    local s8b = Drawing.new("Square")
+    s8b.Visible = false
+    s8b.Transparency = 1
+    s8b.ZIndex = 1061
+    s8b.Color = Color3.fromHex("#1b1a1b")
+    s8b.Filled = false
+    s8b.Thickness = 1
+    s8b.Position = s8.Position
+    s8b.Size = s8.Size
+    s8b.Corner = 5
+    table.insert(uiElements, s8b)
+    table.insert(espPage2Elements, s8b)
+
+    local autoRescanTxt = Drawing.new("Text")
+    autoRescanTxt.Visible = false
+    autoRescanTxt.Transparency = 1
+    autoRescanTxt.ZIndex = 1080
+    autoRescanTxt.Color = Color3.fromHex("#d1d4dd")
+    autoRescanTxt.Position = s8.Position + Vector2.new(11, 14)
+    autoRescanTxt.Text = "Auto Rescan"
+    autoRescanTxt.Size = 14
+    autoRescanTxt.Center = false
+    autoRescanTxt.Outline = true
+    autoRescanTxt.Font = Drawing.Fonts.UI
+    table.insert(uiElements, autoRescanTxt)
+    table.insert(espPage2Elements, autoRescanTxt)
+
+    local swAR = Drawing.new("Square")
+    swAR.Visible = false
+    swAR.Transparency = 1
+    swAR.Color = Color3.fromHex("#000000")
+    swAR.Thickness = 1
+    swAR.Filled = false
+    swAR.Size = Vector2.new(30, 15)
+    swAR.Position = s8.Position + Vector2.new(207, 12)
+    swAR.ZIndex = 1120
+    swAR.Corner = 10
+    table.insert(uiElements, swAR)
+    table.insert(espPage2Elements, swAR)
+
+    local swARBg = Drawing.new("Square")
+    swARBg.Visible = false
+    swARBg.Transparency = 1
+    swARBg.Color = Color3.fromHex("#cbcfd5")
+    swARBg.Filled = true
+    swARBg.Size = swAR.Size
+    swARBg.Position = swAR.Position
+    swARBg.ZIndex = 1120
+    swARBg.Corner = 10
+    table.insert(uiElements, swARBg)
+    table.insert(espPage2Elements, swARBg)
+
+    local swARIndBorder = Drawing.new("Square")
+    swARIndBorder.Visible = false
+    swARIndBorder.Transparency = 1
+    swARIndBorder.Color = Color3.fromHex("#000000")
+    swARIndBorder.Thickness = 1
+    swARIndBorder.Filled = false
+    swARIndBorder.Size = Vector2.new(13, 13)
+    swARIndBorder.ZIndex = 1122
+    swARIndBorder.Corner = 10
+    table.insert(uiElements, swARIndBorder)
+    table.insert(espPage2Elements, swARIndBorder)
+
+    local swARInd = Drawing.new("Square")
+    swARInd.Visible = false
+    swARInd.Transparency = 1
+    swARInd.Color = Color3.fromHex("#ffffff")
+    swARInd.Filled = true
+    swARInd.Size = Vector2.new(13, 13)
+    swARInd.ZIndex = 1122
+    swARInd.Corner = 10
+    table.insert(uiElements, swARInd)
+    table.insert(espPage2Elements, swARInd)
+
+    local swARLabel = Drawing.new("Text")
+    swARLabel.Visible = false
+    swARLabel.Text = ""
+    swARLabel.Size = 1
+    swARLabel.Color = Color3.fromHex("#FFFFFF")
+    swARLabel.Outline = true
+    swARLabel.Font = Drawing.Fonts.UI
+    swARLabel.Position = swAR.Position + Vector2.new(40, 7)
+    swARLabel.ZIndex = 1121
+    table.insert(uiElements, swARLabel)
+    table.insert(espPage2Elements, swARLabel)
+
+    AdvAutoRescan = { Bg = swARBg, Ind = swARInd, IndBorder = swARIndBorder, IsChecked = Settings.autoRescanEnabled }
+    UpdateSwitchColor(AdvAutoRescan.Bg, AdvAutoRescan.IsChecked)
+    if AdvAutoRescan.IsChecked then
+        AdvAutoRescan.IndBorder.Position = AdvAutoRescan.Bg.Position + Vector2.new(16, 1)
+        AdvAutoRescan.Ind.Position = AdvAutoRescan.Bg.Position + Vector2.new(16, 1)
+    else
+        AdvAutoRescan.IndBorder.Position = AdvAutoRescan.Bg.Position + Vector2.new(1, 1)
+        AdvAutoRescan.Ind.Position = AdvAutoRescan.Bg.Position + Vector2.new(1, 1)
+    end
+
+    local chunkTxt = Drawing.new("Text")
+    chunkTxt.Visible = false
+    chunkTxt.Transparency = 1
+    chunkTxt.ZIndex = 1080
+    chunkTxt.Color = Color3.fromHex("#d1d4dd")
+    chunkTxt.Position = s8.Position + Vector2.new(11, 40)
+    chunkTxt.Text = "Chunk Size"
+    chunkTxt.Size = 14
+    chunkTxt.Center = false
+    chunkTxt.Outline = true
+    chunkTxt.Font = Drawing.Fonts.UI
+    table.insert(uiElements, chunkTxt)
+    table.insert(espPage2Elements, chunkTxt)
+
+    local chunkSliderTrack = Drawing.new("Square")
+    chunkSliderTrack.Visible = false
+    chunkSliderTrack.Transparency = 1
+    chunkSliderTrack.Color = Color3.fromHex("#2a2a2a")
+    chunkSliderTrack.Filled = true
+    chunkSliderTrack.Size = Vector2.new(200, 4)
+    chunkSliderTrack.Position = s8.Position + Vector2.new(19, 65)
+    chunkSliderTrack.ZIndex = 1130
+    chunkSliderTrack.Corner = 2
+    table.insert(uiElements, chunkSliderTrack)
+    table.insert(espPage2Elements, chunkSliderTrack)
+
+    local chunkVal = Settings.rescanChunkSize
+    local chunkSliderFill = Drawing.new("Square")
+    chunkSliderFill.Visible = false
+    chunkSliderFill.Transparency = 1
+    chunkSliderFill.Color = Color3.fromHex("#04c838")
+    chunkSliderFill.Filled = true
+    chunkSliderFill.Size = Vector2.new(200 * ((chunkVal-10)/(500-10)), 4)
+    chunkSliderFill.Position = chunkSliderTrack.Position
+    chunkSliderFill.ZIndex = 1131
+    chunkSliderFill.Corner = 2
+    table.insert(uiElements, chunkSliderFill)
+    table.insert(espPage2Elements, chunkSliderFill)
+
+    local chunkSliderKnob = Drawing.new("Circle")
+    chunkSliderKnob.Visible = false
+    chunkSliderKnob.Transparency = 1
+    chunkSliderKnob.Color = Color3.fromHex("#04c838")
+    chunkSliderKnob.Filled = true
+    chunkSliderKnob.Radius = 6
+    chunkSliderKnob.NumSides = 16
+    chunkSliderKnob.Position = chunkSliderTrack.Position + Vector2.new(200 * ((chunkVal-10)/(500-10)), 2)
+    chunkSliderKnob.ZIndex = 1132
+    table.insert(uiElements, chunkSliderKnob)
+    table.insert(espPage2Elements, chunkSliderKnob)
+
+    local chunkValText = Drawing.new("Text")
+    chunkValText.Visible = false
+    chunkValText.Text = tostring(math.floor(chunkVal)) .. ""
+    chunkValText.Size = 14
+    chunkValText.Center = true
+    chunkValText.Outline = true
+    chunkValText.Color = Color3.fromHex("#ffffff")
+    chunkValText.Position = chunkSliderTrack.Position + Vector2.new(100, -20)
+    chunkValText.ZIndex = 1133
+    table.insert(uiElements, chunkValText)
+    table.insert(espPage2Elements, chunkValText)
+
+    local intervalTxt = Drawing.new("Text")
+    intervalTxt.Visible = false
+    intervalTxt.Transparency = 1
+    intervalTxt.ZIndex = 1080
+    intervalTxt.Color = Color3.fromHex("#d1d4dd")
+    intervalTxt.Position = s8.Position + Vector2.new(11, 80)
+    intervalTxt.Text = "Interval (sec)"
+    intervalTxt.Size = 14
+    intervalTxt.Center = false
+    intervalTxt.Outline = true
+    intervalTxt.Font = Drawing.Fonts.UI
+    table.insert(uiElements, intervalTxt)
+    table.insert(espPage2Elements, intervalTxt)
+
+    local intervalSliderTrack = Drawing.new("Square")
+    intervalSliderTrack.Visible = false
+    intervalSliderTrack.Transparency = 1
+    intervalSliderTrack.Color = Color3.fromHex("#2a2a2a")
+    intervalSliderTrack.Filled = true
+    intervalSliderTrack.Size = Vector2.new(200, 4)
+    intervalSliderTrack.Position = s8.Position + Vector2.new(19, 105)
+    intervalSliderTrack.ZIndex = 1130
+    intervalSliderTrack.Corner = 2
+    table.insert(uiElements, intervalSliderTrack)
+    table.insert(espPage2Elements, intervalSliderTrack)
+
+    local intervalVal = Settings.rescanInterval
+    local intervalSliderFill = Drawing.new("Square")
+    intervalSliderFill.Visible = false
+    intervalSliderFill.Transparency = 1
+    intervalSliderFill.Color = Color3.fromHex("#04c838")
+    intervalSliderFill.Filled = true
+    intervalSliderFill.Size = Vector2.new(200 * ((intervalVal-1)/(30-1)), 4)
+    intervalSliderFill.Position = intervalSliderTrack.Position
+    intervalSliderFill.ZIndex = 1131
+    intervalSliderFill.Corner = 2
+    table.insert(uiElements, intervalSliderFill)
+    table.insert(espPage2Elements, intervalSliderFill)
+
+    local intervalSliderKnob = Drawing.new("Circle")
+    intervalSliderKnob.Visible = false
+    intervalSliderKnob.Transparency = 1
+    intervalSliderKnob.Color = Color3.fromHex("#04c838")
+    intervalSliderKnob.Filled = true
+    intervalSliderKnob.Radius = 6
+    intervalSliderKnob.NumSides = 16
+    intervalSliderKnob.Position = intervalSliderTrack.Position + Vector2.new(200 * ((intervalVal-1)/(30-1)), 2)
+    intervalSliderKnob.ZIndex = 1132
+    table.insert(uiElements, intervalSliderKnob)
+    table.insert(espPage2Elements, intervalSliderKnob)
+
+    local intervalValText = Drawing.new("Text")
+    intervalValText.Visible = false
+    intervalValText.Text = tostring(math.floor(intervalVal)) .. "s"
+    intervalValText.Size = 14
+    intervalValText.Center = true
+    intervalValText.Outline = true
+    intervalValText.Color = Color3.fromHex("#ffffff")
+    intervalValText.Position = intervalSliderTrack.Position + Vector2.new(100, -20)
+    intervalValText.ZIndex = 1133
+    table.insert(uiElements, intervalValText)
+    table.insert(espPage2Elements, intervalValText)
+
+    local allElements = {
+        win2, closeBtn, closeText, win, title,
+        page1Btn, page1Text, page2Btn, page2Text
+    }
+    for _, el in ipairs(espPage1Elements) do
+        table.insert(allElements, el)
+    end
+    for _, el in ipairs(espPage2Elements) do
+        table.insert(allElements, el)
+    end
+    for _, box in ipairs(dropdownBoxes) do
+        table.insert(allElements, box.Box)
+        table.insert(allElements, box.Check)
+        table.insert(allElements, box.Text)
+    end
+    for _, box in ipairs(mobDropdownBoxes) do
+        table.insert(allElements, box.Box)
+        table.insert(allElements, box.Check)
+        table.insert(allElements, box.Text)
+    end
 
     _G.adv_esp = {
-        elements = {win2, closeBtn, closeText, win, s1, s1b, title, espTxt, desc, sw, swBg, swIndBorder, swInd, swLabel,
-                    s2, s2b, distTxt, sliderTrack, sliderFill, sliderKnob, sliderValText, sliderDesc,
-                    s3, s3b, kcTxt, dropdownMain, dropdownText, dropdownArrow,
-                    s4, s4b, itemsTxt, swItems, swItemsBg, swItemsIndBorder, swItemsInd, swItemsLabel, itemsDesc,
-                    s5, s5b, currTxt, swCurr, swCurrBg, swCurrIndBorder, swCurrInd, swCurrLabel, richTxt, swRich, swRichBg, swRichIndBorder, swRichInd, swRichLabel, currDesc,
-                    s6, s6b, doorsTxt, swDoors, swDoorsBg, swDoorsIndBorder, swDoorsInd, swDoorsLabel, doorsDesc},
+        elements = allElements,
+        page1Elements = espPage1Elements,
+        page2Elements = espPage2Elements,
+        page1Btn = page1Btn,
+        page2Btn = page2Btn,
+        page1BaseY = scrollY + 9,
+        page2BaseY = page2StartY + 9,
+        dropdownMain = dropdownMain,
         dropdownBoxes = dropdownBoxes,
         dropdownItems = dropdownItems,
         dropdownOpen = dropdownOpen,
         dropdownText = dropdownText,
         UpdateDropdown = UpdateDropdownText,
+        mobDropdownMain = mobDropdownMain,
+        mobDropdownBoxes = mobDropdownBoxes,
+        mobItems = mobItems,
+        mobDropdownOpen = mobDropdownOpen,
+        mobDropdownText = mobDropdownText,
+        UpdateMobDropdown = UpdateMobDropdownText,
         swESP4 = AdvSwitchESP4,
+        swKeycards = AdvSwitchKeycards,
         swItems = AdvSwitchItems,
         swCurrency = AdvSwitchCurrency,
         swRich = AdvSwitchRich,
         swDoors = AdvSwitchDoors,
-        closeBtn = closeBtn,
-        basePos = basePos,
+        swMobs = AdvSwitchMobs,
+        advAutoRescan = AdvAutoRescan,
+        chunkSliderTrack = chunkSliderTrack,
+        chunkSliderKnob = chunkSliderKnob,
+        chunkSliderFill = chunkSliderFill,
+        chunkValText = chunkValText,
+        intervalSliderTrack = intervalSliderTrack,
+        intervalSliderKnob = intervalSliderKnob,
+        intervalSliderFill = intervalSliderFill,
+        intervalValText = intervalValText,
         sliderTrack = sliderTrack,
         sliderKnob = sliderKnob,
         sliderFill = sliderFill,
         sliderValText = sliderValText,
+        closeBtn = closeBtn,
+        basePos = basePos,
         sliderDragging = false,
+        chunkDragging = false,
+        intervalDragging = false,
+        blocks = {
+            {block = s1, border = s1b},
+            {block = s2, border = s2b},
+            {block = s3, border = s3b},
+            {block = s4, border = s4b},
+            {block = s5, border = s5b},
+            {block = s6, border = s6b},
+            {block = s7, border = s7b},
+            {block = s8, border = s8b},
+        }
     }
 
-    for _, box in ipairs(dropdownBoxes) do
-        if _G.adv_esp and _G.adv_esp.elements then
-            table.insert(_G.adv_esp.elements, box.Box)
-            table.insert(_G.adv_esp.elements, box.Check)
-            table.insert(_G.adv_esp.elements, box.Text)
-        end
+    for _, el in ipairs(allElements) do
+        table.insert(uiElements, el)
     end
+
+    ShowESPPage(1)
 end
 
 local function CreateAdvancedNotifications()
@@ -2471,29 +3285,6 @@ local function CreateAdvancedNotifications()
     win.Filled = true
     table.insert(uiElements, win)
 
-    local s1 = Drawing.new("Square")
-    s1.Visible = true
-    s1.Transparency = 1
-    s1.ZIndex = 1040
-    s1.Color = Color3.fromHex("#111010")
-    s1.Position = win2.Position + Vector2.new(16, 52)
-    s1.Size = Vector2.new(247, 65)
-    s1.Filled = true
-    s1.Corner = 5
-    table.insert(uiElements, s1)
-
-    local s1b = Drawing.new("Square")
-    s1b.Visible = true
-    s1b.Transparency = 1
-    s1b.ZIndex = 1041
-    s1b.Color = Color3.fromHex("#1b1a1b")
-    s1b.Filled = false
-    s1b.Thickness = 1
-    s1b.Position = s1.Position
-    s1b.Size = s1.Size
-    s1b.Corner = 5
-    table.insert(uiElements, s1b)
-
     local title = Drawing.new("Text")
     title.Visible = true
     title.Transparency = 1
@@ -2507,31 +3298,60 @@ local function CreateAdvancedNotifications()
     title.Font = Drawing.Fonts.UI
     table.insert(uiElements, title)
 
+    local scrollY = win2.Position.Y + 43
+
+    local s1 = Drawing.new("Square")
+    s1.Visible = true
+    s1.Transparency = 1
+    s1.ZIndex = 1040
+    s1.Color = Color3.fromHex("#111010")
+    s1.Position = Vector2.new(win2.Position.X + 16, scrollY + 9)
+    s1.Size = Vector2.new(247, 65)
+    s1.Filled = true
+    s1.Corner = 5
+    table.insert(uiElements, s1)
+    table.insert(notifPageElements, s1)
+
+    local s1b = Drawing.new("Square")
+    s1b.Visible = true
+    s1b.Transparency = 1
+    s1b.ZIndex = 1041
+    s1b.Color = Color3.fromHex("#1b1a1b")
+    s1b.Filled = false
+    s1b.Thickness = 1
+    s1b.Position = s1.Position
+    s1b.Size = s1.Size
+    s1b.Corner = 5
+    table.insert(uiElements, s1b)
+    table.insert(notifPageElements, s1b)
+
     local notifTxt = Drawing.new("Text")
     notifTxt.Visible = true
     notifTxt.Transparency = 1
     notifTxt.ZIndex = 1080
     notifTxt.Color = Color3.fromHex("#d1d4dd")
-    notifTxt.Position = win2.Position + Vector2.new(27, 66)
+    notifTxt.Position = s1.Position + Vector2.new(11, 14)
     notifTxt.Text = "Notification"
     notifTxt.Size = 14
     notifTxt.Center = false
     notifTxt.Outline = true
     notifTxt.Font = Drawing.Fonts.UI
     table.insert(uiElements, notifTxt)
+    table.insert(notifPageElements, notifTxt)
 
     local desc = Drawing.new("Text")
     desc.Visible = true
     desc.Transparency = 1
     desc.ZIndex = 1100
     desc.Color = Color3.fromHex("#6b7382")
-    desc.Position = win2.Position + Vector2.new(35, 90)
+    desc.Position = s1.Position + Vector2.new(19, 38)
     desc.Text = "Turn enable/disable notifications"
     desc.Size = 11
     desc.Center = false
     desc.Outline = true
     desc.Font = Drawing.Fonts.UI
     table.insert(uiElements, desc)
+    table.insert(notifPageElements, desc)
 
     local sw = Drawing.new("Square")
     sw.Visible = true
@@ -2540,10 +3360,11 @@ local function CreateAdvancedNotifications()
     sw.Thickness = 1
     sw.Filled = false
     sw.Size = Vector2.new(30, 15)
-    sw.Position = win2.Position + Vector2.new(223, 66)
+    sw.Position = s1.Position + Vector2.new(207, 14)
     sw.ZIndex = 1120
     sw.Corner = 10
     table.insert(uiElements, sw)
+    table.insert(notifPageElements, sw)
 
     local swBg = Drawing.new("Square")
     swBg.Visible = true
@@ -2555,6 +3376,7 @@ local function CreateAdvancedNotifications()
     swBg.ZIndex = 1120
     swBg.Corner = 10
     table.insert(uiElements, swBg)
+    table.insert(notifPageElements, swBg)
 
     local swIndBorder = Drawing.new("Square")
     swIndBorder.Visible = true
@@ -2566,6 +3388,7 @@ local function CreateAdvancedNotifications()
     swIndBorder.ZIndex = 1122
     swIndBorder.Corner = 10
     table.insert(uiElements, swIndBorder)
+    table.insert(notifPageElements, swIndBorder)
 
     local swInd = Drawing.new("Square")
     swInd.Visible = true
@@ -2576,6 +3399,7 @@ local function CreateAdvancedNotifications()
     swInd.ZIndex = 1122
     swInd.Corner = 10
     table.insert(uiElements, swInd)
+    table.insert(notifPageElements, swInd)
 
     local swLabel = Drawing.new("Text")
     swLabel.Visible = true
@@ -2587,6 +3411,7 @@ local function CreateAdvancedNotifications()
     swLabel.Position = sw.Position + Vector2.new(40, 7)
     swLabel.ZIndex = 1121
     table.insert(uiElements, swLabel)
+    table.insert(notifPageElements, swLabel)
 
     AdvSwitchNotif = { Bg = swBg, Ind = swInd, IndBorder = swIndBorder, IsChecked = MainSwitchNotification.IsChecked }
     if AdvSwitchNotif.IsChecked then
@@ -2603,11 +3428,12 @@ local function CreateAdvancedNotifications()
     s3.Transparency = 1
     s3.ZIndex = 1060
     s3.Color = Color3.fromHex("#111010")
-    s3.Position = win2.Position + Vector2.new(10, 138)
+    s3.Position = s1.Position + Vector2.new(0, 80)
     s3.Size = Vector2.new(247, 65)
     s3.Filled = true
     s3.Corner = 5
     table.insert(uiElements, s3)
+    table.insert(notifPageElements, s3)
 
     local s3b = Drawing.new("Square")
     s3b.Visible = true
@@ -2620,19 +3446,21 @@ local function CreateAdvancedNotifications()
     s3b.Size = s3.Size
     s3b.Corner = 5
     table.insert(uiElements, s3b)
+    table.insert(notifPageElements, s3b)
 
     local targetsTxt = Drawing.new("Text")
     targetsTxt.Visible = true
     targetsTxt.Transparency = 1
     targetsTxt.ZIndex = 1080
     targetsTxt.Color = Color3.fromHex("#d1d4dd")
-    targetsTxt.Position = win2.Position + Vector2.new(21, 148)
+    targetsTxt.Position = s3.Position + Vector2.new(11, 14)
     targetsTxt.Text = "Notification Targets"
     targetsTxt.Size = 14
     targetsTxt.Center = false
     targetsTxt.Outline = true
     targetsTxt.Font = Drawing.Fonts.UI
     table.insert(uiElements, targetsTxt)
+    table.insert(notifPageElements, targetsTxt)
 
     local targetItems = {
         { name = "Angler", checked = true },
@@ -2652,10 +3480,11 @@ local function CreateAdvancedNotifications()
     targetMain.Color = Color3.fromHex("#1b1a1b")
     targetMain.Filled = true
     targetMain.Size = Vector2.new(140, 24)
-    targetMain.Position = win2.Position + Vector2.new(35, 163)
+    targetMain.Position = s3.Position + Vector2.new(25, 38)
     targetMain.ZIndex = 1140
     targetMain.Corner = 4
     table.insert(uiElements, targetMain)
+    table.insert(notifPageElements, targetMain)
 
     local targetText = Drawing.new("Text")
     targetText.Visible = true
@@ -2667,6 +3496,7 @@ local function CreateAdvancedNotifications()
     targetText.Position = targetMain.Position + Vector2.new(8, 4)
     targetText.ZIndex = 1142
     table.insert(uiElements, targetText)
+    table.insert(notifPageElements, targetText)
 
     local targetArrow = Drawing.new("Text")
     targetArrow.Visible = true
@@ -2677,6 +3507,7 @@ local function CreateAdvancedNotifications()
     targetArrow.Position = targetMain.Position + Vector2.new(120, 4)
     targetArrow.ZIndex = 1142
     table.insert(uiElements, targetArrow)
+    table.insert(notifPageElements, targetArrow)
 
     local targetBoxes = {}
     for idx, item in ipairs(targetItems) do
@@ -2731,11 +3562,12 @@ local function CreateAdvancedNotifications()
     s4.Transparency = 1
     s4.ZIndex = 1060
     s4.Color = Color3.fromHex("#111010")
-    s4.Position = win2.Position + Vector2.new(10, 223)
+    s4.Position = s3.Position + Vector2.new(0, 79)
     s4.Size = Vector2.new(251, 46)
     s4.Filled = true
     s4.Corner = 5
     table.insert(uiElements, s4)
+    table.insert(notifPageElements, s4)
 
     local s4b = Drawing.new("Square")
     s4b.Visible = true
@@ -2748,19 +3580,21 @@ local function CreateAdvancedNotifications()
     s4b.Size = s4.Size
     s4b.Corner = 5
     table.insert(uiElements, s4b)
+    table.insert(notifPageElements, s4b)
 
     local wmTxt = Drawing.new("Text")
     wmTxt.Visible = true
     wmTxt.Transparency = 1
     wmTxt.ZIndex = 1080
     wmTxt.Color = Color3.fromHex("#d1d4dd")
-    wmTxt.Position = win2.Position + Vector2.new(21, 233)
+    wmTxt.Position = s4.Position + Vector2.new(11, 12)
     wmTxt.Text = "Watermark"
     wmTxt.Size = 14
     wmTxt.Center = false
     wmTxt.Outline = true
     wmTxt.Font = Drawing.Fonts.UI
     table.insert(uiElements, wmTxt)
+    table.insert(notifPageElements, wmTxt)
 
     local swWm = Drawing.new("Square")
     swWm.Visible = true
@@ -2769,10 +3603,11 @@ local function CreateAdvancedNotifications()
     swWm.Thickness = 1
     swWm.Filled = false
     swWm.Size = Vector2.new(30, 15)
-    swWm.Position = win2.Position + Vector2.new(217, 233)
+    swWm.Position = s4.Position + Vector2.new(207, 10)
     swWm.ZIndex = 1120
     swWm.Corner = 10
     table.insert(uiElements, swWm)
+    table.insert(notifPageElements, swWm)
 
     local swWmBg = Drawing.new("Square")
     swWmBg.Visible = true
@@ -2784,6 +3619,7 @@ local function CreateAdvancedNotifications()
     swWmBg.ZIndex = 1120
     swWmBg.Corner = 10
     table.insert(uiElements, swWmBg)
+    table.insert(notifPageElements, swWmBg)
 
     local swWmIndBorder = Drawing.new("Square")
     swWmIndBorder.Visible = true
@@ -2795,6 +3631,7 @@ local function CreateAdvancedNotifications()
     swWmIndBorder.ZIndex = 1122
     swWmIndBorder.Corner = 10
     table.insert(uiElements, swWmIndBorder)
+    table.insert(notifPageElements, swWmIndBorder)
 
     local swWmInd = Drawing.new("Square")
     swWmInd.Visible = true
@@ -2805,6 +3642,7 @@ local function CreateAdvancedNotifications()
     swWmInd.ZIndex = 1122
     swWmInd.Corner = 10
     table.insert(uiElements, swWmInd)
+    table.insert(notifPageElements, swWmInd)
 
     local swWmLabel = Drawing.new("Text")
     swWmLabel.Visible = true
@@ -2816,6 +3654,7 @@ local function CreateAdvancedNotifications()
     swWmLabel.Position = swWm.Position + Vector2.new(40, 7)
     swWmLabel.ZIndex = 1121
     table.insert(uiElements, swWmLabel)
+    table.insert(notifPageElements, swWmLabel)
 
     AdvSwitchWatermark = { Bg = swWmBg, Ind = swWmInd, IndBorder = swWmIndBorder, IsChecked = Settings.watermarkEnabled }
     UpdateSwitchColor(AdvSwitchWatermark.Bg, AdvSwitchWatermark.IsChecked)
@@ -2832,24 +3671,26 @@ local function CreateAdvancedNotifications()
     wmDesc.Transparency = 1
     wmDesc.ZIndex = 1100
     wmDesc.Color = Color3.fromHex("#6b7382")
-    wmDesc.Position = win2.Position + Vector2.new(29, 248)
+    wmDesc.Position = s4.Position + Vector2.new(19, 28)
     wmDesc.Text = "Turn enable/disable Watermark"
     wmDesc.Size = 11
     wmDesc.Center = false
     wmDesc.Outline = true
     wmDesc.Font = Drawing.Fonts.UI
     table.insert(uiElements, wmDesc)
+    table.insert(notifPageElements, wmDesc)
 
     local s5 = Drawing.new("Square")
     s5.Visible = true
     s5.Transparency = 1
     s5.ZIndex = 1060
     s5.Color = Color3.fromHex("#111010")
-    s5.Position = win2.Position + Vector2.new(10, 280)
+    s5.Position = s4.Position + Vector2.new(0, 60)
     s5.Size = Vector2.new(251, 65)
     s5.Filled = true
     s5.Corner = 5
     table.insert(uiElements, s5)
+    table.insert(notifPageElements, s5)
 
     local s5b = Drawing.new("Square")
     s5b.Visible = true
@@ -2862,19 +3703,21 @@ local function CreateAdvancedNotifications()
     s5b.Size = s5.Size
     s5b.Corner = 5
     table.insert(uiElements, s5b)
+    table.insert(notifPageElements, s5b)
 
     local wmTargetsTxt = Drawing.new("Text")
     wmTargetsTxt.Visible = true
     wmTargetsTxt.Transparency = 1
     wmTargetsTxt.ZIndex = 1080
     wmTargetsTxt.Color = Color3.fromHex("#d1d4dd")
-    wmTargetsTxt.Position = win2.Position + Vector2.new(21, 290)
+    wmTargetsTxt.Position = s5.Position + Vector2.new(11, 12)
     wmTargetsTxt.Text = "Watermark Targets"
     wmTargetsTxt.Size = 14
     wmTargetsTxt.Center = false
     wmTargetsTxt.Outline = true
     wmTargetsTxt.Font = Drawing.Fonts.UI
     table.insert(uiElements, wmTargetsTxt)
+    table.insert(notifPageElements, wmTargetsTxt)
 
     local wmTargetItems = {
         { name = "Angler", checked = Settings.watermarkMobsEnabled.Angler },
@@ -2894,10 +3737,11 @@ local function CreateAdvancedNotifications()
     wmTargetMain.Color = Color3.fromHex("#1b1a1b")
     wmTargetMain.Filled = true
     wmTargetMain.Size = Vector2.new(140, 24)
-    wmTargetMain.Position = win2.Position + Vector2.new(35, 305)
+    wmTargetMain.Position = s5.Position + Vector2.new(25, 38)
     wmTargetMain.ZIndex = 1140
     wmTargetMain.Corner = 4
     table.insert(uiElements, wmTargetMain)
+    table.insert(notifPageElements, wmTargetMain)
 
     local wmTargetText = Drawing.new("Text")
     wmTargetText.Visible = true
@@ -2909,6 +3753,7 @@ local function CreateAdvancedNotifications()
     wmTargetText.Position = wmTargetMain.Position + Vector2.new(8, 4)
     wmTargetText.ZIndex = 1142
     table.insert(uiElements, wmTargetText)
+    table.insert(notifPageElements, wmTargetText)
 
     local wmTargetArrow = Drawing.new("Text")
     wmTargetArrow.Visible = true
@@ -2919,6 +3764,7 @@ local function CreateAdvancedNotifications()
     wmTargetArrow.Position = wmTargetMain.Position + Vector2.new(120, 4)
     wmTargetArrow.ZIndex = 1142
     table.insert(uiElements, wmTargetArrow)
+    table.insert(notifPageElements, wmTargetArrow)
 
     local wmTargetBoxes = {}
     for idx, item in ipairs(wmTargetItems) do
@@ -2968,16 +3814,33 @@ local function CreateAdvancedNotifications()
         else wmTargetText.Text = "Watermark: " .. #sel .. "/" .. #wmTargetItems end
     end
 
+    local allElements = {
+        win2, closeBtn, closeText, win, title,
+    }
+    for _, el in ipairs(notifPageElements) do
+        table.insert(allElements, el)
+    end
+    for _, box in ipairs(targetBoxes) do
+        table.insert(allElements, box.Box)
+        table.insert(allElements, box.Check)
+        table.insert(allElements, box.Text)
+    end
+    for _, box in ipairs(wmTargetBoxes) do
+        table.insert(allElements, box.Box)
+        table.insert(allElements, box.Check)
+        table.insert(allElements, box.Text)
+    end
+
     _G.adv_notif = {
-        elements = {win2, closeBtn, closeText, win, s1, s1b, title, notifTxt, desc, sw, swBg, swIndBorder, swInd, swLabel,
-                    s3, s3b, targetsTxt, targetMain, targetText, targetArrow,
-                    s4, s4b, wmTxt, swWm, swWmBg, swWmIndBorder, swWmInd, swWmLabel, wmDesc,
-                    s5, s5b, wmTargetsTxt, wmTargetMain, wmTargetText, wmTargetArrow},
+        elements = allElements,
+        pageElements = notifPageElements,
+        targetMain = targetMain,
         targetBoxes = targetBoxes,
         targetItems = targetItems,
         targetOpen = targetOpen,
         targetText = targetText,
         UpdateTarget = UpdateTargetText,
+        wmTargetMain = wmTargetMain,
         wmTargetBoxes = wmTargetBoxes,
         wmTargetItems = wmTargetItems,
         wmTargetOpen = wmTargetOpen,
@@ -2987,21 +3850,16 @@ local function CreateAdvancedNotifications()
         swWatermark = AdvSwitchWatermark,
         closeBtn = closeBtn,
         basePos = basePos,
+        blocks = {
+            {block = s1, border = s1b},
+            {block = s3, border = s3b},
+            {block = s4, border = s4b},
+            {block = s5, border = s5b},
+        }
     }
 
-    for _, box in ipairs(targetBoxes) do
-        if _G.adv_notif and _G.adv_notif.elements then
-            table.insert(_G.adv_notif.elements, box.Box)
-            table.insert(_G.adv_notif.elements, box.Check)
-            table.insert(_G.adv_notif.elements, box.Text)
-        end
-    end
-    for _, box in ipairs(wmTargetBoxes) do
-        if _G.adv_notif and _G.adv_notif.elements then
-            table.insert(_G.adv_notif.elements, box.Box)
-            table.insert(_G.adv_notif.elements, box.Check)
-            table.insert(_G.adv_notif.elements, box.Text)
-        end
+    for _, el in ipairs(allElements) do
+        table.insert(uiElements, el)
     end
 end
 
@@ -3014,13 +3872,23 @@ local watermarkDragging = false
 local watermarkStartPos = nil
 local watermarkDragStart = nil
 local sliderDragging = false
+local chunkSliderDragging = false
+local intervalSliderDragging = false
 
 spawn(function()
     while true do
         updateAllESP()
-        scanner:update()
         doorScanner:scan()
         CheckForMobs()
+
+        if Settings.autoRescanEnabled then
+            local now = tick()
+            if now - lastProgressiveScan > Settings.rescanInterval then
+                lastProgressiveScan = now
+                task.spawn(ProgressiveScan)
+            end
+        end
+
         task.wait(0.03)
     end
 end)
@@ -3323,9 +4191,9 @@ while true do
                 ContentInfo2.Visible = newState
                 ContentInfo2_Border.Visible = newState
                 TextInfo3.Visible = newState
-                Changelog1.Visible = newState
-                Changelog3.Visible = newState
-                Changelog2.Visible = newState
+                for _, line in ipairs(ChangelogLines) do
+                    line.Visible = newState
+                end
             end
             if not newState and advancedWindowOpen then
                 CloseAdvancedWindows()
@@ -3373,6 +4241,59 @@ while true do
             end
         end
 
+        if advancedWindowOpen then
+            if _G.adv_esp then
+                for _, item in ipairs(_G.adv_esp.blocks) do
+                    local block = item.block
+                    local border = item.border
+                    if block.Visible and mPos.X >= block.Position.X and mPos.X <= block.Position.X + block.Size.X and
+                       mPos.Y >= block.Position.Y and mPos.Y <= block.Position.Y + block.Size.Y then
+                        border.Color = Color3.fromHex("#00c950")
+                    else
+                        border.Color = Color3.fromHex("#1b1a1b")
+                    end
+                end
+                local page1 = _G.adv_esp.page1Btn
+                local page2 = _G.adv_esp.page2Btn
+                if page1 and page1.Visible then
+                    if mPos.X >= page1.Position.X and mPos.X <= page1.Position.X + page1.Size.X and
+                       mPos.Y >= page1.Position.Y and mPos.Y <= page1.Position.Y + page1.Size.Y then
+                        if currentPage == 1 then
+                            page1.Color = Color3.fromHex("#2ae85a")
+                        else
+                            page1.Color = Color3.fromHex("#3a3a3a")
+                        end
+                    else
+                        page1.Color = (currentPage == 1) and Color3.fromHex("#04c838") or Color3.fromHex("#1b1a1b")
+                    end
+                end
+                if page2 and page2.Visible then
+                    if mPos.X >= page2.Position.X and mPos.X <= page2.Position.X + page2.Size.X and
+                       mPos.Y >= page2.Position.Y and mPos.Y <= page2.Position.Y + page2.Size.Y then
+                        if currentPage == 2 then
+                            page2.Color = Color3.fromHex("#2ae85a")
+                        else
+                            page2.Color = Color3.fromHex("#3a3a3a")
+                        end
+                    else
+                        page2.Color = (currentPage == 2) and Color3.fromHex("#04c838") or Color3.fromHex("#1b1a1b")
+                    end
+                end
+            end
+            if _G.adv_notif then
+                for _, item in ipairs(_G.adv_notif.blocks) do
+                    local block = item.block
+                    local border = item.border
+                    if block.Visible and mPos.X >= block.Position.X and mPos.X <= block.Position.X + block.Size.X and
+                       mPos.Y >= block.Position.Y and mPos.Y <= block.Position.Y + block.Size.Y then
+                        border.Color = Color3.fromHex("#00c950")
+                    else
+                        border.Color = Color3.fromHex("#1b1a1b")
+                    end
+                end
+            end
+        end
+
         if mouse1 and not lastMouse1 then
             if TabVisuals.Visible and mPos.X >= TabVisuals.Position.X and mPos.X <= TabVisuals.Position.X + TabVisuals.Size.X and
                mPos.Y >= TabVisuals.Position.Y and mPos.Y <= TabVisuals.Position.Y + TabVisuals.Size.Y then
@@ -3411,8 +4332,10 @@ while true do
                 ContentInfo1.Visible = true; ContentInfo1_Border.Visible = true
                 TextInfo1.Visible = true; TextInfo2.Visible = true
                 ContentInfo2.Visible = true; ContentInfo2_Border.Visible = true
-                TextInfo3.Visible = true; Changelog1.Visible = true
-                Changelog3.Visible = true; Changelog2.Visible = true
+                TextInfo3.Visible = true
+                for _, line in ipairs(ChangelogLines) do
+                    line.Visible = true
+                end
                 SetActiveTab("Info", TabInfo, TabInfo_Border, TabInfo_Text)
             end
 
@@ -3461,7 +4384,7 @@ while true do
                     SwitchESP_IndBorder.Position = SwitchESP.Position + Vector2.new(1, 1)
                     SwitchESP_Ind.Position = SwitchESP.Position + Vector2.new(1, 1)
                 end
-                Settings.keycardESPEnabled = MainSwitchESP.IsChecked
+                Settings.globalESPEnabled = MainSwitchESP.IsChecked
                 if AdvSwitchESP4 then
                     AdvSwitchESP4.IsChecked = MainSwitchESP.IsChecked
                     UpdateSwitchColor(AdvSwitchESP4.Bg, AdvSwitchESP4.IsChecked)
@@ -3473,6 +4396,7 @@ while true do
                         AdvSwitchESP4.Ind.Position = AdvSwitchESP4.Bg.Position + Vector2.new(1, 1)
                     end
                 end
+                ForceRescanESP()
             end
             if SwitchAutoHide_Label.Visible and mPos.X >= SwitchAutoHide.Position.X and mPos.X <= SwitchAutoHide.Position.X + SwitchAutoHide.Size.X and
                mPos.Y >= SwitchAutoHide.Position.Y and mPos.Y <= SwitchAutoHide.Position.Y + SwitchAutoHide.Size.Y then
@@ -3505,6 +4429,14 @@ while true do
             if advancedWindowOpen then
                 if _G.adv_esp then
                     local a = _G.adv_esp
+                    if a.page1Btn and a.page1Btn.Visible and mPos.X >= a.page1Btn.Position.X and mPos.X <= a.page1Btn.Position.X + a.page1Btn.Size.X and
+                       mPos.Y >= a.page1Btn.Position.Y and mPos.Y <= a.page1Btn.Position.Y + a.page1Btn.Size.Y then
+                        ShowESPPage(1)
+                    end
+                    if a.page2Btn and a.page2Btn.Visible and mPos.X >= a.page2Btn.Position.X and mPos.X <= a.page2Btn.Position.X + a.page2Btn.Size.X and
+                       mPos.Y >= a.page2Btn.Position.Y and mPos.Y <= a.page2Btn.Position.Y + a.page2Btn.Size.Y then
+                        ShowESPPage(2)
+                    end
                     if a.swESP4 and a.swESP4.Bg and a.swESP4.Bg.Visible and mPos.X >= a.swESP4.Bg.Position.X and mPos.X <= a.swESP4.Bg.Position.X + a.swESP4.Bg.Size.X and
                        mPos.Y >= a.swESP4.Bg.Position.Y and mPos.Y <= a.swESP4.Bg.Position.Y + a.swESP4.Bg.Size.Y then
                         a.swESP4.IsChecked = not a.swESP4.IsChecked
@@ -3525,7 +4457,22 @@ while true do
                             SwitchESP_IndBorder.Position = SwitchESP.Position + Vector2.new(1, 1)
                             SwitchESP_Ind.Position = SwitchESP.Position + Vector2.new(1, 1)
                         end
-                        Settings.keycardESPEnabled = a.swESP4.IsChecked
+                        Settings.globalESPEnabled = a.swESP4.IsChecked
+                        ForceRescanESP()
+                    end
+                    if a.swKeycards and a.swKeycards.Bg and a.swKeycards.Bg.Visible and mPos.X >= a.swKeycards.Bg.Position.X and mPos.X <= a.swKeycards.Bg.Position.X + a.swKeycards.Bg.Size.X and
+                       mPos.Y >= a.swKeycards.Bg.Position.Y and mPos.Y <= a.swKeycards.Bg.Position.Y + a.swKeycards.Bg.Size.Y then
+                        a.swKeycards.IsChecked = not a.swKeycards.IsChecked
+                        UpdateSwitchColor(a.swKeycards.Bg, a.swKeycards.IsChecked)
+                        if a.swKeycards.IsChecked then
+                            a.swKeycards.IndBorder.Position = a.swKeycards.Bg.Position + Vector2.new(16, 1)
+                            a.swKeycards.Ind.Position = a.swKeycards.Bg.Position + Vector2.new(16, 1)
+                        else
+                            a.swKeycards.IndBorder.Position = a.swKeycards.Bg.Position + Vector2.new(1, 1)
+                            a.swKeycards.Ind.Position = a.swKeycards.Bg.Position + Vector2.new(1, 1)
+                        end
+                        Settings.keycardESPEnabled = a.swKeycards.IsChecked
+                        ForceRescanESP()
                     end
                     if a.swItems and a.swItems.Bg and a.swItems.Bg.Visible and mPos.X >= a.swItems.Bg.Position.X and mPos.X <= a.swItems.Bg.Position.X + a.swItems.Bg.Size.X and
                        mPos.Y >= a.swItems.Bg.Position.Y and mPos.Y <= a.swItems.Bg.Position.Y + a.swItems.Bg.Size.Y then
@@ -3539,6 +4486,7 @@ while true do
                             a.swItems.Ind.Position = a.swItems.Bg.Position + Vector2.new(1, 1)
                         end
                         Settings.itemsESPEnabled = a.swItems.IsChecked
+                        ForceRescanESP()
                     end
                     if a.swCurrency and a.swCurrency.Bg and a.swCurrency.Bg.Visible and mPos.X >= a.swCurrency.Bg.Position.X and mPos.X <= a.swCurrency.Bg.Position.X + a.swCurrency.Bg.Size.X and
                        mPos.Y >= a.swCurrency.Bg.Position.Y and mPos.Y <= a.swCurrency.Bg.Position.Y + a.swCurrency.Bg.Size.Y then
@@ -3552,6 +4500,7 @@ while true do
                             a.swCurrency.Ind.Position = a.swCurrency.Bg.Position + Vector2.new(1, 1)
                         end
                         Settings.currencyESPEnabled = a.swCurrency.IsChecked
+                        ForceRescanESP()
                     end
                     if a.swRich and a.swRich.Bg and a.swRich.Bg.Visible and mPos.X >= a.swRich.Bg.Position.X and mPos.X <= a.swRich.Bg.Position.X + a.swRich.Bg.Size.X and
                        mPos.Y >= a.swRich.Bg.Position.Y and mPos.Y <= a.swRich.Bg.Position.Y + a.swRich.Bg.Size.Y then
@@ -3579,6 +4528,33 @@ while true do
                         end
                         Settings.doorESPEnabled = a.swDoors.IsChecked
                     end
+                    if a.swMobs and a.swMobs.Bg and a.swMobs.Bg.Visible and mPos.X >= a.swMobs.Bg.Position.X and mPos.X <= a.swMobs.Bg.Position.X + a.swMobs.Bg.Size.X and
+                       mPos.Y >= a.swMobs.Bg.Position.Y and mPos.Y <= a.swMobs.Bg.Position.Y + a.swMobs.Bg.Size.Y then
+                        a.swMobs.IsChecked = not a.swMobs.IsChecked
+                        UpdateSwitchColor(a.swMobs.Bg, a.swMobs.IsChecked)
+                        if a.swMobs.IsChecked then
+                            a.swMobs.IndBorder.Position = a.swMobs.Bg.Position + Vector2.new(16, 1)
+                            a.swMobs.Ind.Position = a.swMobs.Bg.Position + Vector2.new(16, 1)
+                        else
+                            a.swMobs.IndBorder.Position = a.swMobs.Bg.Position + Vector2.new(1, 1)
+                            a.swMobs.Ind.Position = a.swMobs.Bg.Position + Vector2.new(1, 1)
+                        end
+                        Settings.mobsESPEnabled = a.swMobs.IsChecked
+                        ForceRescanESP()
+                    end
+                    if a.advAutoRescan and a.advAutoRescan.Bg and a.advAutoRescan.Bg.Visible and mPos.X >= a.advAutoRescan.Bg.Position.X and mPos.X <= a.advAutoRescan.Bg.Position.X + a.advAutoRescan.Bg.Size.X and
+                       mPos.Y >= a.advAutoRescan.Bg.Position.Y and mPos.Y <= a.advAutoRescan.Bg.Position.Y + a.advAutoRescan.Bg.Size.Y then
+                        a.advAutoRescan.IsChecked = not a.advAutoRescan.IsChecked
+                        UpdateSwitchColor(a.advAutoRescan.Bg, a.advAutoRescan.IsChecked)
+                        if a.advAutoRescan.IsChecked then
+                            a.advAutoRescan.IndBorder.Position = a.advAutoRescan.Bg.Position + Vector2.new(16, 1)
+                            a.advAutoRescan.Ind.Position = a.advAutoRescan.Bg.Position + Vector2.new(16, 1)
+                        else
+                            a.advAutoRescan.IndBorder.Position = a.advAutoRescan.Bg.Position + Vector2.new(1, 1)
+                            a.advAutoRescan.Ind.Position = a.advAutoRescan.Bg.Position + Vector2.new(1, 1)
+                        end
+                        Settings.autoRescanEnabled = a.advAutoRescan.IsChecked
+                    end
                     if a.dropdownMain and a.dropdownMain.Visible and mPos.X >= a.dropdownMain.Position.X and mPos.X <= a.dropdownMain.Position.X + a.dropdownMain.Size.X and
                        mPos.Y >= a.dropdownMain.Position.Y and mPos.Y <= a.dropdownMain.Position.Y + a.dropdownMain.Size.Y then
                         a.dropdownOpen = not a.dropdownOpen
@@ -3596,7 +4572,40 @@ while true do
                                mPos.Y >= box.Box.Position.Y and mPos.Y <= box.Box.Position.Y + box.Box.Size.Y then
                                 box.Data.checked = not box.Data.checked
                                 box.Check.Color = box.Data.checked and Color3.fromHex("#04c838") or Color3.fromHex("#3a3a3a")
+                                local keyType = box.Data.name:match("(%a+) keycard") or box.Data.name
+                                if keyType == "Normal" then Settings.keycardTypes.Normal = box.Data.checked
+                                elseif keyType == "Inner" then Settings.keycardTypes.Inner = box.Data.checked
+                                elseif keyType == "Ridge" then Settings.keycardTypes.Ridge = box.Data.checked
+                                elseif keyType == "Password paper" then Settings.keycardTypes.Password = box.Data.checked
+                                end
                                 a.UpdateDropdown()
+                                ForceRescanESP()
+                                break
+                            end
+                        end
+                    end
+                    if a.mobDropdownMain and a.mobDropdownMain.Visible and mPos.X >= a.mobDropdownMain.Position.X and mPos.X <= a.mobDropdownMain.Position.X + a.mobDropdownMain.Size.X and
+                       mPos.Y >= a.mobDropdownMain.Position.Y and mPos.Y <= a.mobDropdownMain.Position.Y + a.mobDropdownMain.Size.Y then
+                        a.mobDropdownOpen = not a.mobDropdownOpen
+                        for _, box in ipairs(a.mobDropdownBoxes) do
+                            if box and box.Box then
+                                box.Box.Visible = a.mobDropdownOpen
+                                box.Check.Visible = a.mobDropdownOpen
+                                box.Text.Visible = a.mobDropdownOpen
+                            end
+                        end
+                    end
+                    if a.mobDropdownOpen then
+                        for _, box in ipairs(a.mobDropdownBoxes) do
+                            if box and box.Box and box.Box.Visible and mPos.X >= box.Box.Position.X and mPos.X <= box.Box.Position.X + box.Box.Size.X and
+                               mPos.Y >= box.Box.Position.Y and mPos.Y <= box.Box.Position.Y + box.Box.Size.Y then
+                                box.Data.checked = not box.Data.checked
+                                box.Check.Color = box.Data.checked and Color3.fromHex("#04c838") or Color3.fromHex("#3a3a3a")
+                                a.UpdateMobDropdown()
+                                local simple = box.Data.name
+                                if simple == "A60" then simple = "A60" end
+                                Settings.mobsESPList[simple] = box.Data.checked
+                                ForceRescanESP()
                                 break
                             end
                         end
@@ -3611,6 +4620,28 @@ while true do
                         a.sliderValText.Text = tostring(math.floor(newVal))
                         a.sliderFill.Size = Vector2.new(a.sliderTrack.Size.X * ((newVal-15)/(500-15)), a.sliderFill.Size.Y)
                         a.sliderKnob.Position = a.sliderTrack.Position + Vector2.new(a.sliderTrack.Size.X * ((newVal-15)/(500-15)), 2)
+                    end
+                    if a.chunkSliderTrack and a.chunkSliderTrack.Visible and mPos.X >= a.chunkSliderTrack.Position.X and mPos.X <= a.chunkSliderTrack.Position.X + a.chunkSliderTrack.Size.X and
+                       mPos.Y >= a.chunkSliderTrack.Position.Y-10 and mPos.Y <= a.chunkSliderTrack.Position.Y+10 then
+                        chunkSliderDragging = true
+                        local relX = mPos.X - a.chunkSliderTrack.Position.X
+                        local newVal = 10 + (relX / a.chunkSliderTrack.Size.X) * (500-10)
+                        newVal = math.floor(math.max(10, math.min(500, newVal)))
+                        Settings.rescanChunkSize = newVal
+                        a.chunkValText.Text = tostring(newVal)
+                        a.chunkSliderFill.Size = Vector2.new(a.chunkSliderTrack.Size.X * ((newVal-10)/(500-10)), a.chunkSliderFill.Size.Y)
+                        a.chunkSliderKnob.Position = a.chunkSliderTrack.Position + Vector2.new(a.chunkSliderTrack.Size.X * ((newVal-10)/(500-10)), 2)
+                    end
+                    if a.intervalSliderTrack and a.intervalSliderTrack.Visible and mPos.X >= a.intervalSliderTrack.Position.X and mPos.X <= a.intervalSliderTrack.Position.X + a.intervalSliderTrack.Size.X and
+                       mPos.Y >= a.intervalSliderTrack.Position.Y-10 and mPos.Y <= a.intervalSliderTrack.Position.Y+10 then
+                        intervalSliderDragging = true
+                        local relX = mPos.X - a.intervalSliderTrack.Position.X
+                        local newVal = 1 + (relX / a.intervalSliderTrack.Size.X) * (30-1)
+                        newVal = math.floor(math.max(1, math.min(30, newVal)))
+                        Settings.rescanInterval = newVal
+                        a.intervalValText.Text = tostring(newVal) .. "s"
+                        a.intervalSliderFill.Size = Vector2.new(a.intervalSliderTrack.Size.X * ((newVal-1)/(30-1)), a.intervalSliderFill.Size.Y)
+                        a.intervalSliderKnob.Position = a.intervalSliderTrack.Position + Vector2.new(a.intervalSliderTrack.Size.X * ((newVal-1)/(30-1)), 2)
                     end
                 end
                 if _G.adv_notif then
@@ -3747,6 +4778,8 @@ while true do
             dragging = false
             watermarkDragging = false
             sliderDragging = false
+            chunkSliderDragging = false
+            intervalSliderDragging = false
         end
 
         if dragging and mouse1 then
@@ -3832,9 +4865,9 @@ while true do
             ContentInfo2.Position = VeryBackGUI.Position + Vector2.new(11, 185)
             ContentInfo2_Border.Position = ContentInfo2.Position
             TextInfo3.Position = VeryBackGUI.Position + Vector2.new(26, 199)
-            Changelog1.Position = VeryBackGUI.Position + Vector2.new(34, 215)
-            Changelog3.Position = VeryBackGUI.Position + Vector2.new(34, 230)
-            Changelog2.Position = VeryBackGUI.Position + Vector2.new(34, 245)
+            for i, line in ipairs(ChangelogLines) do
+                line.Position = ContentInfo2.Position + Vector2.new(23, 30 + (i-1)*15)
+            end
 
             if advancedWindowOpen then
                 UpdateAdvancedPositions()
@@ -3862,6 +4895,30 @@ while true do
             a.sliderValText.Text = tostring(math.floor(newVal))
             a.sliderFill.Size = Vector2.new(a.sliderTrack.Size.X * ((newVal-15)/(500-15)), a.sliderFill.Size.Y)
             a.sliderKnob.Position = a.sliderTrack.Position + Vector2.new(a.sliderTrack.Size.X * ((newVal-15)/(500-15)), 2)
+        end
+
+        if chunkSliderDragging and mouse1 and _G.adv_esp then
+            local a = _G.adv_esp
+            local relX = mPos.X - a.chunkSliderTrack.Position.X
+            relX = math.max(0, math.min(a.chunkSliderTrack.Size.X, relX))
+            local newVal = 10 + (relX / a.chunkSliderTrack.Size.X) * (500-10)
+            newVal = math.floor(math.max(10, math.min(500, newVal)))
+            Settings.rescanChunkSize = newVal
+            a.chunkValText.Text = tostring(newVal)
+            a.chunkSliderFill.Size = Vector2.new(a.chunkSliderTrack.Size.X * ((newVal-10)/(500-10)), a.chunkSliderFill.Size.Y)
+            a.chunkSliderKnob.Position = a.chunkSliderTrack.Position + Vector2.new(a.chunkSliderTrack.Size.X * ((newVal-10)/(500-10)), 2)
+        end
+
+        if intervalSliderDragging and mouse1 and _G.adv_esp then
+            local a = _G.adv_esp
+            local relX = mPos.X - a.intervalSliderTrack.Position.X
+            relX = math.max(0, math.min(a.intervalSliderTrack.Size.X, relX))
+            local newVal = 1 + (relX / a.intervalSliderTrack.Size.X) * (30-1)
+            newVal = math.floor(math.max(1, math.min(30, newVal)))
+            Settings.rescanInterval = newVal
+            a.intervalValText.Text = tostring(newVal) .. "s"
+            a.intervalSliderFill.Size = Vector2.new(a.intervalSliderTrack.Size.X * ((newVal-1)/(30-1)), a.intervalSliderFill.Size.Y)
+            a.intervalSliderKnob.Position = a.intervalSliderTrack.Position + Vector2.new(a.intervalSliderTrack.Size.X * ((newVal-1)/(30-1)), 2)
         end
 
         lastMouse1 = mouse1
