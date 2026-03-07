@@ -752,7 +752,7 @@ TextInfo3.Transparency = 1
 TextInfo3.ZIndex = 340
 TextInfo3.Color = Color3.fromHex("#00c950")
 TextInfo3.Position = ContentInfo2.Position + Vector2.new(15, 14)
-TextInfo3.Text = "Changelogs for ver 6.2:"
+TextInfo3.Text = "Changelogs for ver 6.6, 7 March, 2026 Year:"
 TextInfo3.Size = 14
 TextInfo3.Center = false
 TextInfo3.Outline = true
@@ -776,11 +776,11 @@ for i=1,12 do
     table.insert(ChangelogLines, line)
 end
 
-ChangelogLines[1].Text = "+ Redesigned UI"
+ChangelogLines[1].Text = "+ Recode auto-rescan for ESP's, and make it better"
 ChangelogLines[1].Color = Color3.fromHex("#00ff66")
-ChangelogLines[2].Text = "- Removed themes, etc"
+ChangelogLines[2].Text = "Add new type for ESP: EntityESP "
 ChangelogLines[2].Color = Color3.fromHex("#b62020")
-ChangelogLines[3].Text = "+ Recode ESP's, because library discount"
+ChangelogLines[3].Text = ""
 ChangelogLines[3].Color = Color3.fromHex("#00ff66")
 
 local MainWatermark = Drawing.new("Square")
