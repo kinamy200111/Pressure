@@ -13,15 +13,15 @@ local function UpdateSwitchColor(sw, checked)
     end
 end
 
--- Основные переключатели
+
 local MainSwitchESP = { IsChecked = false, Bg = nil, Ind = nil, IndBorder = nil }
 local MainSwitchManny = { IsChecked = false, Bg = nil, Ind = nil, IndBorder = nil }
 
--- Переменные для Auto Manny
+
 local mannyEnabled = false
 local mannySpeed = 1.0
 
--- Элементы расширенных окон
+
 local AdvSwitchESP4
 local AdvSwitchKeycards
 local AdvSwitchMannyEnable
@@ -176,7 +176,7 @@ BackGUI2_Border.Position = BackGUI2.Position
 BackGUI2_Border.Size = BackGUI2.Size
 table.insert(uiElements, BackGUI2_Border)
 
--- Вкладки
+
 local TabVisuals = Drawing.new("Square")
 TabVisuals.Visible = false
 TabVisuals.Transparency = 1
@@ -280,7 +280,7 @@ Square16.Filled = true
 Square16.Corner = 1
 table.insert(uiElements, Square16)
 
--- Границы вкладок
+
 local TabVisuals_Border = Drawing.new("Square")
 TabVisuals_Border.Visible = false
 TabVisuals_Border.Transparency = 1
@@ -329,7 +329,7 @@ TabInfo_Border.Size = TabInfo.Size
 TabInfo_Border.Corner = 4
 table.insert(uiElements, TabInfo_Border)
 
--- Блок Preset на вкладке Visuals
+
 local PresetContent = Drawing.new("Square")
 PresetContent.Visible = false
 PresetContent.Transparency = 1
@@ -438,7 +438,7 @@ MainSwitchESP.Bg = SwitchPreset_Bg
 MainSwitchESP.Ind = SwitchPreset_Ind
 MainSwitchESP.IndBorder = SwitchPreset_IndBorder
 
--- Блок Auto Manny на вкладке Exploits
+
 local ContentExploits1 = Drawing.new("Square")
 ContentExploits1.Visible = false
 ContentExploits1.Transparency = 1
@@ -547,7 +547,7 @@ MainSwitchManny.Bg = SwitchManny_Bg
 MainSwitchManny.Ind = SwitchManny_Ind
 MainSwitchManny.IndBorder = SwitchManny_IndBorder
 
--- Остальные элементы (Misc, Info)
+
 local InvisibleSquare = Drawing.new("Square")
 InvisibleSquare.Visible = false
 InvisibleSquare.Transparency = 0
@@ -680,7 +680,7 @@ ChangelogLines[2].Color = Color3.fromHex("#00ff66")
 ChangelogLines[3].Text = "+ Add new page for advanced settings and customizble auto-rescan"
 ChangelogLines[3].Color = Color3.fromHex("#00ff66")
 
--- Watermark
+
 local MainWatermark = Drawing.new("Square")
 MainWatermark.Visible = false
 MainWatermark.Transparency = 1
@@ -766,7 +766,7 @@ CurrentEntity.Outline = true
 CurrentEntity.Font = Drawing.Fonts.System
 table.insert(uiElements, CurrentEntity)
 
--- Вспомогательные функции
+
 local function HideAllTabs()
     PresetContent.Visible = false; PresetContent_Border.Visible = false
     PresetTitle.Visible = false; PresetDesc.Visible = false
@@ -826,7 +826,7 @@ local function GetKeyName(key)
     return KeyNames[key] or tostring(key)
 end
 
--- Функция закрытия всех расширенных окон
+
 local function CloseAdvancedWindows()
     advancedWindowOpen = false
     Overlay.Visible = false
@@ -848,7 +848,7 @@ local function CloseAdvancedWindows()
     AdvMannySpeedSlider = nil
 end
 
--- Обновление позиций расширенных окон при перетаскивании основного
+
 local function UpdateAdvancedPositions()
     if not advancedWindowOpen then return end
     local basePos = VeryBackGUI.Position + Vector2.new(VeryBackGUI.Size.X + 20, 0)
@@ -872,7 +872,7 @@ local function UpdateAdvancedPositions()
     end
 end
 
--- Функция создания расширенного окна ESP (без изменений)
+
 local function CreateAdvancedESP()
     if advancedWindowOpen then
         CloseAdvancedWindows()
@@ -945,7 +945,7 @@ local function CreateAdvancedESP()
 
     local scrollY = win2.Position.Y + 43 + 35
 
-    -- Блок 1: свитч
+ 
     local s1 = Drawing.new("Square")
     s1.Visible = true
     s1.Transparency = 1
@@ -1069,7 +1069,7 @@ local function CreateAdvancedESP()
     end
     UpdateSwitchColor(AdvSwitchESP4.Bg, AdvSwitchESP4.IsChecked)
 
-    -- Блок 2: слайдер
+
     local s2 = Drawing.new("Square")
     s2.Visible = true
     s2.Transparency = 1
@@ -1172,7 +1172,7 @@ local function CreateAdvancedESP()
     table.insert(uiElements, desc2)
     table.insert(advEspElements, desc2)
 
-    -- Блок 3: дропдаун
+
     local s3 = Drawing.new("Square")
     s3.Visible = true
     s3.Transparency = 1
@@ -1433,7 +1433,7 @@ local function CreateAdvancedESP()
     }
 end
 
--- Функция создания расширенного окна Auto Manny
+
 local function CreateAdvancedManny()
     if advancedWindowOpen then
         CloseAdvancedWindows()
@@ -1506,7 +1506,7 @@ local function CreateAdvancedManny()
 
     local scrollY = win2.Position.Y + 43 + 35
 
-    -- Блок 1: глобальный переключатель
+
     local s1 = Drawing.new("Square")
     s1.Visible = true
     s1.Transparency = 1
@@ -1630,7 +1630,7 @@ local function CreateAdvancedManny()
     end
     UpdateSwitchColor(AdvSwitchMannyEnable.Bg, AdvSwitchMannyEnable.IsChecked)
 
-    -- Блок 2: слайдер скорости
+
     local s2 = Drawing.new("Square")
     s2.Visible = true
     s2.Transparency = 1
@@ -1763,7 +1763,7 @@ local function CreateAdvancedManny()
     }
 end
 
--- Постоянный фоновый поток для Auto Manny (без goto)
+
 task.spawn(function()
     while true do
         if mannyEnabled then
@@ -1796,7 +1796,7 @@ task.spawn(function()
     end
 end)
 
--- Лоадер
+
 local MainLoader1 = Drawing.new("Square")
 MainLoader1.Visible = true
 MainLoader1.Transparency = 1
@@ -2012,7 +2012,7 @@ spawn(function()
     setrobloxinput(false)
 end)
 
--- Главный цикл обработки ввода
+
 while true do
     wait(0.01)
     if pcall(ismouse1pressed) and isrbxactive() then
@@ -2020,7 +2020,7 @@ while true do
         local mouse2 = ismouse2pressed()
         local mPos = Vector2.new(Mouse.X, Mouse.Y)
 
-        -- Обработка клавиши закрытия (F1)
+
         if iskeypressed(closeKey) then
             local newState = not VeryBackGUI.Visible
             VeryBackGUI.Visible = newState
@@ -2094,7 +2094,7 @@ while true do
             wait(0.2)
         end
 
-        -- Подсветка вкладок при наведении
+
         local tabs = {
             {btn = TabVisuals, border = TabVisuals_Border, txt = TabVisuals_Text, name = "Visuals"},
             {btn = TabExploits, border = TabExploits_Border, txt = TabExploits_Text, name = "Exploits"},
@@ -2114,7 +2114,7 @@ while true do
             end
         end
 
-        -- Подсветка блоков контента
+
         local blocks = {
             {block = PresetContent, border = PresetContent_Border, visible = PresetContent.Visible},
             {block = ContentExploits1, border = ContentExploits1_Border, visible = ContentExploits1.Visible},
@@ -2130,7 +2130,7 @@ while true do
             end
         end
 
-        -- Подсветка блоков в расширенных окнах
+
         if advancedWindowOpen then
             if _G.adv_esp then
                 for _, item in ipairs(_G.adv_esp.blocks) do
@@ -2158,9 +2158,9 @@ while true do
             end
         end
 
-        -- Обработка кликов мыши
+
         if mouse1 and not lastMouse1 then
-            -- Переключение вкладок
+
             if TabVisuals.Visible and mPos.X >= TabVisuals.Position.X and mPos.X <= TabVisuals.Position.X + TabVisuals.Size.X and
                mPos.Y >= TabVisuals.Position.Y and mPos.Y <= TabVisuals.Position.Y + TabVisuals.Size.Y then
                 HideAllTabs()
@@ -2200,7 +2200,7 @@ while true do
                 SetActiveTab("Info", TabInfo, TabInfo_Border, TabInfo_Text)
             end
 
-            -- Переключатели на главной
+
             if SwitchPreset_Label.Visible and mPos.X >= SwitchPreset.Position.X and mPos.X <= SwitchPreset.Position.X + SwitchPreset.Size.X and
                mPos.Y >= SwitchPreset.Position.Y and mPos.Y <= SwitchPreset.Position.Y + SwitchPreset.Size.Y then
                 MainSwitchESP.IsChecked = not MainSwitchESP.IsChecked
@@ -2249,7 +2249,7 @@ while true do
                 end
             end
 
-            -- Перетаскивание главного окна
+
             if VeryBackGUI.Visible and mPos.X >= VeryBackGUI.Position.X and mPos.X <= VeryBackGUI.Position.X + VeryBackGUI.Size.X and
                mPos.Y >= VeryBackGUI.Position.Y and mPos.Y <= VeryBackGUI.Position.Y + VeryBackGUI.Size.Y then
                 dragging = true
@@ -2257,7 +2257,7 @@ while true do
                 startPos = VeryBackGUI.Position
             end
 
-            -- Перетаскивание водмарка
+
             if MainWatermark.Visible and mPos.X >= MainWatermark.Position.X and mPos.X <= MainWatermark.Position.X + MainWatermark.Size.X and
                mPos.Y >= MainWatermark.Position.Y and mPos.Y <= MainWatermark.Position.Y + MainWatermark.Size.Y then
                 watermarkDragging = true
@@ -2265,7 +2265,7 @@ while true do
                 watermarkStartPos = MainWatermark.Position
             end
 
-            -- Клики в расширенных окнах
+
             if advancedWindowOpen then
                 if _G.adv_esp then
                     local a = _G.adv_esp
@@ -2374,7 +2374,7 @@ while true do
             end
         end
 
-        -- Правый клик для открытия расширенных настроек
+
         if mouse2 and not lastMouse2 then
             if PresetContent.Visible and mPos.X >= PresetContent.Position.X and mPos.X <= PresetContent.Position.X + PresetContent.Size.X and
                mPos.Y >= PresetContent.Position.Y and mPos.Y <= PresetContent.Position.Y + PresetContent.Size.Y then
@@ -2394,7 +2394,7 @@ while true do
             end
         end
 
-        -- Окончание перетаскивания
+
         if not mouse1 and lastMouse1 then
             dragging = false
             watermarkDragging = false
@@ -2402,7 +2402,7 @@ while true do
             if _G.adv_manny and _G.adv_manny.speedSlider then _G.adv_manny.speedSlider.dragging = false end
         end
 
-        -- Перетаскивание главного окна
+
         if dragging and mouse1 then
             local delta = mPos - dragStart
             VeryBackGUI.Position = startPos + delta
@@ -2480,7 +2480,7 @@ while true do
             end
         end
 
-        -- Перетаскивание водмарка
+
         if watermarkDragging and mouse1 then
             local delta = mPos - watermarkDragStart
             MainWatermark.Position = watermarkStartPos + delta
@@ -2492,7 +2492,7 @@ while true do
             CurrentEntity.Position = MainWatermark.Position + Vector2.new(68, 47.5)
         end
 
-        -- Перетаскивание слайдеров
+
         if _G.adv_esp and _G.adv_esp.sliderDragging and mouse1 then
             local a = _G.adv_esp
             local relX = mPos.X - a.sliderTrack.Position.X
