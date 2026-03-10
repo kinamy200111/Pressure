@@ -1538,7 +1538,7 @@ local function CreateAdvancedManny()
     title1.ZIndex = 1080
     title1.Color = Color3.fromHex("#d1d4dd")
     title1.Position = s1.Position + Vector2.new(11, 14)
-    title1.Text = "Enable"
+    title1.Text = "Enable Auto Manny"
     title1.Size = 14
     title1.Center = false
     title1.Outline = true
