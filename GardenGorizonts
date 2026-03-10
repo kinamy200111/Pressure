@@ -1,0 +1,2531 @@
+local Mouse = game.Players.LocalPlayer:GetMouse()
+local Viewport = workspace.CurrentCamera.ViewportSize
+
+local activeTab = nil
+local advancedWindowOpen = false
+local closeKey = 0x70
+
+local function UpdateSwitchColor(sw, checked)
+    if checked then
+        sw.Color = Color3.fromHex("#1a1a1a")
+    else
+        sw.Color = Color3.fromHex("#cbcfd5")
+    end
+end
+
+-- Основные переключатели
+local MainSwitchESP = { IsChecked = false, Bg = nil, Ind = nil, IndBorder = nil }
+local MainSwitchManny = { IsChecked = false, Bg = nil, Ind = nil, IndBorder = nil }
+
+-- Переменные для Auto Manny
+local mannyEnabled = false
+local mannySpeed = 1.0
+local mannyThread = nil
+
+-- Элементы расширенных окон
+local AdvSwitchESP4
+local AdvSwitchKeycards
+local AdvSwitchMannyEnable
+local AdvMannySpeedSlider
+
+local uiElements = {}
+local advEspElements = {}
+local advMannyElements = {}
+
+local Overlay = Drawing.new("Square")
+Overlay.Visible = false
+Overlay.Transparency = 0.5
+Overlay.ZIndex = 5
+Overlay.Color = Color3.fromHex("#000000")
+Overlay.Position = Vector2.new(0, 0)
+Overlay.Size = Viewport
+Overlay.Filled = true
+table.insert(uiElements, Overlay)
+
+local VeryBackGUI = Drawing.new("Square")
+VeryBackGUI.Visible = false
+VeryBackGUI.Transparency = 1
+VeryBackGUI.ZIndex = 10
+VeryBackGUI.Color = Color3.fromHex("#0d0c0c")
+VeryBackGUI.Position = Vector2.new(118, 29)
+VeryBackGUI.Size = Vector2.new(569, 42)
+VeryBackGUI.Filled = true
+VeryBackGUI.Corner = 4
+table.insert(uiElements, VeryBackGUI)
+
+local VeryBackGUI_Border = Drawing.new("Square")
+VeryBackGUI_Border.Visible = false
+VeryBackGUI_Border.Transparency = 1
+VeryBackGUI_Border.ZIndex = 11
+VeryBackGUI_Border.Color = Color3.fromHex("#1b1b1a")
+VeryBackGUI_Border.Filled = false
+VeryBackGUI_Border.Thickness = 1
+VeryBackGUI_Border.Position = VeryBackGUI.Position
+VeryBackGUI_Border.Size = VeryBackGUI.Size
+VeryBackGUI_Border.Corner = 4
+table.insert(uiElements, VeryBackGUI_Border)
+
+local Line1 = Drawing.new("Square")
+Line1.Visible = false
+Line1.Transparency = 1
+Line1.ZIndex = 30
+Line1.Color = Color3.fromHex("#1b1b1a")
+Line1.Position = VeryBackGUI.Position + Vector2.new(0, 41.5)
+Line1.Size = Vector2.new(569, 0.5)
+Line1.Filled = true
+Line1.Corner = 1
+table.insert(uiElements, Line1)
+
+local BackGUItabs = Drawing.new("Square")
+BackGUItabs.Visible = false
+BackGUItabs.Transparency = 1
+BackGUItabs.ZIndex = 20
+BackGUItabs.Color = Color3.fromHex("#0d0c0c")
+BackGUItabs.Position = VeryBackGUI.Position + Vector2.new(0, 42)
+BackGUItabs.Size = Vector2.new(568, 42)
+BackGUItabs.Filled = true
+table.insert(uiElements, BackGUItabs)
+
+local Line3 = Drawing.new("Square")
+Line3.Visible = false
+Line3.Transparency = 1
+Line3.ZIndex = 90
+Line3.Color = Color3.fromHex("#1b1b1a")
+Line3.Position = VeryBackGUI.Position + Vector2.new(-2.5, 84)
+Line3.Size = Vector2.new(569, 1)
+Line3.Filled = true
+table.insert(uiElements, Line3)
+
+local Line2 = Drawing.new("Square")
+Line2.Visible = false
+Line2.Transparency = 1
+Line2.ZIndex = 40
+Line2.Color = Color3.fromHex("#1b1b1a")
+Line2.Position = VeryBackGUI.Position + Vector2.new(0, 42)
+Line2.Size = Vector2.new(1, 42)
+Line2.Filled = true
+Line2.Corner = 1
+table.insert(uiElements, Line2)
+
+local TextRATHUB = Drawing.new("Text")
+TextRATHUB.Visible = false
+TextRATHUB.Transparency = 1
+TextRATHUB.ZIndex = 50
+TextRATHUB.Color = Color3.fromHex("#00c950")
+TextRATHUB.Position = VeryBackGUI.Position + Vector2.new(48, 13)
+TextRATHUB.Text = "RATHUB"
+TextRATHUB.Size = 14
+TextRATHUB.Center = false
+TextRATHUB.Outline = true
+TextRATHUB.Font = Drawing.Fonts.UI
+table.insert(uiElements, TextRATHUB)
+
+local TextLOGO = Drawing.new("Text")
+TextLOGO.Visible = false
+TextLOGO.Transparency = 1
+TextLOGO.ZIndex = 60
+TextLOGO.Color = Color3.fromHex("#00c950")
+TextLOGO.Position = VeryBackGUI.Position + Vector2.new(20, 13)
+TextLOGO.Text = ">_"
+TextLOGO.Size = 14
+TextLOGO.Center = false
+TextLOGO.Outline = true
+TextLOGO.Font = Drawing.Fonts.UI
+table.insert(uiElements, TextLOGO)
+
+local BackContentTabs = Drawing.new("Square")
+BackContentTabs.Visible = false
+BackContentTabs.Transparency = 1
+BackContentTabs.ZIndex = 70
+BackContentTabs.Color = Color3.fromHex("#111111")
+BackContentTabs.Position = VeryBackGUI.Position + Vector2.new(0, 84)
+BackContentTabs.Size = Vector2.new(569, 419)
+BackContentTabs.Filled = true
+BackContentTabs.Corner = 4
+table.insert(uiElements, BackContentTabs)
+
+local BackContentTabs_Border = Drawing.new("Square")
+BackContentTabs_Border.Visible = false
+BackContentTabs_Border.Transparency = 1
+BackContentTabs_Border.ZIndex = 71
+BackContentTabs_Border.Color = Color3.fromHex("#1b1b1a")
+BackContentTabs_Border.Filled = false
+BackContentTabs_Border.Thickness = 1
+BackContentTabs_Border.Position = BackContentTabs.Position
+BackContentTabs_Border.Size = BackContentTabs.Size
+BackContentTabs_Border.Corner = 4
+table.insert(uiElements, BackContentTabs_Border)
+
+local BackGUI2 = Drawing.new("Square")
+BackGUI2.Visible = false
+BackGUI2.Transparency = 1
+BackGUI2.ZIndex = 80
+BackGUI2.Color = Color3.fromHex("#0c0c0d")
+BackGUI2.Position = VeryBackGUI.Position + Vector2.new(0, 488)
+BackGUI2.Size = Vector2.new(569, 15)
+BackGUI2.Filled = true
+table.insert(uiElements, BackGUI2)
+
+local BackGUI2_Border = Drawing.new("Square")
+BackGUI2_Border.Visible = false
+BackGUI2_Border.Transparency = 1
+BackGUI2_Border.ZIndex = 81
+BackGUI2_Border.Color = Color3.fromHex("#1b1a1b")
+BackGUI2_Border.Filled = false
+BackGUI2_Border.Thickness = 1
+BackGUI2_Border.Position = BackGUI2.Position
+BackGUI2_Border.Size = BackGUI2.Size
+table.insert(uiElements, BackGUI2_Border)
+
+-- Вкладки
+local TabVisuals = Drawing.new("Square")
+TabVisuals.Visible = false
+TabVisuals.Transparency = 1
+TabVisuals.ZIndex = 100
+TabVisuals.Color = Color3.fromHex("#0c0c0d")
+TabVisuals.Position = VeryBackGUI.Position + Vector2.new(11, 51.5)
+TabVisuals.Size = Vector2.new(86, 22)
+TabVisuals.Filled = true
+TabVisuals.Corner = 4
+table.insert(uiElements, TabVisuals)
+
+local TabVisuals_Text = Drawing.new("Text")
+TabVisuals_Text.Text = "Visuals"
+TabVisuals_Text.Size = 14
+TabVisuals_Text.Center = true
+TabVisuals_Text.Outline = true
+TabVisuals_Text.Font = 0
+TabVisuals_Text.Color = Color3.fromHex("#6b7382")
+TabVisuals_Text.Position = TabVisuals.Position + Vector2.new(86/2, 22/2)
+TabVisuals_Text.Visible = false
+TabVisuals_Text.ZIndex = 102
+table.insert(uiElements, TabVisuals_Text)
+
+local TabExploits = Drawing.new("Square")
+TabExploits.Visible = false
+TabExploits.Transparency = 1
+TabExploits.ZIndex = 120
+TabExploits.Color = Color3.fromHex("#0c0c0d")
+TabExploits.Position = VeryBackGUI.Position + Vector2.new(105, 51.5)
+TabExploits.Size = Vector2.new(86, 22)
+TabExploits.Filled = true
+TabExploits.Corner = 4
+table.insert(uiElements, TabExploits)
+
+local TabExploits_Text = Drawing.new("Text")
+TabExploits_Text.Text = "Exploits"
+TabExploits_Text.Size = 14
+TabExploits_Text.Center = true
+TabExploits_Text.Outline = true
+TabExploits_Text.Font = 0
+TabExploits_Text.Color = Color3.fromHex("#6b7382")
+TabExploits_Text.Position = TabExploits.Position + Vector2.new(86/2, 22/2)
+TabExploits_Text.Visible = false
+TabExploits_Text.ZIndex = 122
+table.insert(uiElements, TabExploits_Text)
+
+local TabMisc = Drawing.new("Square")
+TabMisc.Visible = false
+TabMisc.Transparency = 1
+TabMisc.ZIndex = 130
+TabMisc.Color = Color3.fromHex("#0c0c0d")
+TabMisc.Position = VeryBackGUI.Position + Vector2.new(197, 52)
+TabMisc.Size = Vector2.new(86, 22)
+TabMisc.Filled = true
+TabMisc.Corner = 4
+table.insert(uiElements, TabMisc)
+
+local TabMisc_Text = Drawing.new("Text")
+TabMisc_Text.Text = "Misc"
+TabMisc_Text.Size = 14
+TabMisc_Text.Center = true
+TabMisc_Text.Outline = true
+TabMisc_Text.Font = 0
+TabMisc_Text.Color = Color3.fromHex("#6b7382")
+TabMisc_Text.Position = TabMisc.Position + Vector2.new(86/2, 22/2)
+TabMisc_Text.Visible = false
+TabMisc_Text.ZIndex = 132
+table.insert(uiElements, TabMisc_Text)
+
+local TabInfo = Drawing.new("Square")
+TabInfo.Visible = false
+TabInfo.Transparency = 1
+TabInfo.ZIndex = 140
+TabInfo.Color = Color3.fromHex("#0c0c0d")
+TabInfo.Position = VeryBackGUI.Position + Vector2.new(290, 52)
+TabInfo.Size = Vector2.new(86, 22)
+TabInfo.Filled = true
+TabInfo.Corner = 4
+table.insert(uiElements, TabInfo)
+
+local TabInfo_Text = Drawing.new("Text")
+TabInfo_Text.Text = "Info"
+TabInfo_Text.Size = 14
+TabInfo_Text.Center = true
+TabInfo_Text.Outline = true
+TabInfo_Text.Font = 0
+TabInfo_Text.Color = Color3.fromHex("#6b7382")
+TabInfo_Text.Position = TabInfo.Position + Vector2.new(86/2, 22/2)
+TabInfo_Text.Visible = false
+TabInfo_Text.ZIndex = 142
+table.insert(uiElements, TabInfo_Text)
+
+local Square16 = Drawing.new("Square")
+Square16.Visible = false
+Square16.Transparency = 1
+Square16.ZIndex = 110
+Square16.Color = Color3.fromHex("#1b1b1a")
+Square16.Position = VeryBackGUI.Position + Vector2.new(567, 41.5)
+Square16.Size = Vector2.new(1, 42)
+Square16.Filled = true
+Square16.Corner = 1
+table.insert(uiElements, Square16)
+
+-- Границы вкладок
+local TabVisuals_Border = Drawing.new("Square")
+TabVisuals_Border.Visible = false
+TabVisuals_Border.Transparency = 1
+TabVisuals_Border.ZIndex = 101
+TabVisuals_Border.Color = Color3.fromHex("#085226")
+TabVisuals_Border.Filled = false
+TabVisuals_Border.Thickness = 1
+TabVisuals_Border.Position = TabVisuals.Position
+TabVisuals_Border.Size = TabVisuals.Size
+TabVisuals_Border.Corner = 4
+table.insert(uiElements, TabVisuals_Border)
+
+local TabExploits_Border = Drawing.new("Square")
+TabExploits_Border.Visible = false
+TabExploits_Border.Transparency = 1
+TabExploits_Border.ZIndex = 121
+TabExploits_Border.Color = Color3.fromHex("#085226")
+TabExploits_Border.Filled = false
+TabExploits_Border.Thickness = 1
+TabExploits_Border.Position = TabExploits.Position
+TabExploits_Border.Size = TabExploits.Size
+TabExploits_Border.Corner = 4
+table.insert(uiElements, TabExploits_Border)
+
+local TabMisc_Border = Drawing.new("Square")
+TabMisc_Border.Visible = false
+TabMisc_Border.Transparency = 1
+TabMisc_Border.ZIndex = 131
+TabMisc_Border.Color = Color3.fromHex("#085226")
+TabMisc_Border.Filled = false
+TabMisc_Border.Thickness = 1
+TabMisc_Border.Position = TabMisc.Position
+TabMisc_Border.Size = TabMisc.Size
+TabMisc_Border.Corner = 4
+table.insert(uiElements, TabMisc_Border)
+
+local TabInfo_Border = Drawing.new("Square")
+TabInfo_Border.Visible = false
+TabInfo_Border.Transparency = 1
+TabInfo_Border.ZIndex = 141
+TabInfo_Border.Color = Color3.fromHex("#085226")
+TabInfo_Border.Filled = false
+TabInfo_Border.Thickness = 1
+TabInfo_Border.Position = TabInfo.Position
+TabInfo_Border.Size = TabInfo.Size
+TabInfo_Border.Corner = 4
+table.insert(uiElements, TabInfo_Border)
+
+-- Блок Preset на вкладке Visuals
+local PresetContent = Drawing.new("Square")
+PresetContent.Visible = false
+PresetContent.Transparency = 1
+PresetContent.ZIndex = 150
+PresetContent.Color = Color3.fromHex("#111010")
+PresetContent.Position = VeryBackGUI.Position + Vector2.new(20, 97)
+PresetContent.Size = Vector2.new(224, 51)
+PresetContent.Filled = true
+PresetContent.Corner = 5
+table.insert(uiElements, PresetContent)
+
+local PresetContent_Border = Drawing.new("Square")
+PresetContent_Border.Visible = false
+PresetContent_Border.Transparency = 1
+PresetContent_Border.ZIndex = 151
+PresetContent_Border.Color = Color3.fromHex("#1b1a1b")
+PresetContent_Border.Filled = false
+PresetContent_Border.Thickness = 1
+PresetContent_Border.Position = PresetContent.Position
+PresetContent_Border.Size = PresetContent.Size
+PresetContent_Border.Corner = 5
+table.insert(uiElements, PresetContent_Border)
+
+local PresetTitle = Drawing.new("Text")
+PresetTitle.Visible = false
+PresetTitle.Transparency = 1
+PresetTitle.ZIndex = 170
+PresetTitle.Color = Color3.fromHex("#d1d4dd")
+PresetTitle.Position = PresetContent.Position + Vector2.new(10, 13)
+PresetTitle.Text = "Preset"
+PresetTitle.Size = 14
+PresetTitle.Center = false
+PresetTitle.Outline = true
+PresetTitle.Font = Drawing.Fonts.UI
+table.insert(uiElements, PresetTitle)
+
+local PresetDesc = Drawing.new("Text")
+PresetDesc.Visible = false
+PresetDesc.Transparency = 1
+PresetDesc.ZIndex = 190
+PresetDesc.Color = Color3.fromHex("#6b7382")
+PresetDesc.Position = PresetContent.Position + Vector2.new(16, 28)
+PresetDesc.Text = "Enable preset feature"
+PresetDesc.Size = 11
+PresetDesc.Center = false
+PresetDesc.Outline = true
+PresetDesc.Font = Drawing.Fonts.UI
+table.insert(uiElements, PresetDesc)
+
+local SwitchPreset = Drawing.new("Square")
+SwitchPreset.Visible = false
+SwitchPreset.Transparency = 1
+SwitchPreset.Color = Color3.fromHex("#000000")
+SwitchPreset.Thickness = 1
+SwitchPreset.Filled = false
+SwitchPreset.Size = Vector2.new(25, 15)
+SwitchPreset.Position = VeryBackGUI.Position + Vector2.new(210, 106)
+SwitchPreset.ZIndex = 210
+SwitchPreset.Corner = 10
+table.insert(uiElements, SwitchPreset)
+
+local SwitchPreset_Bg = Drawing.new("Square")
+SwitchPreset_Bg.Visible = false
+SwitchPreset_Bg.Transparency = 1
+SwitchPreset_Bg.Color = Color3.fromHex("#cbcfd5")
+SwitchPreset_Bg.Filled = true
+SwitchPreset_Bg.Size = SwitchPreset.Size
+SwitchPreset_Bg.Position = SwitchPreset.Position
+SwitchPreset_Bg.ZIndex = 210
+SwitchPreset_Bg.Corner = 10
+table.insert(uiElements, SwitchPreset_Bg)
+
+local SwitchPreset_IndBorder = Drawing.new("Square")
+SwitchPreset_IndBorder.Visible = false
+SwitchPreset_IndBorder.Transparency = 1
+SwitchPreset_IndBorder.Color = Color3.fromHex("#000000")
+SwitchPreset_IndBorder.Thickness = 1
+SwitchPreset_IndBorder.Filled = false
+SwitchPreset_IndBorder.Size = Vector2.new(13, 13)
+SwitchPreset_IndBorder.ZIndex = 212
+SwitchPreset_IndBorder.Corner = 10
+table.insert(uiElements, SwitchPreset_IndBorder)
+
+local SwitchPreset_Ind = Drawing.new("Square")
+SwitchPreset_Ind.Visible = false
+SwitchPreset_Ind.Transparency = 1
+SwitchPreset_Ind.Color = Color3.fromHex("#ffffff")
+SwitchPreset_Ind.Filled = true
+SwitchPreset_Ind.Size = Vector2.new(13, 13)
+SwitchPreset_Ind.ZIndex = 212
+SwitchPreset_Ind.Corner = 10
+table.insert(uiElements, SwitchPreset_Ind)
+
+local SwitchPreset_Label = Drawing.new("Text")
+SwitchPreset_Label.Visible = false
+SwitchPreset_Label.Text = ""
+SwitchPreset_Label.Size = 8
+SwitchPreset_Label.Color = Color3.fromHex("#FFFFFF")
+SwitchPreset_Label.Outline = true
+SwitchPreset_Label.Font = Drawing.Fonts.UI
+SwitchPreset_Label.Position = SwitchPreset.Position + Vector2.new(35, 3.5)
+SwitchPreset_Label.ZIndex = 211
+table.insert(uiElements, SwitchPreset_Label)
+
+MainSwitchESP.Bg = SwitchPreset_Bg
+MainSwitchESP.Ind = SwitchPreset_Ind
+MainSwitchESP.IndBorder = SwitchPreset_IndBorder
+
+-- Блок Auto Manny на вкладке Exploits
+local ContentExploits1 = Drawing.new("Square")
+ContentExploits1.Visible = false
+ContentExploits1.Transparency = 1
+ContentExploits1.ZIndex = 240
+ContentExploits1.Color = Color3.fromHex("#111010")
+ContentExploits1.Position = VeryBackGUI.Position + Vector2.new(20, 97)
+ContentExploits1.Size = Vector2.new(224, 51)
+ContentExploits1.Filled = true
+ContentExploits1.Corner = 5
+table.insert(uiElements, ContentExploits1)
+
+local ContentExploits1_Border = Drawing.new("Square")
+ContentExploits1_Border.Visible = false
+ContentExploits1_Border.Transparency = 1
+ContentExploits1_Border.ZIndex = 241
+ContentExploits1_Border.Color = Color3.fromHex("#1b1a1b")
+ContentExploits1_Border.Filled = false
+ContentExploits1_Border.Thickness = 1
+ContentExploits1_Border.Position = ContentExploits1.Position
+ContentExploits1_Border.Size = ContentExploits1.Size
+ContentExploits1_Border.Corner = 5
+table.insert(uiElements, ContentExploits1_Border)
+
+local MannyTitle = Drawing.new("Text")
+MannyTitle.Visible = false
+MannyTitle.Transparency = 1
+MannyTitle.ZIndex = 270
+MannyTitle.Color = Color3.fromHex("#d1d4dd")
+MannyTitle.Position = ContentExploits1.Position + Vector2.new(15, 12)
+MannyTitle.Text = "Auto Manny"
+MannyTitle.Size = 14
+MannyTitle.Center = false
+MannyTitle.Outline = true
+MannyTitle.Font = Drawing.Fonts.UI
+table.insert(uiElements, MannyTitle)
+
+local MannyDesc = Drawing.new("Text")
+MannyDesc.Visible = false
+MannyDesc.Transparency = 1
+MannyDesc.ZIndex = 260
+MannyDesc.Color = Color3.fromHex("#6b7382")
+MannyDesc.Position = ContentExploits1.Position + Vector2.new(23, 29)
+MannyDesc.Text = "Automatically teleport to collectibles"
+MannyDesc.Size = 11
+MannyDesc.Center = false
+MannyDesc.Outline = true
+MannyDesc.Font = Drawing.Fonts.UI
+table.insert(uiElements, MannyDesc)
+
+local SwitchManny = Drawing.new("Square")
+SwitchManny.Visible = false
+SwitchManny.Transparency = 1
+SwitchManny.Color = Color3.fromHex("#000000")
+SwitchManny.Thickness = 1
+SwitchManny.Filled = false
+SwitchManny.Size = Vector2.new(25, 15)
+SwitchManny.Position = VeryBackGUI.Position + Vector2.new(212, 109)
+SwitchManny.ZIndex = 250
+SwitchManny.Corner = 10
+table.insert(uiElements, SwitchManny)
+
+local SwitchManny_Bg = Drawing.new("Square")
+SwitchManny_Bg.Visible = false
+SwitchManny_Bg.Transparency = 1
+SwitchManny_Bg.Color = Color3.fromHex("#cbcfd5")
+SwitchManny_Bg.Filled = true
+SwitchManny_Bg.Size = SwitchManny.Size
+SwitchManny_Bg.Position = SwitchManny.Position
+SwitchManny_Bg.ZIndex = 250
+SwitchManny_Bg.Corner = 10
+table.insert(uiElements, SwitchManny_Bg)
+
+local SwitchManny_IndBorder = Drawing.new("Square")
+SwitchManny_IndBorder.Visible = false
+SwitchManny_IndBorder.Transparency = 1
+SwitchManny_IndBorder.Color = Color3.fromHex("#000000")
+SwitchManny_IndBorder.Thickness = 1
+SwitchManny_IndBorder.Filled = false
+SwitchManny_IndBorder.Size = Vector2.new(13, 13)
+SwitchManny_IndBorder.ZIndex = 252
+SwitchManny_IndBorder.Corner = 10
+table.insert(uiElements, SwitchManny_IndBorder)
+
+local SwitchManny_Ind = Drawing.new("Square")
+SwitchManny_Ind.Visible = false
+SwitchManny_Ind.Transparency = 1
+SwitchManny_Ind.Color = Color3.fromHex("#ffffff")
+SwitchManny_Ind.Filled = true
+SwitchManny_Ind.Size = Vector2.new(13, 13)
+SwitchManny_Ind.ZIndex = 252
+SwitchManny_Ind.Corner = 10
+table.insert(uiElements, SwitchManny_Ind)
+
+local SwitchManny_Label = Drawing.new("Text")
+SwitchManny_Label.Visible = false
+SwitchManny_Label.Text = ""
+SwitchManny_Label.Size = 8
+SwitchManny_Label.Color = Color3.fromHex("#FFFFFF")
+SwitchManny_Label.Outline = true
+SwitchManny_Label.Font = Drawing.Fonts.UI
+SwitchManny_Label.Position = SwitchManny.Position + Vector2.new(35, 3.5)
+SwitchManny_Label.ZIndex = 251
+table.insert(uiElements, SwitchManny_Label)
+
+MainSwitchManny.Bg = SwitchManny_Bg
+MainSwitchManny.Ind = SwitchManny_Ind
+MainSwitchManny.IndBorder = SwitchManny_IndBorder
+
+-- Остальные элементы (Misc, Info) без изменений
+local InvisibleSquare = Drawing.new("Square")
+InvisibleSquare.Visible = false
+InvisibleSquare.Transparency = 0
+InvisibleSquare.ZIndex = 290
+InvisibleSquare.Color = Color3.fromHex("#FFFFFF")
+InvisibleSquare.Position = VeryBackGUI.Position + Vector2.new(-87, 96)
+InvisibleSquare.Size = Vector2.new(10, 53)
+InvisibleSquare.Filled = true
+table.insert(uiElements, InvisibleSquare)
+
+local HereNoContentText = Drawing.new("Text")
+HereNoContentText.Visible = false
+HereNoContentText.Transparency = 1
+HereNoContentText.ZIndex = 280
+HereNoContentText.Color = Color3.fromHex("#ff0000")
+HereNoContentText.Position = InvisibleSquare.Position + Vector2.new(117, 20)
+HereNoContentText.Text = "Here no content"
+HereNoContentText.Size = 43
+HereNoContentText.Center = false
+HereNoContentText.Outline = false
+HereNoContentText.Font = Drawing.Fonts.UI
+table.insert(uiElements, HereNoContentText)
+
+local ContentInfo1 = Drawing.new("Square")
+ContentInfo1.Visible = false
+ContentInfo1.Transparency = 1
+ContentInfo1.ZIndex = 300
+ContentInfo1.Color = Color3.fromHex("#111010")
+ContentInfo1.Position = VeryBackGUI.Position + Vector2.new(11, 101)
+ContentInfo1.Size = Vector2.new(545, 75)
+ContentInfo1.Filled = true
+ContentInfo1.Corner = 5
+table.insert(uiElements, ContentInfo1)
+
+local ContentInfo1_Border = Drawing.new("Square")
+ContentInfo1_Border.Visible = false
+ContentInfo1_Border.Transparency = 1
+ContentInfo1_Border.ZIndex = 301
+ContentInfo1_Border.Color = Color3.fromHex("#1b1a1b")
+ContentInfo1_Border.Filled = false
+ContentInfo1_Border.Thickness = 1
+ContentInfo1_Border.Position = ContentInfo1.Position
+ContentInfo1_Border.Size = ContentInfo1.Size
+ContentInfo1_Border.Corner = 5
+table.insert(uiElements, ContentInfo1_Border)
+
+local TextInfo1 = Drawing.new("Text")
+TextInfo1.Visible = false
+TextInfo1.Transparency = 1
+TextInfo1.ZIndex = 310
+TextInfo1.Color = Color3.fromHex("#47f109")
+TextInfo1.Position = ContentInfo1.Position + Vector2.new(9, 38)
+TextInfo1.Text = "To open advanced settings, hover over the button and right-click!!"
+TextInfo1.Size = 15
+TextInfo1.Center = false
+TextInfo1.Outline = false
+TextInfo1.Font = Drawing.Fonts.UI
+table.insert(uiElements, TextInfo1)
+
+local TextInfo2 = Drawing.new("Text")
+TextInfo2.Visible = false
+TextInfo2.Transparency = 1
+TextInfo2.ZIndex = 320
+TextInfo2.Color = Color3.fromHex("#e3e3e3")
+TextInfo2.Position = ContentInfo1.Position + Vector2.new(17, 11)
+TextInfo2.Text = "Some usefull info"
+TextInfo2.Size = 17
+TextInfo2.Center = false
+TextInfo2.Outline = true
+TextInfo2.Font = Drawing.Fonts.UI
+table.insert(uiElements, TextInfo2)
+
+local ContentInfo2 = Drawing.new("Square")
+ContentInfo2.Visible = false
+ContentInfo2.Transparency = 1
+ContentInfo2.ZIndex = 300
+ContentInfo2.Color = Color3.fromHex("#111010")
+ContentInfo2.Position = ContentInfo1.Position + Vector2.new(0, 84)
+ContentInfo2.Size = Vector2.new(544, 156)
+ContentInfo2.Filled = true
+ContentInfo2.Corner = 5
+table.insert(uiElements, ContentInfo2)
+
+local ContentInfo2_Border = Drawing.new("Square")
+ContentInfo2_Border.Visible = false
+ContentInfo2_Border.Transparency = 1
+ContentInfo2_Border.ZIndex = 301
+ContentInfo2_Border.Color = Color3.fromHex("#1b1a1b")
+ContentInfo2_Border.Filled = false
+ContentInfo2_Border.Thickness = 1
+ContentInfo2_Border.Position = ContentInfo2.Position
+ContentInfo2_Border.Size = ContentInfo2.Size
+ContentInfo2_Border.Corner = 5
+table.insert(uiElements, ContentInfo2_Border)
+
+local TextInfo3 = Drawing.new("Text")
+TextInfo3.Visible = false
+TextInfo3.Transparency = 1
+TextInfo3.ZIndex = 340
+TextInfo3.Color = Color3.fromHex("#00c950")
+TextInfo3.Position = ContentInfo2.Position + Vector2.new(15, 14)
+TextInfo3.Text = "Changelogs for ver 6.6, 7 March, 2026 Year:"
+TextInfo3.Size = 14
+TextInfo3.Center = false
+TextInfo3.Outline = true
+TextInfo3.Font = Drawing.Fonts.UI
+table.insert(uiElements, TextInfo3)
+
+local ChangelogLines = {}
+for i=1,12 do
+    local line = Drawing.new("Text")
+    line.Visible = false
+    line.Transparency = 1
+    line.ZIndex = 340
+    line.Color = Color3.fromHex("#6b7382")
+    line.Position = ContentInfo2.Position + Vector2.new(23, 30 + (i-1)*15)
+    line.Text = ""
+    line.Size = 14
+    line.Center = false
+    line.Outline = true
+    line.Font = Drawing.Fonts.UI
+    table.insert(uiElements, line)
+    table.insert(ChangelogLines, line)
+end
+
+ChangelogLines[1].Text = "+ Recode auto-rescan for ESP's, and make it better"
+ChangelogLines[1].Color = Color3.fromHex("#00ff66")
+ChangelogLines[2].Text = "+ Add new type for ESP: EntityESP "
+ChangelogLines[2].Color = Color3.fromHex("#00ff66")
+ChangelogLines[3].Text = "+ Add new page for advanced settings and customizble auto-rescan"
+ChangelogLines[3].Color = Color3.fromHex("#00ff66")
+
+-- Watermark
+local MainWatermark = Drawing.new("Square")
+MainWatermark.Visible = false
+MainWatermark.Transparency = 1
+MainWatermark.ZIndex = 20
+MainWatermark.Color = Color3.fromHex("#0b0b0b")
+MainWatermark.Position = Vector2.new(302, 42.5)
+MainWatermark.Size = Vector2.new(205, 106)
+MainWatermark.Filled = true
+MainWatermark.Corner = 8
+table.insert(uiElements, MainWatermark)
+
+local MainWatermark_Border = Drawing.new("Square")
+MainWatermark_Border.Visible = false
+MainWatermark_Border.Transparency = 1
+MainWatermark_Border.ZIndex = 21
+MainWatermark_Border.Color = Color3.fromHex("#1b1a1b")
+MainWatermark_Border.Filled = false
+MainWatermark_Border.Thickness = 1
+MainWatermark_Border.Position = MainWatermark.Position
+MainWatermark_Border.Size = MainWatermark.Size
+MainWatermark_Border.Corner = 8
+table.insert(uiElements, MainWatermark_Border)
+
+local LineWatermark1 = Drawing.new("Square")
+LineWatermark1.Visible = false
+LineWatermark1.Transparency = 1
+LineWatermark1.ZIndex = 30
+LineWatermark1.Color = Color3.fromHex("#1b1a1b")
+LineWatermark1.Position = MainWatermark.Position + Vector2.new(35, 36.5)
+LineWatermark1.Size = Vector2.new(126, 1)
+LineWatermark1.Filled = true
+table.insert(uiElements, LineWatermark1)
+
+local TextRATHUB34 = Drawing.new("Text")
+TextRATHUB34.Visible = false
+TextRATHUB34.Transparency = 1
+TextRATHUB34.ZIndex = 40
+TextRATHUB34.Color = Color3.fromHex("#01b349")
+TextRATHUB34.Position = MainWatermark.Position + Vector2.new(62, 12.5)
+TextRATHUB34.Text = "RATHUB"
+TextRATHUB34.Size = 14
+TextRATHUB34.Center = false
+TextRATHUB34.Outline = true
+TextRATHUB34.Font = Drawing.Fonts.SystemBold
+table.insert(uiElements, TextRATHUB34)
+
+local LogoRathub34 = Drawing.new("Text")
+LogoRathub34.Visible = false
+LogoRathub34.Transparency = 1
+LogoRathub34.ZIndex = 50
+LogoRathub34.Color = Color3.fromHex("#01b349")
+LogoRathub34.Position = MainWatermark.Position + Vector2.new(35, 11.5)
+LogoRathub34.Text = ">_"
+LogoRathub34.Size = 14
+LogoRathub34.Center = false
+LogoRathub34.Outline = true
+LogoRathub34.Font = Drawing.Fonts.SystemBold
+table.insert(uiElements, LogoRathub34)
+
+local StatusWatermark = Drawing.new("Text")
+StatusWatermark.Visible = false
+StatusWatermark.Transparency = 1
+StatusWatermark.ZIndex = 60
+StatusWatermark.Color = Color3.fromHex("#656c7b")
+StatusWatermark.Position = MainWatermark.Position + Vector2.new(18, 47.5)
+StatusWatermark.Text = "Status:"
+StatusWatermark.Size = 14
+StatusWatermark.Center = false
+StatusWatermark.Outline = true
+StatusWatermark.Font = Drawing.Fonts.System
+table.insert(uiElements, StatusWatermark)
+
+local CurrentEntity = Drawing.new("Text")
+CurrentEntity.Visible = false
+CurrentEntity.Transparency = 1
+CurrentEntity.ZIndex = 70
+CurrentEntity.Color = Color3.fromHex("#656c7b")
+CurrentEntity.Position = MainWatermark.Position + Vector2.new(68, 47.5)
+CurrentEntity.Text = "None"
+CurrentEntity.Size = 14
+CurrentEntity.Center = false
+CurrentEntity.Outline = true
+CurrentEntity.Font = Drawing.Fonts.System
+table.insert(uiElements, CurrentEntity)
+
+-- Вспомогательные функции
+local function HideAllTabs()
+    PresetContent.Visible = false; PresetContent_Border.Visible = false
+    PresetTitle.Visible = false; PresetDesc.Visible = false
+    SwitchPreset.Visible = false; SwitchPreset_Bg.Visible = false
+    SwitchPreset_IndBorder.Visible = false; SwitchPreset_Ind.Visible = false
+    SwitchPreset_Label.Visible = false
+    ContentExploits1.Visible = false; ContentExploits1_Border.Visible = false
+    MannyTitle.Visible = false; MannyDesc.Visible = false
+    SwitchManny.Visible = false; SwitchManny_Bg.Visible = false
+    SwitchManny_IndBorder.Visible = false; SwitchManny_Ind.Visible = false
+    SwitchManny_Label.Visible = false
+    InvisibleSquare.Visible = false; HereNoContentText.Visible = false
+    ContentInfo1.Visible = false; ContentInfo1_Border.Visible = false
+    TextInfo1.Visible = false; TextInfo2.Visible = false
+    ContentInfo2.Visible = false; ContentInfo2_Border.Visible = false
+    TextInfo3.Visible = false
+    for _, line in ipairs(ChangelogLines) do
+        line.Visible = false
+    end
+end
+
+local function SetActiveTab(tabName, tabButton, tabBorder, tabText)
+    local tabs = {
+        {btn = TabVisuals, border = TabVisuals_Border, txt = TabVisuals_Text},
+        {btn = TabExploits, border = TabExploits_Border, txt = TabExploits_Text},
+        {btn = TabMisc, border = TabMisc_Border, txt = TabMisc_Text},
+        {btn = TabInfo, border = TabInfo_Border, txt = TabInfo_Text}
+    }
+    for _, t in ipairs(tabs) do
+        t.btn.Color = Color3.fromHex("#0c0c0d")
+        t.txt.Color = Color3.fromHex("#6b7382")
+        t.border.Visible = false
+    end
+    if tabName then
+        tabButton.Color = Color3.fromHex("#0c2014")
+        tabText.Color = Color3.fromHex("#01c34c")
+        tabBorder.Visible = true
+        activeTab = tabName
+    else
+        activeTab = nil
+    end
+end
+
+local KeyNames = {
+    [0x70] = "F1", [0x71] = "F2", [0x72] = "F3", [0x73] = "F4", [0x74] = "F5", [0x75] = "F6",
+    [0x76] = "F7", [0x77] = "F8", [0x78] = "F9", [0x79] = "F10", [0x7A] = "F11", [0x7B] = "F12",
+    [0x30] = "0", [0x31] = "1", [0x32] = "2", [0x33] = "3", [0x34] = "4", [0x35] = "5",
+    [0x36] = "6", [0x37] = "7", [0x38] = "8", [0x39] = "9",
+    [0x41] = "A", [0x42] = "B", [0x43] = "C", [0x44] = "D", [0x45] = "E", [0x46] = "F",
+    [0x47] = "G", [0x48] = "H", [0x49] = "I", [0x4A] = "J", [0x4B] = "K", [0x4C] = "L",
+    [0x4D] = "M", [0x4E] = "N", [0x4F] = "O", [0x50] = "P", [0x51] = "Q", [0x52] = "R",
+    [0x53] = "S", [0x54] = "T", [0x55] = "U", [0x56] = "V", [0x57] = "W", [0x58] = "X",
+    [0x59] = "Y", [0x5A] = "Z"
+}
+
+local function GetKeyName(key)
+    return KeyNames[key] or tostring(key)
+end
+
+-- Функция закрытия всех расширенных окон
+local function CloseAdvancedWindows()
+    advancedWindowOpen = false
+    Overlay.Visible = false
+    if _G.adv_esp then
+        for _, el in ipairs(_G.adv_esp.elements) do
+            pcall(function() el:Remove() end)
+        end
+        _G.adv_esp = nil
+    end
+    if _G.adv_manny then
+        for _, el in ipairs(_G.adv_manny.elements) do
+            pcall(function() el:Remove() end)
+        end
+        _G.adv_manny = nil
+    end
+    AdvSwitchESP4 = nil
+    AdvSwitchKeycards = nil
+    AdvSwitchMannyEnable = nil
+    AdvMannySpeedSlider = nil
+end
+
+-- Обновление позиций расширенных окон при перетаскивании основного
+local function UpdateAdvancedPositions()
+    if not advancedWindowOpen then return end
+    local basePos = VeryBackGUI.Position + Vector2.new(VeryBackGUI.Size.X + 20, 0)
+    if _G.adv_esp and _G.adv_esp.basePos then
+        local delta = basePos - _G.adv_esp.basePos
+        for _, el in ipairs(_G.adv_esp.elements) do
+            if el and el.Position then
+                el.Position = el.Position + delta
+            end
+        end
+        _G.adv_esp.basePos = basePos
+    end
+    if _G.adv_manny and _G.adv_manny.basePos then
+        local delta = basePos - _G.adv_manny.basePos
+        for _, el in ipairs(_G.adv_manny.elements) do
+            if el and el.Position then
+                el.Position = el.Position + delta
+            end
+        end
+        _G.adv_manny.basePos = basePos
+    end
+end
+
+-- Функция создания расширенного окна ESP (без изменений)
+local function CreateAdvancedESP()
+    if advancedWindowOpen then
+        CloseAdvancedWindows()
+        return
+    end
+    advancedWindowOpen = true
+    Overlay.Visible = true
+
+    local basePos = VeryBackGUI.Position + Vector2.new(VeryBackGUI.Size.X + 20, 0)
+
+    local win2 = Drawing.new("Square")
+    win2.Visible = true
+    win2.Transparency = 1
+    win2.ZIndex = 1000
+    win2.Color = Color3.fromHex("#111010")
+    win2.Position = basePos
+    win2.Size = Vector2.new(286, 46)
+    win2.Filled = true
+    table.insert(uiElements, win2)
+    table.insert(advEspElements, win2)
+
+    local closeBtn = Drawing.new("Square")
+    closeBtn.Visible = true
+    closeBtn.Transparency = 1
+    closeBtn.ZIndex = 1010
+    closeBtn.Color = Color3.fromHex("#111010")
+    closeBtn.Position = win2.Position + Vector2.new(245, 5.5)
+    closeBtn.Size = Vector2.new(28, 28)
+    closeBtn.Filled = true
+    table.insert(uiElements, closeBtn)
+    table.insert(advEspElements, closeBtn)
+
+    local closeText = Drawing.new("Text")
+    closeText.Visible = true
+    closeText.Text = "X"
+    closeText.Size = 18
+    closeText.Center = true
+    closeText.Outline = true
+    closeText.Font = 0
+    closeText.Color = Color3.fromHex("#b5b5b5")
+    closeText.Position = closeBtn.Position + Vector2.new(14, 14)
+    closeText.ZIndex = 1012
+    table.insert(uiElements, closeText)
+    table.insert(advEspElements, closeText)
+
+    local win = Drawing.new("Square")
+    win.Visible = true
+    win.Transparency = 1
+    win.ZIndex = 1000
+    win.Color = Color3.fromHex("#0c0c0d")
+    win.Position = win2.Position + Vector2.new(-1, 43)
+    win.Size = Vector2.new(287, 506)
+    win.Filled = true
+    table.insert(uiElements, win)
+    table.insert(advEspElements, win)
+
+    local title = Drawing.new("Text")
+    title.Visible = true
+    title.Transparency = 1
+    title.ZIndex = 1070
+    title.Color = Color3.fromHex("#04c838")
+    title.Position = win2.Position + Vector2.new(16, 12)
+    title.Text = "Preset Settings"
+    title.Size = 17
+    title.Center = false
+    title.Outline = true
+    title.Font = Drawing.Fonts.UI
+    table.insert(uiElements, title)
+    table.insert(advEspElements, title)
+
+    local scrollY = win2.Position.Y + 43 + 35
+
+    -- Блок 1: свитч
+    local s1 = Drawing.new("Square")
+    s1.Visible = true
+    s1.Transparency = 1
+    s1.ZIndex = 1040
+    s1.Color = Color3.fromHex("#111010")
+    s1.Position = Vector2.new(win2.Position.X + 16, scrollY + 9)
+    s1.Size = Vector2.new(247, 65)
+    s1.Filled = true
+    s1.Corner = 5
+    table.insert(uiElements, s1)
+    table.insert(advEspElements, s1)
+
+    local s1b = Drawing.new("Square")
+    s1b.Visible = true
+    s1b.Transparency = 1
+    s1b.ZIndex = 1041
+    s1b.Color = Color3.fromHex("#1b1a1b")
+    s1b.Filled = false
+    s1b.Thickness = 1
+    s1b.Position = s1.Position
+    s1b.Size = s1.Size
+    s1b.Corner = 5
+    table.insert(uiElements, s1b)
+    table.insert(advEspElements, s1b)
+
+    local title1 = Drawing.new("Text")
+    title1.Visible = true
+    title1.Transparency = 1
+    title1.ZIndex = 1080
+    title1.Color = Color3.fromHex("#d1d4dd")
+    title1.Position = s1.Position + Vector2.new(11, 14)
+    title1.Text = "Preset Switch"
+    title1.Size = 14
+    title1.Center = false
+    title1.Outline = true
+    title1.Font = Drawing.Fonts.UI
+    table.insert(uiElements, title1)
+    table.insert(advEspElements, title1)
+
+    local desc1 = Drawing.new("Text")
+    desc1.Visible = true
+    desc1.Transparency = 1
+    desc1.ZIndex = 1100
+    desc1.Color = Color3.fromHex("#6b7382")
+    desc1.Position = s1.Position + Vector2.new(19, 38)
+    desc1.Text = "Toggle preset switch"
+    desc1.Size = 11
+    desc1.Center = false
+    desc1.Outline = true
+    desc1.Font = Drawing.Fonts.UI
+    table.insert(uiElements, desc1)
+    table.insert(advEspElements, desc1)
+
+    local sw = Drawing.new("Square")
+    sw.Visible = true
+    sw.Transparency = 1
+    sw.Color = Color3.fromHex("#000000")
+    sw.Thickness = 1
+    sw.Filled = false
+    sw.Size = Vector2.new(30, 15)
+    sw.Position = s1.Position + Vector2.new(207, 14)
+    sw.ZIndex = 1120
+    sw.Corner = 10
+    table.insert(uiElements, sw)
+    table.insert(advEspElements, sw)
+
+    local swBg = Drawing.new("Square")
+    swBg.Visible = true
+    swBg.Transparency = 1
+    swBg.Color = Color3.fromHex("#cbcfd5")
+    swBg.Filled = true
+    swBg.Size = sw.Size
+    swBg.Position = sw.Position
+    swBg.ZIndex = 1120
+    swBg.Corner = 10
+    table.insert(uiElements, swBg)
+    table.insert(advEspElements, swBg)
+
+    local swIndBorder = Drawing.new("Square")
+    swIndBorder.Visible = true
+    swIndBorder.Transparency = 1
+    swIndBorder.Color = Color3.fromHex("#000000")
+    swIndBorder.Thickness = 1
+    swIndBorder.Filled = false
+    swIndBorder.Size = Vector2.new(13, 13)
+    swIndBorder.ZIndex = 1122
+    swIndBorder.Corner = 10
+    table.insert(uiElements, swIndBorder)
+    table.insert(advEspElements, swIndBorder)
+
+    local swInd = Drawing.new("Square")
+    swInd.Visible = true
+    swInd.Transparency = 1
+    swInd.Color = Color3.fromHex("#ffffff")
+    swInd.Filled = true
+    swInd.Size = Vector2.new(13, 13)
+    swInd.ZIndex = 1122
+    swInd.Corner = 10
+    table.insert(uiElements, swInd)
+    table.insert(advEspElements, swInd)
+
+    local swLabel = Drawing.new("Text")
+    swLabel.Visible = true
+    swLabel.Text = ""
+    swLabel.Size = 1
+    swLabel.Color = Color3.fromHex("#FFFFFF")
+    swLabel.Outline = true
+    swLabel.Font = Drawing.Fonts.UI
+    swLabel.Position = sw.Position + Vector2.new(40, 7)
+    swLabel.ZIndex = 1121
+    table.insert(uiElements, swLabel)
+    table.insert(advEspElements, swLabel)
+
+    AdvSwitchESP4 = { Bg = swBg, Ind = swInd, IndBorder = swIndBorder, IsChecked = false }
+    if AdvSwitchESP4.IsChecked then
+        AdvSwitchESP4.IndBorder.Position = AdvSwitchESP4.Bg.Position + Vector2.new(16, 1)
+        AdvSwitchESP4.Ind.Position = AdvSwitchESP4.Bg.Position + Vector2.new(16, 1)
+    else
+        AdvSwitchESP4.IndBorder.Position = AdvSwitchESP4.Bg.Position + Vector2.new(1, 1)
+        AdvSwitchESP4.Ind.Position = AdvSwitchESP4.Bg.Position + Vector2.new(1, 1)
+    end
+    UpdateSwitchColor(AdvSwitchESP4.Bg, AdvSwitchESP4.IsChecked)
+
+    -- Блок 2: слайдер
+    local s2 = Drawing.new("Square")
+    s2.Visible = true
+    s2.Transparency = 1
+    s2.ZIndex = 1050
+    s2.Color = Color3.fromHex("#111010")
+    s2.Position = s1.Position + Vector2.new(0, 80)
+    s2.Size = Vector2.new(247, 90)
+    s2.Filled = true
+    s2.Corner = 5
+    table.insert(uiElements, s2)
+    table.insert(advEspElements, s2)
+
+    local s2b = Drawing.new("Square")
+    s2b.Visible = true
+    s2b.Transparency = 1
+    s2b.ZIndex = 1051
+    s2b.Color = Color3.fromHex("#1b1a1b")
+    s2b.Filled = false
+    s2b.Thickness = 1
+    s2b.Position = s2.Position
+    s2b.Size = s2.Size
+    s2b.Corner = 5
+    table.insert(uiElements, s2b)
+    table.insert(advEspElements, s2b)
+
+    local title2 = Drawing.new("Text")
+    title2.Visible = true
+    title2.Transparency = 1
+    title2.ZIndex = 1090
+    title2.Color = Color3.fromHex("#d1d4dd")
+    title2.Position = s2.Position + Vector2.new(19, 12)
+    title2.Text = "Preset Slider"
+    title2.Size = 14
+    title2.Center = false
+    title2.Outline = true
+    title2.Font = Drawing.Fonts.UI
+    table.insert(uiElements, title2)
+    table.insert(advEspElements, title2)
+
+    local sliderVal = 150
+    local sliderTrack = Drawing.new("Square")
+    sliderTrack.Visible = true
+    sliderTrack.Transparency = 1
+    sliderTrack.Color = Color3.fromHex("#2a2a2a")
+    sliderTrack.Filled = true
+    sliderTrack.Size = Vector2.new(200, 4)
+    sliderTrack.Position = s2.Position + Vector2.new(19, 40)
+    sliderTrack.ZIndex = 1130
+    sliderTrack.Corner = 2
+    table.insert(uiElements, sliderTrack)
+    table.insert(advEspElements, sliderTrack)
+
+    local sliderFill = Drawing.new("Square")
+    sliderFill.Visible = true
+    sliderFill.Transparency = 1
+    sliderFill.Color = Color3.fromHex("#04c838")
+    sliderFill.Filled = true
+    sliderFill.Size = Vector2.new(200 * ((sliderVal-15)/(500-15)), 4)
+    sliderFill.Position = sliderTrack.Position
+    sliderFill.ZIndex = 1131
+    sliderFill.Corner = 2
+    table.insert(uiElements, sliderFill)
+    table.insert(advEspElements, sliderFill)
+
+    local sliderKnob = Drawing.new("Circle")
+    sliderKnob.Visible = true
+    sliderKnob.Transparency = 1
+    sliderKnob.Color = Color3.fromHex("#04c838")
+    sliderKnob.Filled = true
+    sliderKnob.Radius = 6
+    sliderKnob.NumSides = 16
+    sliderKnob.Position = sliderTrack.Position + Vector2.new(200 * ((sliderVal-15)/(500-15)), 2)
+    sliderKnob.ZIndex = 1132
+    table.insert(uiElements, sliderKnob)
+    table.insert(advEspElements, sliderKnob)
+
+    local sliderValText = Drawing.new("Text")
+    sliderValText.Visible = true
+    sliderValText.Text = tostring(math.floor(sliderVal)) .. ""
+    sliderValText.Size = 14
+    sliderValText.Center = true
+    sliderValText.Outline = true
+    sliderValText.Color = Color3.fromHex("#ffffff")
+    sliderValText.Position = sliderTrack.Position + Vector2.new(100, -20)
+    sliderValText.ZIndex = 1133
+    table.insert(uiElements, sliderValText)
+    table.insert(advEspElements, sliderValText)
+
+    local desc2 = Drawing.new("Text")
+    desc2.Visible = true
+    desc2.Transparency = 1
+    desc2.ZIndex = 1110
+    desc2.Color = Color3.fromHex("#6b7382")
+    desc2.Position = s2.Position + Vector2.new(32, 62)
+    desc2.Text = "Adjust preset value"
+    desc2.Size = 11
+    desc2.Center = false
+    desc2.Outline = true
+    desc2.Font = Drawing.Fonts.UI
+    table.insert(uiElements, desc2)
+    table.insert(advEspElements, desc2)
+
+    -- Блок 3: дропдаун
+    local s3 = Drawing.new("Square")
+    s3.Visible = true
+    s3.Transparency = 1
+    s3.ZIndex = 1060
+    s3.Color = Color3.fromHex("#111010")
+    s3.Position = s2.Position + Vector2.new(0, 104)
+    s3.Size = Vector2.new(247, 90)
+    s3.Filled = true
+    s3.Corner = 5
+    table.insert(uiElements, s3)
+    table.insert(advEspElements, s3)
+
+    local s3b = Drawing.new("Square")
+    s3b.Visible = true
+    s3b.Transparency = 1
+    s3b.ZIndex = 1061
+    s3b.Color = Color3.fromHex("#1b1a1b")
+    s3b.Filled = false
+    s3b.Thickness = 1
+    s3b.Position = s3.Position
+    s3b.Size = s3.Size
+    s3b.Corner = 5
+    table.insert(uiElements, s3b)
+    table.insert(advEspElements, s3b)
+
+    local title3 = Drawing.new("Text")
+    title3.Visible = true
+    title3.Transparency = 1
+    title3.ZIndex = 1080
+    title3.Color = Color3.fromHex("#d1d4dd")
+    title3.Position = s3.Position + Vector2.new(11, 14)
+    title3.Text = "Preset Dropdown"
+    title3.Size = 14
+    title3.Center = false
+    title3.Outline = true
+    title3.Font = Drawing.Fonts.UI
+    table.insert(uiElements, title3)
+    table.insert(advEspElements, title3)
+
+    local swKc = Drawing.new("Square")
+    swKc.Visible = true
+    swKc.Transparency = 1
+    swKc.Color = Color3.fromHex("#000000")
+    swKc.Thickness = 1
+    swKc.Filled = false
+    swKc.Size = Vector2.new(30, 15)
+    swKc.Position = s3.Position + Vector2.new(207, 12)
+    swKc.ZIndex = 1120
+    swKc.Corner = 10
+    table.insert(uiElements, swKc)
+    table.insert(advEspElements, swKc)
+
+    local swKcBg = Drawing.new("Square")
+    swKcBg.Visible = true
+    swKcBg.Transparency = 1
+    swKcBg.Color = Color3.fromHex("#cbcfd5")
+    swKcBg.Filled = true
+    swKcBg.Size = swKc.Size
+    swKcBg.Position = swKc.Position
+    swKcBg.ZIndex = 1120
+    swKcBg.Corner = 10
+    table.insert(uiElements, swKcBg)
+    table.insert(advEspElements, swKcBg)
+
+    local swKcIndBorder = Drawing.new("Square")
+    swKcIndBorder.Visible = true
+    swKcIndBorder.Transparency = 1
+    swKcIndBorder.Color = Color3.fromHex("#000000")
+    swKcIndBorder.Thickness = 1
+    swKcIndBorder.Filled = false
+    swKcIndBorder.Size = Vector2.new(13, 13)
+    swKcIndBorder.ZIndex = 1122
+    swKcIndBorder.Corner = 10
+    table.insert(uiElements, swKcIndBorder)
+    table.insert(advEspElements, swKcIndBorder)
+
+    local swKcInd = Drawing.new("Square")
+    swKcInd.Visible = true
+    swKcInd.Transparency = 1
+    swKcInd.Color = Color3.fromHex("#ffffff")
+    swKcInd.Filled = true
+    swKcInd.Size = Vector2.new(13, 13)
+    swKcInd.ZIndex = 1122
+    swKcInd.Corner = 10
+    table.insert(uiElements, swKcInd)
+    table.insert(advEspElements, swKcInd)
+
+    local swKcLabel = Drawing.new("Text")
+    swKcLabel.Visible = true
+    swKcLabel.Text = ""
+    swKcLabel.Size = 1
+    swKcLabel.Color = Color3.fromHex("#FFFFFF")
+    swKcLabel.Outline = true
+    swKcLabel.Font = Drawing.Fonts.UI
+    swKcLabel.Position = swKc.Position + Vector2.new(40, 7)
+    swKcLabel.ZIndex = 1121
+    table.insert(uiElements, swKcLabel)
+    table.insert(advEspElements, swKcLabel)
+
+    AdvSwitchKeycards = { Bg = swKcBg, Ind = swKcInd, IndBorder = swKcIndBorder, IsChecked = false }
+    UpdateSwitchColor(AdvSwitchKeycards.Bg, AdvSwitchKeycards.IsChecked)
+    if AdvSwitchKeycards.IsChecked then
+        AdvSwitchKeycards.IndBorder.Position = AdvSwitchKeycards.Bg.Position + Vector2.new(16, 1)
+        AdvSwitchKeycards.Ind.Position = AdvSwitchKeycards.Bg.Position + Vector2.new(16, 1)
+    else
+        AdvSwitchKeycards.IndBorder.Position = AdvSwitchKeycards.Bg.Position + Vector2.new(1, 1)
+        AdvSwitchKeycards.Ind.Position = AdvSwitchKeycards.Bg.Position + Vector2.new(1, 1)
+    end
+
+    local desc3 = Drawing.new("Text")
+    desc3.Visible = true
+    desc3.Transparency = 1
+    desc3.ZIndex = 1100
+    desc3.Color = Color3.fromHex("#6b7382")
+    desc3.Position = s3.Position + Vector2.new(19, 38)
+    desc3.Text = "Select preset option"
+    desc3.Size = 11
+    desc3.Center = false
+    desc3.Outline = true
+    desc3.Font = Drawing.Fonts.UI
+    table.insert(uiElements, desc3)
+    table.insert(advEspElements, desc3)
+
+    local dropdownItems = {
+        { name = "Option 1", checked = false },
+        { name = "Option 2", checked = false },
+        { name = "Option 3", checked = false },
+        { name = "Option 4", checked = false }
+    }
+    local dropdownOpen = false
+    local dropdownMain = Drawing.new("Square")
+    dropdownMain.Visible = true
+    dropdownMain.Transparency = 1
+    dropdownMain.Color = Color3.fromHex("#1b1a1b")
+    dropdownMain.Filled = true
+    dropdownMain.Size = Vector2.new(140, 24)
+    dropdownMain.Position = s3.Position + Vector2.new(25, 52)
+    dropdownMain.ZIndex = 1140
+    dropdownMain.Corner = 4
+    table.insert(uiElements, dropdownMain)
+    table.insert(advEspElements, dropdownMain)
+
+    local dropdownText = Drawing.new("Text")
+    dropdownText.Visible = true
+    dropdownText.Text = "Options: all"
+    dropdownText.Size = 14
+    dropdownText.Outline = true
+    dropdownText.Font = 0
+    dropdownText.Color = Color3.fromHex("#d1d4dd")
+    dropdownText.Position = dropdownMain.Position + Vector2.new(8, 4)
+    dropdownText.ZIndex = 1142
+    table.insert(uiElements, dropdownText)
+    table.insert(advEspElements, dropdownText)
+
+    local dropdownArrow = Drawing.new("Text")
+    dropdownArrow.Visible = true
+    dropdownArrow.Text = ""
+    dropdownArrow.Size = 12
+    dropdownArrow.Outline = true
+    dropdownArrow.Color = Color3.fromHex("#d1d4dd")
+    dropdownArrow.Position = dropdownMain.Position + Vector2.new(120, 4)
+    dropdownArrow.ZIndex = 1142
+    table.insert(uiElements, dropdownArrow)
+    table.insert(advEspElements, dropdownArrow)
+
+    local dropdownBoxes = {}
+    for idx, item in ipairs(dropdownItems) do
+        local box = Drawing.new("Square")
+        box.Visible = false
+        box.Transparency = 1
+        box.Color = Color3.fromHex("#111010")
+        box.Filled = true
+        box.Size = Vector2.new(140, 24)
+        box.Position = dropdownMain.Position + Vector2.new(0, 24 * idx)
+        box.ZIndex = 1145
+        box.Corner = 4
+        table.insert(uiElements, box)
+        table.insert(advEspElements, box)
+
+        local check = Drawing.new("Square")
+        check.Visible = false
+        check.Transparency = 1
+        check.Color = item.checked and Color3.fromHex("#04c838") or Color3.fromHex("#3a3a3a")
+        check.Filled = true
+        check.Size = Vector2.new(12, 12)
+        check.Position = box.Position + Vector2.new(6, 6)
+        check.ZIndex = 1146
+        check.Corner = 2
+        table.insert(uiElements, check)
+        table.insert(advEspElements, check)
+
+        local txt = Drawing.new("Text")
+        txt.Visible = false
+        txt.Text = item.name
+        txt.Size = 14
+        txt.Outline = true
+        txt.Font = 0
+        txt.Color = Color3.fromHex("#d1d4dd")
+        txt.Position = box.Position + Vector2.new(24, 4)
+        txt.ZIndex = 1146
+        table.insert(uiElements, txt)
+        table.insert(advEspElements, txt)
+
+        table.insert(dropdownBoxes, { Box = box, Check = check, Text = txt, Data = item })
+    end
+
+    local function UpdateDropdownText()
+        local sel = {}
+        for _, it in ipairs(dropdownItems) do
+            if it.checked then table.insert(sel, it.name) end
+        end
+        if #sel == 0 then dropdownText.Text = "Options: none"
+        elseif #sel == #dropdownItems then dropdownText.Text = "Options: all"
+        else dropdownText.Text = "Options: " .. table.concat(sel, ", ") end
+    end
+
+    local allElements = {
+        win2, closeBtn, closeText, win, title,
+        s1, s1b, title1, desc1, sw, swBg, swIndBorder, swInd, swLabel,
+        s2, s2b, title2, sliderTrack, sliderFill, sliderKnob, sliderValText, desc2,
+        s3, s3b, title3, swKc, swKcBg, swKcIndBorder, swKcInd, swKcLabel, desc3,
+        dropdownMain, dropdownText, dropdownArrow
+    }
+    for _, el in ipairs(allElements) do
+        table.insert(uiElements, el)
+    end
+    for _, box in ipairs(dropdownBoxes) do
+        table.insert(uiElements, box.Box)
+        table.insert(uiElements, box.Check)
+        table.insert(uiElements, box.Text)
+        table.insert(advEspElements, box.Box)
+        table.insert(advEspElements, box.Check)
+        table.insert(advEspElements, box.Text)
+    end
+
+    _G.adv_esp = {
+        elements = allElements,
+        dropdownMain = dropdownMain,
+        dropdownBoxes = dropdownBoxes,
+        dropdownItems = dropdownItems,
+        dropdownOpen = dropdownOpen,
+        dropdownText = dropdownText,
+        UpdateDropdown = UpdateDropdownText,
+        swESP4 = AdvSwitchESP4,
+        swKeycards = AdvSwitchKeycards,
+        sliderTrack = sliderTrack,
+        sliderKnob = sliderKnob,
+        sliderFill = sliderFill,
+        sliderValText = sliderValText,
+        closeBtn = closeBtn,
+        basePos = basePos,
+        sliderDragging = false,
+        blocks = {
+            {block = s1, border = s1b},
+            {block = s2, border = s2b},
+            {block = s3, border = s3b},
+        }
+    }
+end
+
+-- Функция создания расширенного окна Auto Manny (с новым функционалом)
+local function CreateAdvancedManny()
+    if advancedWindowOpen then
+        CloseAdvancedWindows()
+        return
+    end
+    advancedWindowOpen = true
+    Overlay.Visible = true
+
+    local basePos = VeryBackGUI.Position + Vector2.new(VeryBackGUI.Size.X + 20, 0)
+
+    local win2 = Drawing.new("Square")
+    win2.Visible = true
+    win2.Transparency = 1
+    win2.ZIndex = 1000
+    win2.Color = Color3.fromHex("#111010")
+    win2.Position = basePos
+    win2.Size = Vector2.new(286, 46)
+    win2.Filled = true
+    table.insert(uiElements, win2)
+    table.insert(advMannyElements, win2)
+
+    local closeBtn = Drawing.new("Square")
+    closeBtn.Visible = true
+    closeBtn.Transparency = 1
+    closeBtn.ZIndex = 1010
+    closeBtn.Color = Color3.fromHex("#111010")
+    closeBtn.Position = win2.Position + Vector2.new(245, 5.5)
+    closeBtn.Size = Vector2.new(28, 28)
+    closeBtn.Filled = true
+    table.insert(uiElements, closeBtn)
+    table.insert(advMannyElements, closeBtn)
+
+    local closeText = Drawing.new("Text")
+    closeText.Visible = true
+    closeText.Text = "X"
+    closeText.Size = 18
+    closeText.Center = true
+    closeText.Outline = true
+    closeText.Font = 0
+    closeText.Color = Color3.fromHex("#b5b5b5")
+    closeText.Position = closeBtn.Position + Vector2.new(14, 14)
+    closeText.ZIndex = 1012
+    table.insert(uiElements, closeText)
+    table.insert(advMannyElements, closeText)
+
+    local win = Drawing.new("Square")
+    win.Visible = true
+    win.Transparency = 1
+    win.ZIndex = 1000
+    win.Color = Color3.fromHex("#0c0c0d")
+    win.Position = win2.Position + Vector2.new(-1, 43)
+    win.Size = Vector2.new(287, 506)
+    win.Filled = true
+    table.insert(uiElements, win)
+    table.insert(advMannyElements, win)
+
+    local title = Drawing.new("Text")
+    title.Visible = true
+    title.Transparency = 1
+    title.ZIndex = 1070
+    title.Color = Color3.fromHex("#04c838")
+    title.Position = win2.Position + Vector2.new(16, 12)
+    title.Text = "Auto Manny Settings"
+    title.Size = 17
+    title.Center = false
+    title.Outline = true
+    title.Font = Drawing.Fonts.UI
+    table.insert(uiElements, title)
+    table.insert(advMannyElements, title)
+
+    local scrollY = win2.Position.Y + 43 + 35
+
+    -- Блок 1: глобальный переключатель
+    local s1 = Drawing.new("Square")
+    s1.Visible = true
+    s1.Transparency = 1
+    s1.ZIndex = 1040
+    s1.Color = Color3.fromHex("#111010")
+    s1.Position = Vector2.new(win2.Position.X + 16, scrollY + 9)
+    s1.Size = Vector2.new(247, 65)
+    s1.Filled = true
+    s1.Corner = 5
+    table.insert(uiElements, s1)
+    table.insert(advMannyElements, s1)
+
+    local s1b = Drawing.new("Square")
+    s1b.Visible = true
+    s1b.Transparency = 1
+    s1b.ZIndex = 1041
+    s1b.Color = Color3.fromHex("#1b1a1b")
+    s1b.Filled = false
+    s1b.Thickness = 1
+    s1b.Position = s1.Position
+    s1b.Size = s1.Size
+    s1b.Corner = 5
+    table.insert(uiElements, s1b)
+    table.insert(advMannyElements, s1b)
+
+    local title1 = Drawing.new("Text")
+    title1.Visible = true
+    title1.Transparency = 1
+    title1.ZIndex = 1080
+    title1.Color = Color3.fromHex("#d1d4dd")
+    title1.Position = s1.Position + Vector2.new(11, 14)
+    title1.Text = "Enable"
+    title1.Size = 14
+    title1.Center = false
+    title1.Outline = true
+    title1.Font = Drawing.Fonts.UI
+    table.insert(uiElements, title1)
+    table.insert(advMannyElements, title1)
+
+    local desc1 = Drawing.new("Text")
+    desc1.Visible = true
+    desc1.Transparency = 1
+    desc1.ZIndex = 1100
+    desc1.Color = Color3.fromHex("#6b7382")
+    desc1.Position = s1.Position + Vector2.new(19, 38)
+    desc1.Text = "Toggle Auto Manny"
+    desc1.Size = 11
+    desc1.Center = false
+    desc1.Outline = true
+    desc1.Font = Drawing.Fonts.UI
+    table.insert(uiElements, desc1)
+    table.insert(advMannyElements, desc1)
+
+    local sw = Drawing.new("Square")
+    sw.Visible = true
+    sw.Transparency = 1
+    sw.Color = Color3.fromHex("#000000")
+    sw.Thickness = 1
+    sw.Filled = false
+    sw.Size = Vector2.new(30, 15)
+    sw.Position = s1.Position + Vector2.new(207, 14)
+    sw.ZIndex = 1120
+    sw.Corner = 10
+    table.insert(uiElements, sw)
+    table.insert(advMannyElements, sw)
+
+    local swBg = Drawing.new("Square")
+    swBg.Visible = true
+    swBg.Transparency = 1
+    swBg.Color = Color3.fromHex("#cbcfd5")
+    swBg.Filled = true
+    swBg.Size = sw.Size
+    swBg.Position = sw.Position
+    swBg.ZIndex = 1120
+    swBg.Corner = 10
+    table.insert(uiElements, swBg)
+    table.insert(advMannyElements, swBg)
+
+    local swIndBorder = Drawing.new("Square")
+    swIndBorder.Visible = true
+    swIndBorder.Transparency = 1
+    swIndBorder.Color = Color3.fromHex("#000000")
+    swIndBorder.Thickness = 1
+    swIndBorder.Filled = false
+    swIndBorder.Size = Vector2.new(13, 13)
+    swIndBorder.ZIndex = 1122
+    swIndBorder.Corner = 10
+    table.insert(uiElements, swIndBorder)
+    table.insert(advMannyElements, swIndBorder)
+
+    local swInd = Drawing.new("Square")
+    swInd.Visible = true
+    swInd.Transparency = 1
+    swInd.Color = Color3.fromHex("#ffffff")
+    swInd.Filled = true
+    swInd.Size = Vector2.new(13, 13)
+    swInd.ZIndex = 1122
+    swInd.Corner = 10
+    table.insert(uiElements, swInd)
+    table.insert(advMannyElements, swInd)
+
+    local swLabel = Drawing.new("Text")
+    swLabel.Visible = true
+    swLabel.Text = ""
+    swLabel.Size = 1
+    swLabel.Color = Color3.fromHex("#FFFFFF")
+    swLabel.Outline = true
+    swLabel.Font = Drawing.Fonts.UI
+    swLabel.Position = sw.Position + Vector2.new(40, 7)
+    swLabel.ZIndex = 1121
+    table.insert(uiElements, swLabel)
+    table.insert(advMannyElements, swLabel)
+
+    AdvSwitchMannyEnable = { Bg = swBg, Ind = swInd, IndBorder = swIndBorder, IsChecked = mannyEnabled }
+    if AdvSwitchMannyEnable.IsChecked then
+        AdvSwitchMannyEnable.IndBorder.Position = AdvSwitchMannyEnable.Bg.Position + Vector2.new(16, 1)
+        AdvSwitchMannyEnable.Ind.Position = AdvSwitchMannyEnable.Bg.Position + Vector2.new(16, 1)
+    else
+        AdvSwitchMannyEnable.IndBorder.Position = AdvSwitchMannyEnable.Bg.Position + Vector2.new(1, 1)
+        AdvSwitchMannyEnable.Ind.Position = AdvSwitchMannyEnable.Bg.Position + Vector2.new(1, 1)
+    end
+    UpdateSwitchColor(AdvSwitchMannyEnable.Bg, AdvSwitchMannyEnable.IsChecked)
+
+    -- Блок 2: слайдер скорости
+    local s2 = Drawing.new("Square")
+    s2.Visible = true
+    s2.Transparency = 1
+    s2.ZIndex = 1060
+    s2.Color = Color3.fromHex("#111010")
+    s2.Position = s1.Position + Vector2.new(0, 80)
+    s2.Size = Vector2.new(247, 90)
+    s2.Filled = true
+    s2.Corner = 5
+    table.insert(uiElements, s2)
+    table.insert(advMannyElements, s2)
+
+    local s2b = Drawing.new("Square")
+    s2b.Visible = true
+    s2b.Transparency = 1
+    s2b.ZIndex = 1061
+    s2b.Color = Color3.fromHex("#1b1a1b")
+    s2b.Filled = false
+    s2b.Thickness = 1
+    s2b.Position = s2.Position
+    s2b.Size = s2.Size
+    s2b.Corner = 5
+    table.insert(uiElements, s2b)
+    table.insert(advMannyElements, s2b)
+
+    local title2 = Drawing.new("Text")
+    title2.Visible = true
+    title2.Transparency = 1
+    title2.ZIndex = 1080
+    title2.Color = Color3.fromHex("#d1d4dd")
+    title2.Position = s2.Position + Vector2.new(19, 12)
+    title2.Text = "Teleport Speed"
+    title2.Size = 14
+    title2.Center = false
+    title2.Outline = true
+    title2.Font = Drawing.Fonts.UI
+    table.insert(uiElements, title2)
+    table.insert(advMannyElements, title2)
+
+    local speedSliderTrack = Drawing.new("Square")
+    speedSliderTrack.Visible = true
+    speedSliderTrack.Transparency = 1
+    speedSliderTrack.Color = Color3.fromHex("#2a2a2a")
+    speedSliderTrack.Filled = true
+    speedSliderTrack.Size = Vector2.new(200, 4)
+    speedSliderTrack.Position = s2.Position + Vector2.new(19, 40)
+    speedSliderTrack.ZIndex = 1130
+    speedSliderTrack.Corner = 2
+    table.insert(uiElements, speedSliderTrack)
+    table.insert(advMannyElements, speedSliderTrack)
+
+    local speedFill = Drawing.new("Square")
+    speedFill.Visible = true
+    speedFill.Transparency = 1
+    speedFill.Color = Color3.fromHex("#04c838")
+    speedFill.Filled = true
+    speedFill.Size = Vector2.new(200 * ((mannySpeed-0.1)/(10-0.1)), 4)
+    speedFill.Position = speedSliderTrack.Position
+    speedFill.ZIndex = 1131
+    speedFill.Corner = 2
+    table.insert(uiElements, speedFill)
+    table.insert(advMannyElements, speedFill)
+
+    local speedKnob = Drawing.new("Circle")
+    speedKnob.Visible = true
+    speedKnob.Transparency = 1
+    speedKnob.Color = Color3.fromHex("#04c838")
+    speedKnob.Filled = true
+    speedKnob.Radius = 6
+    speedKnob.NumSides = 16
+    speedKnob.Position = speedSliderTrack.Position + Vector2.new(200 * ((mannySpeed-0.1)/(10-0.1)), 2)
+    speedKnob.ZIndex = 1132
+    table.insert(uiElements, speedKnob)
+    table.insert(advMannyElements, speedKnob)
+
+    local speedValText = Drawing.new("Text")
+    speedValText.Visible = true
+    speedValText.Text = string.format("%.1f", mannySpeed) .. "s"
+    speedValText.Size = 14
+    speedValText.Center = true
+    speedValText.Outline = true
+    speedValText.Color = Color3.fromHex("#ffffff")
+    speedValText.Position = speedSliderTrack.Position + Vector2.new(100, -20)
+    speedValText.ZIndex = 1133
+    table.insert(uiElements, speedValText)
+    table.insert(advMannyElements, speedValText)
+
+    local desc2 = Drawing.new("Text")
+    desc2.Visible = true
+    desc2.Transparency = 1
+    desc2.ZIndex = 1110
+    desc2.Color = Color3.fromHex("#6b7382")
+    desc2.Position = s2.Position + Vector2.new(32, 62)
+    desc2.Text = "Delay between teleports"
+    desc2.Size = 11
+    desc2.Center = false
+    desc2.Outline = true
+    desc2.Font = Drawing.Fonts.UI
+    table.insert(uiElements, desc2)
+    table.insert(advMannyElements, desc2)
+
+    AdvMannySpeedSlider = {
+        track = speedSliderTrack,
+        fill = speedFill,
+        knob = speedKnob,
+        text = speedValText,
+        dragging = false
+    }
+
+    local allElements = {
+        win2, closeBtn, closeText, win, title,
+        s1, s1b, title1, desc1, sw, swBg, swIndBorder, swInd, swLabel,
+        s2, s2b, title2, speedSliderTrack, speedFill, speedKnob, speedValText, desc2
+    }
+    for _, el in ipairs(allElements) do
+        table.insert(uiElements, el)
+        table.insert(advMannyElements, el)
+    end
+
+    _G.adv_manny = {
+        elements = allElements,
+        swEnable = AdvSwitchMannyEnable,
+        speedSlider = AdvMannySpeedSlider,
+        closeBtn = closeBtn,
+        basePos = basePos,
+        blocks = {
+            {block = s1, border = s1b},
+            {block = s2, border = s2b},
+        }
+    }
+end
+
+-- Новая функция цикла Auto Manny (рабочий код)
+local function mannyLoop()
+    while mannyEnabled do
+        local folder = workspace:FindFirstChild("MannyMishapCollectibles")
+        if folder then
+            local objects = folder:GetChildren()
+            if #objects > 0 then
+                for _, model in ipairs(objects) do
+                    if not mannyEnabled then break end
+                    -- Получаем корневую часть модели
+                    local part = model.PrimaryPart or model:FindFirstChildWhichIsA("BasePart")
+                    if part then
+                        local root = player.Character and player.Character:FindFirstChild("HumanoidRootPart")
+                        if root then
+                            root.Position = part.Position
+                        end
+                    end
+                    task.wait(mannySpeed)
+                end
+            else
+                task.wait(1)
+            end
+        else
+            task.wait(2)
+        end
+    end
+end
+
+-- Управление потоком
+local function updateMannyThread()
+    if mannyEnabled then
+        if not mannyThread or coroutine.status(mannyThread) == "dead" then
+            mannyThread = coroutine.create(mannyLoop)
+            coroutine.resume(mannyThread)
+        end
+    else
+        mannyThread = nil
+    end
+end
+
+-- Лоадер (без изменений)
+local MainLoader1 = Drawing.new("Square")
+MainLoader1.Visible = true
+MainLoader1.Transparency = 1
+MainLoader1.ZIndex = 10
+MainLoader1.Color = Color3.fromHex("#111010")
+MainLoader1.Position = Vector2.new(187, 146)
+MainLoader1.Size = Vector2.new(426, 289)
+MainLoader1.Filled = true
+MainLoader1.Corner = 6
+
+local MainLoader1_Border = Drawing.new("Square")
+MainLoader1_Border.Visible = true
+MainLoader1_Border.Transparency = 1
+MainLoader1_Border.ZIndex = 11
+MainLoader1_Border.Color = Color3.fromHex("#1b1a1b")
+MainLoader1_Border.Filled = false
+MainLoader1_Border.Thickness = 1
+MainLoader1_Border.Position = MainLoader1.Position
+MainLoader1_Border.Size = MainLoader1.Size
+MainLoader1_Border.Corner = 6
+
+local LogoLoader = Drawing.new("Text")
+LogoLoader.Visible = true
+LogoLoader.Transparency = 1
+LogoLoader.ZIndex = 20
+LogoLoader.Color = Color3.fromHex("#00c950")
+LogoLoader.Position = MainLoader1.Position + Vector2.new(23, 16)
+LogoLoader.Text = ">_"
+LogoLoader.Size = 26
+LogoLoader.Center = false
+LogoLoader.Outline = true
+LogoLoader.Font = Drawing.Fonts.Monospace
+
+local Initilizing = Drawing.new("Text")
+Initilizing.Visible = true
+Initilizing.Transparency = 1
+Initilizing.ZIndex = 30
+Initilizing.Color = Color3.fromHex("#00c950")
+Initilizing.Position = MainLoader1.Position + Vector2.new(67, 29)
+Initilizing.Text = "Initializing..."
+Initilizing.Size = 19
+Initilizing.Center = false
+Initilizing.Outline = true
+Initilizing.Font = Drawing.Fonts.Monospace
+
+local LoadLogs = {}
+for i=1,5 do
+    local log = Drawing.new("Text")
+    log.Visible = false
+    log.Transparency = 1
+    log.ZIndex = 40 + i
+    log.Color = Color3.fromHex("#00c950")
+    log.Position = MainLoader1.Position + Vector2.new(23, 72 + (i-1)*22)
+    log.Text = ""
+    log.Size = 14
+    log.Center = false
+    log.Outline = true
+    log.Font = Drawing.Fonts.Monospace
+    table.insert(LoadLogs, log)
+    table.insert(uiElements, log)
+end
+
+local AnimatingLineLoad = Drawing.new("Square")
+AnimatingLineLoad.Visible = true
+AnimatingLineLoad.Transparency = 1
+AnimatingLineLoad.ZIndex = 80
+AnimatingLineLoad.Color = Color3.fromHex("#00c950")
+AnimatingLineLoad.Position = MainLoader1.Position + Vector2.new(29.5, 262)
+AnimatingLineLoad.Size = Vector2.new(0, 6)
+AnimatingLineLoad.Filled = true
+AnimatingLineLoad.Corner = 8
+
+local Loadingscripttext = Drawing.new("Text")
+Loadingscripttext.Visible = true
+Loadingscripttext.Transparency = 1
+Loadingscripttext.ZIndex = 90
+Loadingscripttext.Color = Color3.fromHex("#6b7382")
+Loadingscripttext.Position = MainLoader1.Position + Vector2.new(29.5, 240)
+Loadingscripttext.Text = "Loading script.."
+Loadingscripttext.Size = 14
+Loadingscripttext.Center = false
+Loadingscripttext.Outline = true
+Loadingscripttext.Font = Drawing.Fonts.Monospace
+
+local CountLoadScript = Drawing.new("Text")
+CountLoadScript.Visible = true
+CountLoadScript.Transparency = 1
+CountLoadScript.ZIndex = 100
+CountLoadScript.Color = Color3.fromHex("#6b7382")
+CountLoadScript.Position = MainLoader1.Position + Vector2.new(381, 240)
+CountLoadScript.Text = "0/20"
+CountLoadScript.Size = 14
+CountLoadScript.Center = false
+CountLoadScript.Outline = true
+CountLoadScript.Font = Drawing.Fonts.Monospace
+
+local loadMessages = {
+    "Loading reality fap of garden",
+    "Initializing ESP, what, for this game need esp???",
+    "Bro, why we still didn't load superzov?",
+    "Loading UI",
+    "Loading Auto Manny module",
+    "Loading Notification system",
+    "Loading Watermark",
+    "Applying configurations",
+    "Ask Sammy for using this script",
+    "Loading Keycard ESP, oooops, it's not pressure",
+    "Kill Furry",
+    "Cook and eat Furry",
+    "Done",
+    "Verifying like FakeSammy",
+    "Starting rea usefat script",
+    "Ready"
+}
+
+local totalSteps = 16
+local maxWidth = 367
+local logIndex = 1
+local duration = 4.0
+local startTime = tick()
+
+local logQueue = {}
+
+local function AddLog(msg, status)
+    local color
+    if status == "success" then
+        color = Color3.fromHex("#00c950")
+        msg = "[+] " .. msg
+    elseif status == "fail" then
+        color = Color3.fromHex("#c70000")
+        msg = "[-] " .. msg
+    elseif status == "warn" then
+        color = Color3.fromHex("#bac700")
+        msg = "[?] " .. msg
+    end
+    table.insert(logQueue, { text = msg, color = color })
+    if #logQueue > 5 then
+        table.remove(logQueue, 1)
+    end
+    for i, log in ipairs(LoadLogs) do
+        if i <= #logQueue then
+            log.Visible = true
+            log.Text = logQueue[i].text
+            log.Color = logQueue[i].color
+        else
+            log.Visible = false
+        end
+    end
+end
+
+spawn(function()
+    while tick() - startTime < duration do
+        local elapsed = tick() - startTime
+        local progress = elapsed / duration
+        AnimatingLineLoad.Size = Vector2.new(maxWidth * progress, 6)
+        local step = math.floor(progress * totalSteps) + 1
+        if step > totalSteps then step = totalSteps end
+        CountLoadScript.Text = step .. "/" .. totalSteps
+        if step > logIndex and logIndex <= totalSteps then
+            AddLog(loadMessages[logIndex], "success")
+            logIndex = logIndex + 1
+        end
+        wait()
+    end
+    AnimatingLineLoad.Size = Vector2.new(maxWidth, 6)
+    CountLoadScript.Text = totalSteps .. "/" .. totalSteps
+    while logIndex <= totalSteps do
+        AddLog(loadMessages[logIndex], "success")
+        logIndex = logIndex + 1
+        wait(0.1)
+    end
+    wait(0.5)
+    AddLog("Script loaded successfully", "success")
+    wait(1)
+    MainLoader1.Visible = false
+    MainLoader1_Border.Visible = false
+    LogoLoader.Visible = false
+    Initilizing.Visible = false
+    for _, log in ipairs(LoadLogs) do
+        log.Visible = false
+    end
+    AnimatingLineLoad.Visible = false
+    Loadingscripttext.Visible = false
+    CountLoadScript.Visible = false
+    VeryBackGUI.Visible = true
+    VeryBackGUI_Border.Visible = true
+    Line1.Visible = true
+    BackGUItabs.Visible = true
+    Line3.Visible = true
+    Line2.Visible = true
+    TextRATHUB.Visible = true
+    TextLOGO.Visible = true
+    BackContentTabs.Visible = true
+    BackContentTabs_Border.Visible = true
+    BackGUI2.Visible = true
+    BackGUI2_Border.Visible = true
+    TabVisuals.Visible = true
+    TabVisuals_Text.Visible = true
+    TabExploits.Visible = true
+    TabExploits_Text.Visible = true
+    TabMisc.Visible = true
+    TabMisc_Text.Visible = true
+    TabInfo.Visible = true
+    TabInfo_Text.Visible = true
+    Square16.Visible = true
+    HideAllTabs()
+    SetActiveTab("Visuals", TabVisuals, TabVisuals_Border, TabVisuals_Text)
+    PresetContent.Visible = true; PresetContent_Border.Visible = true
+    PresetTitle.Visible = true; PresetDesc.Visible = true
+    SwitchPreset.Visible = true; SwitchPreset_Bg.Visible = true
+    SwitchPreset_IndBorder.Visible = true; SwitchPreset_Ind.Visible = true
+    SwitchPreset_Label.Visible = true
+    setrobloxinput(false)
+end)
+
+-- Главный цикл обработки ввода
+while true do
+    wait(0.01)
+    if pcall(ismouse1pressed) and isrbxactive() then
+        local mouse1 = ismouse1pressed()
+        local mouse2 = ismouse2pressed()
+        local mPos = Vector2.new(Mouse.X, Mouse.Y)
+
+        -- Обработка клавиши закрытия (F1)
+        if iskeypressed(closeKey) then
+            local newState = not VeryBackGUI.Visible
+            VeryBackGUI.Visible = newState
+            VeryBackGUI_Border.Visible = newState
+            Line1.Visible = newState
+            BackGUItabs.Visible = newState
+            Line3.Visible = newState
+            Line2.Visible = newState
+            TextRATHUB.Visible = newState
+            TextLOGO.Visible = newState
+            BackContentTabs.Visible = newState
+            BackContentTabs_Border.Visible = newState
+            BackGUI2.Visible = newState
+            BackGUI2_Border.Visible = newState
+            TabVisuals.Visible = newState
+            TabVisuals_Text.Visible = newState
+            TabExploits.Visible = newState
+            TabExploits_Text.Visible = newState
+            TabMisc.Visible = newState
+            TabMisc_Text.Visible = newState
+            TabInfo.Visible = newState
+            TabInfo_Text.Visible = newState
+            Square16.Visible = newState
+            TabVisuals_Border.Visible = newState and (activeTab == "Visuals")
+            TabExploits_Border.Visible = newState and (activeTab == "Exploits")
+            TabMisc_Border.Visible = newState and (activeTab == "Misc")
+            TabInfo_Border.Visible = newState and (activeTab == "Info")
+            if activeTab == "Visuals" then
+                PresetContent.Visible = newState
+                PresetContent_Border.Visible = newState
+                PresetTitle.Visible = newState
+                PresetDesc.Visible = newState
+                SwitchPreset.Visible = newState
+                SwitchPreset_Bg.Visible = newState
+                SwitchPreset_IndBorder.Visible = newState
+                SwitchPreset_Ind.Visible = newState
+                SwitchPreset_Label.Visible = newState
+            elseif activeTab == "Exploits" then
+                ContentExploits1.Visible = newState
+                ContentExploits1_Border.Visible = newState
+                MannyTitle.Visible = newState
+                MannyDesc.Visible = newState
+                SwitchManny.Visible = newState
+                SwitchManny_Bg.Visible = newState
+                SwitchManny_IndBorder.Visible = newState
+                SwitchManny_Ind.Visible = newState
+                SwitchManny_Label.Visible = newState
+            elseif activeTab == "Misc" then
+                InvisibleSquare.Visible = newState
+                HereNoContentText.Visible = newState
+            elseif activeTab == "Info" then
+                ContentInfo1.Visible = newState
+                ContentInfo1_Border.Visible = newState
+                TextInfo1.Visible = newState
+                TextInfo2.Visible = newState
+                ContentInfo2.Visible = newState
+                ContentInfo2_Border.Visible = newState
+                TextInfo3.Visible = newState
+                for _, line in ipairs(ChangelogLines) do
+                    line.Visible = newState
+                end
+            end
+            if not newState and advancedWindowOpen then
+                CloseAdvancedWindows()
+            end
+            if newState then
+                setrobloxinput(false)
+            else
+                setrobloxinput(true)
+            end
+            wait(0.2)
+        end
+
+        -- Подсветка вкладок при наведении
+        local tabs = {
+            {btn = TabVisuals, border = TabVisuals_Border, txt = TabVisuals_Text, name = "Visuals"},
+            {btn = TabExploits, border = TabExploits_Border, txt = TabExploits_Text, name = "Exploits"},
+            {btn = TabMisc, border = TabMisc_Border, txt = TabMisc_Text, name = "Misc"},
+            {btn = TabInfo, border = TabInfo_Border, txt = TabInfo_Text, name = "Info"}
+        }
+        for _, t in ipairs(tabs) do
+            if t.btn.Visible and mPos.X >= t.btn.Position.X and mPos.X <= t.btn.Position.X + t.btn.Size.X and
+               mPos.Y >= t.btn.Position.Y and mPos.Y <= t.btn.Position.Y + t.btn.Size.Y then
+                if t.name ~= activeTab then
+                    t.btn.Color = Color3.fromHex("#1a1a1a")
+                end
+            else
+                if t.name ~= activeTab then
+                    t.btn.Color = Color3.fromHex("#0c0c0d")
+                end
+            end
+        end
+
+        -- Подсветка блоков контента
+        local blocks = {
+            {block = PresetContent, border = PresetContent_Border, visible = PresetContent.Visible},
+            {block = ContentExploits1, border = ContentExploits1_Border, visible = ContentExploits1.Visible},
+            {block = ContentInfo1, border = ContentInfo1_Border, visible = ContentInfo1.Visible},
+            {block = ContentInfo2, border = ContentInfo2_Border, visible = ContentInfo2.Visible},
+        }
+        for _, b in ipairs(blocks) do
+            if b.visible and mPos.X >= b.block.Position.X and mPos.X <= b.block.Position.X + b.block.Size.X and
+               mPos.Y >= b.block.Position.Y and mPos.Y <= b.block.Position.Y + b.block.Size.Y then
+                b.border.Color = Color3.fromHex("#00c950")
+            else
+                b.border.Color = Color3.fromHex("#1b1a1b")
+            end
+        end
+
+        -- Подсветка блоков в расширенных окнах
+        if advancedWindowOpen then
+            if _G.adv_esp then
+                for _, item in ipairs(_G.adv_esp.blocks) do
+                    local block = item.block
+                    local border = item.border
+                    if block.Visible and mPos.X >= block.Position.X and mPos.X <= block.Position.X + block.Size.X and
+                       mPos.Y >= block.Position.Y and mPos.Y <= block.Position.Y + block.Size.Y then
+                        border.Color = Color3.fromHex("#00c950")
+                    else
+                        border.Color = Color3.fromHex("#1b1a1b")
+                    end
+                end
+            end
+            if _G.adv_manny then
+                for _, item in ipairs(_G.adv_manny.blocks) do
+                    local block = item.block
+                    local border = item.border
+                    if block.Visible and mPos.X >= block.Position.X and mPos.X <= block.Position.X + block.Size.X and
+                       mPos.Y >= block.Position.Y and mPos.Y <= block.Position.Y + block.Size.Y then
+                        border.Color = Color3.fromHex("#00c950")
+                    else
+                        border.Color = Color3.fromHex("#1b1a1b")
+                    end
+                end
+            end
+        end
+
+        -- Обработка кликов мыши
+        if mouse1 and not lastMouse1 then
+            -- Переключение вкладок
+            if TabVisuals.Visible and mPos.X >= TabVisuals.Position.X and mPos.X <= TabVisuals.Position.X + TabVisuals.Size.X and
+               mPos.Y >= TabVisuals.Position.Y and mPos.Y <= TabVisuals.Position.Y + TabVisuals.Size.Y then
+                HideAllTabs()
+                PresetContent.Visible = true; PresetContent_Border.Visible = true
+                PresetTitle.Visible = true; PresetDesc.Visible = true
+                SwitchPreset.Visible = true; SwitchPreset_Bg.Visible = true
+                SwitchPreset_IndBorder.Visible = true; SwitchPreset_Ind.Visible = true
+                SwitchPreset_Label.Visible = true
+                SetActiveTab("Visuals", TabVisuals, TabVisuals_Border, TabVisuals_Text)
+            end
+            if TabExploits.Visible and mPos.X >= TabExploits.Position.X and mPos.X <= TabExploits.Position.X + TabExploits.Size.X and
+               mPos.Y >= TabExploits.Position.Y and mPos.Y <= TabExploits.Position.Y + TabExploits.Size.Y then
+                HideAllTabs()
+                ContentExploits1.Visible = true; ContentExploits1_Border.Visible = true
+                MannyTitle.Visible = true; MannyDesc.Visible = true
+                SwitchManny.Visible = true; SwitchManny_Bg.Visible = true
+                SwitchManny_IndBorder.Visible = true; SwitchManny_Ind.Visible = true
+                SwitchManny_Label.Visible = true
+                SetActiveTab("Exploits", TabExploits, TabExploits_Border, TabExploits_Text)
+            end
+            if TabMisc.Visible and mPos.X >= TabMisc.Position.X and mPos.X <= TabMisc.Position.X + TabMisc.Size.X and
+               mPos.Y >= TabMisc.Position.Y and mPos.Y <= TabMisc.Position.Y + TabMisc.Size.Y then
+                HideAllTabs()
+                InvisibleSquare.Visible = true; HereNoContentText.Visible = true
+                SetActiveTab("Misc", TabMisc, TabMisc_Border, TabMisc_Text)
+            end
+            if TabInfo.Visible and mPos.X >= TabInfo.Position.X and mPos.X <= TabInfo.Position.X + TabInfo.Size.X and
+               mPos.Y >= TabInfo.Position.Y and mPos.Y <= TabInfo.Position.Y + TabInfo.Size.Y then
+                HideAllTabs()
+                ContentInfo1.Visible = true; ContentInfo1_Border.Visible = true
+                TextInfo1.Visible = true; TextInfo2.Visible = true
+                ContentInfo2.Visible = true; ContentInfo2_Border.Visible = true
+                TextInfo3.Visible = true
+                for _, line in ipairs(ChangelogLines) do
+                    line.Visible = true
+                end
+                SetActiveTab("Info", TabInfo, TabInfo_Border, TabInfo_Text)
+            end
+
+            -- Переключатели на главной
+            if SwitchPreset_Label.Visible and mPos.X >= SwitchPreset.Position.X and mPos.X <= SwitchPreset.Position.X + SwitchPreset.Size.X and
+               mPos.Y >= SwitchPreset.Position.Y and mPos.Y <= SwitchPreset.Position.Y + SwitchPreset.Size.Y then
+                MainSwitchESP.IsChecked = not MainSwitchESP.IsChecked
+                UpdateSwitchColor(SwitchPreset_Bg, MainSwitchESP.IsChecked)
+                if MainSwitchESP.IsChecked then
+                    SwitchPreset_IndBorder.Position = SwitchPreset.Position + Vector2.new(11, 1)
+                    SwitchPreset_Ind.Position = SwitchPreset.Position + Vector2.new(11, 1)
+                else
+                    SwitchPreset_IndBorder.Position = SwitchPreset.Position + Vector2.new(1, 1)
+                    SwitchPreset_Ind.Position = SwitchPreset.Position + Vector2.new(1, 1)
+                end
+                if AdvSwitchESP4 then
+                    AdvSwitchESP4.IsChecked = MainSwitchESP.IsChecked
+                    UpdateSwitchColor(AdvSwitchESP4.Bg, AdvSwitchESP4.IsChecked)
+                    if AdvSwitchESP4.IsChecked then
+                        AdvSwitchESP4.IndBorder.Position = AdvSwitchESP4.Bg.Position + Vector2.new(16, 1)
+                        AdvSwitchESP4.Ind.Position = AdvSwitchESP4.Bg.Position + Vector2.new(16, 1)
+                    else
+                        AdvSwitchESP4.IndBorder.Position = AdvSwitchESP4.Bg.Position + Vector2.new(1, 1)
+                        AdvSwitchESP4.Ind.Position = AdvSwitchESP4.Bg.Position + Vector2.new(1, 1)
+                    end
+                end
+            end
+            if SwitchManny_Label.Visible and mPos.X >= SwitchManny.Position.X and mPos.X <= SwitchManny.Position.X + SwitchManny.Size.X and
+               mPos.Y >= SwitchManny.Position.Y and mPos.Y <= SwitchManny.Position.Y + SwitchManny.Size.Y then
+                mannyEnabled = not mannyEnabled
+                MainSwitchManny.IsChecked = mannyEnabled
+                UpdateSwitchColor(SwitchManny_Bg, mannyEnabled)
+                if mannyEnabled then
+                    SwitchManny_IndBorder.Position = SwitchManny.Position + Vector2.new(11, 1)
+                    SwitchManny_Ind.Position = SwitchManny.Position + Vector2.new(11, 1)
+                else
+                    SwitchManny_IndBorder.Position = SwitchManny.Position + Vector2.new(1, 1)
+                    SwitchManny_Ind.Position = SwitchManny.Position + Vector2.new(1, 1)
+                end
+                if AdvSwitchMannyEnable then
+                    AdvSwitchMannyEnable.IsChecked = mannyEnabled
+                    UpdateSwitchColor(AdvSwitchMannyEnable.Bg, AdvSwitchMannyEnable.IsChecked)
+                    if AdvSwitchMannyEnable.IsChecked then
+                        AdvSwitchMannyEnable.IndBorder.Position = AdvSwitchMannyEnable.Bg.Position + Vector2.new(16, 1)
+                        AdvSwitchMannyEnable.Ind.Position = AdvSwitchMannyEnable.Bg.Position + Vector2.new(16, 1)
+                    else
+                        AdvSwitchMannyEnable.IndBorder.Position = AdvSwitchMannyEnable.Bg.Position + Vector2.new(1, 1)
+                        AdvSwitchMannyEnable.Ind.Position = AdvSwitchMannyEnable.Bg.Position + Vector2.new(1, 1)
+                    end
+                end
+                updateMannyThread()
+            end
+
+            -- Перетаскивание главного окна
+            if VeryBackGUI.Visible and mPos.X >= VeryBackGUI.Position.X and mPos.X <= VeryBackGUI.Position.X + VeryBackGUI.Size.X and
+               mPos.Y >= VeryBackGUI.Position.Y and mPos.Y <= VeryBackGUI.Position.Y + VeryBackGUI.Size.Y then
+                dragging = true
+                dragStart = mPos
+                startPos = VeryBackGUI.Position
+            end
+
+            -- Перетаскивание водмарка
+            if MainWatermark.Visible and mPos.X >= MainWatermark.Position.X and mPos.X <= MainWatermark.Position.X + MainWatermark.Size.X and
+               mPos.Y >= MainWatermark.Position.Y and mPos.Y <= MainWatermark.Position.Y + MainWatermark.Size.Y then
+                watermarkDragging = true
+                watermarkDragStart = mPos
+                watermarkStartPos = MainWatermark.Position
+            end
+
+            -- Клики в расширенных окнах
+            if advancedWindowOpen then
+                if _G.adv_esp then
+                    local a = _G.adv_esp
+                    if a.swESP4 and a.swESP4.Bg and a.swESP4.Bg.Visible and mPos.X >= a.swESP4.Bg.Position.X and mPos.X <= a.swESP4.Bg.Position.X + a.swESP4.Bg.Size.X and
+                       mPos.Y >= a.swESP4.Bg.Position.Y and mPos.Y <= a.swESP4.Bg.Position.Y + a.swESP4.Bg.Size.Y then
+                        a.swESP4.IsChecked = not a.swESP4.IsChecked
+                        UpdateSwitchColor(a.swESP4.Bg, a.swESP4.IsChecked)
+                        if a.swESP4.IsChecked then
+                            a.swESP4.IndBorder.Position = a.swESP4.Bg.Position + Vector2.new(16, 1)
+                            a.swESP4.Ind.Position = a.swESP4.Bg.Position + Vector2.new(16, 1)
+                        else
+                            a.swESP4.IndBorder.Position = a.swESP4.Bg.Position + Vector2.new(1, 1)
+                            a.swESP4.Ind.Position = a.swESP4.Bg.Position + Vector2.new(1, 1)
+                        end
+                        MainSwitchESP.IsChecked = a.swESP4.IsChecked
+                        UpdateSwitchColor(SwitchPreset_Bg, MainSwitchESP.IsChecked)
+                        if MainSwitchESP.IsChecked then
+                            SwitchPreset_IndBorder.Position = SwitchPreset.Position + Vector2.new(11, 1)
+                            SwitchPreset_Ind.Position = SwitchPreset.Position + Vector2.new(11, 1)
+                        else
+                            SwitchPreset_IndBorder.Position = SwitchPreset.Position + Vector2.new(1, 1)
+                            SwitchPreset_Ind.Position = SwitchPreset.Position + Vector2.new(1, 1)
+                        end
+                    end
+                    if a.swKeycards and a.swKeycards.Bg and a.swKeycards.Bg.Visible and mPos.X >= a.swKeycards.Bg.Position.X and mPos.X <= a.swKeycards.Bg.Position.X + a.swKeycards.Bg.Size.X and
+                       mPos.Y >= a.swKeycards.Bg.Position.Y and mPos.Y <= a.swKeycards.Bg.Position.Y + a.swKeycards.Bg.Size.Y then
+                        a.swKeycards.IsChecked = not a.swKeycards.IsChecked
+                        UpdateSwitchColor(a.swKeycards.Bg, a.swKeycards.IsChecked)
+                        if a.swKeycards.IsChecked then
+                            a.swKeycards.IndBorder.Position = a.swKeycards.Bg.Position + Vector2.new(16, 1)
+                            a.swKeycards.Ind.Position = a.swKeycards.Bg.Position + Vector2.new(16, 1)
+                        else
+                            a.swKeycards.IndBorder.Position = a.swKeycards.Bg.Position + Vector2.new(1, 1)
+                            a.swKeycards.Ind.Position = a.swKeycards.Bg.Position + Vector2.new(1, 1)
+                        end
+                    end
+                    if a.dropdownMain and a.dropdownMain.Visible and mPos.X >= a.dropdownMain.Position.X and mPos.X <= a.dropdownMain.Position.X + a.dropdownMain.Size.X and
+                       mPos.Y >= a.dropdownMain.Position.Y and mPos.Y <= a.dropdownMain.Position.Y + a.dropdownMain.Size.Y then
+                        a.dropdownOpen = not a.dropdownOpen
+                        for _, box in ipairs(a.dropdownBoxes) do
+                            if box and box.Box then
+                                box.Box.Visible = a.dropdownOpen
+                                box.Check.Visible = a.dropdownOpen
+                                box.Text.Visible = a.dropdownOpen
+                            end
+                        end
+                    end
+                    if a.dropdownOpen then
+                        for _, box in ipairs(a.dropdownBoxes) do
+                            if box and box.Box and box.Box.Visible and mPos.X >= box.Box.Position.X and mPos.X <= box.Box.Position.X + box.Box.Size.X and
+                               mPos.Y >= box.Box.Position.Y and mPos.Y <= box.Box.Position.Y + box.Box.Size.Y then
+                                box.Data.checked = not box.Data.checked
+                                box.Check.Color = box.Data.checked and Color3.fromHex("#04c838") or Color3.fromHex("#3a3a3a")
+                                a.UpdateDropdown()
+                                break
+                            end
+                        end
+                    end
+                    if a.sliderTrack and a.sliderTrack.Visible and mPos.X >= a.sliderTrack.Position.X and mPos.X <= a.sliderTrack.Position.X + a.sliderTrack.Size.X and
+                       mPos.Y >= a.sliderTrack.Position.Y-10 and mPos.Y <= a.sliderTrack.Position.Y+10 then
+                        a.sliderDragging = true
+                        local relX = mPos.X - a.sliderTrack.Position.X
+                        local newVal = 15 + (relX / a.sliderTrack.Size.X) * (500-15)
+                        newVal = math.max(15, math.min(500, newVal))
+                        a.sliderValText.Text = tostring(math.floor(newVal))
+                        a.sliderFill.Size = Vector2.new(a.sliderTrack.Size.X * ((newVal-15)/(500-15)), a.sliderFill.Size.Y)
+                        a.sliderKnob.Position = a.sliderTrack.Position + Vector2.new(a.sliderTrack.Size.X * ((newVal-15)/(500-15)), 2)
+                    end
+                end
+                if _G.adv_manny then
+                    local a = _G.adv_manny
+                    if a.swEnable and a.swEnable.Bg and a.swEnable.Bg.Visible and mPos.X >= a.swEnable.Bg.Position.X and mPos.X <= a.swEnable.Bg.Position.X + a.swEnable.Bg.Size.X and
+                       mPos.Y >= a.swEnable.Bg.Position.Y and mPos.Y <= a.swEnable.Bg.Position.Y + a.swEnable.Bg.Size.Y then
+                        a.swEnable.IsChecked = not a.swEnable.IsChecked
+                        UpdateSwitchColor(a.swEnable.Bg, a.swEnable.IsChecked)
+                        if a.swEnable.IsChecked then
+                            a.swEnable.IndBorder.Position = a.swEnable.Bg.Position + Vector2.new(16, 1)
+                            a.swEnable.Ind.Position = a.swEnable.Bg.Position + Vector2.new(16, 1)
+                        else
+                            a.swEnable.IndBorder.Position = a.swEnable.Bg.Position + Vector2.new(1, 1)
+                            a.swEnable.Ind.Position = a.swEnable.Bg.Position + Vector2.new(1, 1)
+                        end
+                        mannyEnabled = a.swEnable.IsChecked
+                        MainSwitchManny.IsChecked = mannyEnabled
+                        UpdateSwitchColor(SwitchManny_Bg, mannyEnabled)
+                        if mannyEnabled then
+                            SwitchManny_IndBorder.Position = SwitchManny.Position + Vector2.new(11, 1)
+                            SwitchManny_Ind.Position = SwitchManny.Position + Vector2.new(11, 1)
+                        else
+                            SwitchManny_IndBorder.Position = SwitchManny.Position + Vector2.new(1, 1)
+                            SwitchManny_Ind.Position = SwitchManny.Position + Vector2.new(1, 1)
+                        end
+                        updateMannyThread()
+                    end
+                    if a.speedSlider and a.speedSlider.track and a.speedSlider.track.Visible and mPos.X >= a.speedSlider.track.Position.X and mPos.X <= a.speedSlider.track.Position.X + a.speedSlider.track.Size.X and
+                       mPos.Y >= a.speedSlider.track.Position.Y-10 and mPos.Y <= a.speedSlider.track.Position.Y+10 then
+                        a.speedSlider.dragging = true
+                        local relX = mPos.X - a.speedSlider.track.Position.X
+                        local newVal = 0.1 + (relX / a.speedSlider.track.Size.X) * (10-0.1)
+                        newVal = math.max(0.1, math.min(10, newVal))
+                        mannySpeed = newVal
+                        a.speedSlider.text.Text = string.format("%.1f", newVal) .. "s"
+                        a.speedSlider.fill.Size = Vector2.new(a.speedSlider.track.Size.X * ((newVal-0.1)/(10-0.1)), a.speedSlider.fill.Size.Y)
+                        a.speedSlider.knob.Position = a.speedSlider.track.Position + Vector2.new(a.speedSlider.track.Size.X * ((newVal-0.1)/(10-0.1)), 2)
+                    end
+                end
+            end
+        end
+
+        -- Правый клик для открытия расширенных настроек
+        if mouse2 and not lastMouse2 then
+            if PresetContent.Visible and mPos.X >= PresetContent.Position.X and mPos.X <= PresetContent.Position.X + PresetContent.Size.X and
+               mPos.Y >= PresetContent.Position.Y and mPos.Y <= PresetContent.Position.Y + PresetContent.Size.Y then
+                if advancedWindowOpen then
+                    CloseAdvancedWindows()
+                else
+                    CreateAdvancedESP()
+                end
+            end
+            if ContentExploits1.Visible and mPos.X >= ContentExploits1.Position.X and mPos.X <= ContentExploits1.Position.X + ContentExploits1.Size.X and
+               mPos.Y >= ContentExploits1.Position.Y and mPos.Y <= ContentExploits1.Position.Y + ContentExploits1.Size.Y then
+                if advancedWindowOpen then
+                    CloseAdvancedWindows()
+                else
+                    CreateAdvancedManny()
+                end
+            end
+        end
+
+        -- Окончание перетаскивания
+        if not mouse1 and lastMouse1 then
+            dragging = false
+            watermarkDragging = false
+            if _G.adv_esp then _G.adv_esp.sliderDragging = false end
+            if _G.adv_manny and _G.adv_manny.speedSlider then _G.adv_manny.speedSlider.dragging = false end
+        end
+
+        -- Перетаскивание главного окна
+        if dragging and mouse1 then
+            local delta = mPos - dragStart
+            VeryBackGUI.Position = startPos + delta
+            VeryBackGUI_Border.Position = VeryBackGUI.Position
+            Line1.Position = VeryBackGUI.Position + Vector2.new(0, 41.5)
+            BackGUItabs.Position = VeryBackGUI.Position + Vector2.new(0, 42)
+            Line3.Position = VeryBackGUI.Position + Vector2.new(-2.5, 84)
+            Line2.Position = VeryBackGUI.Position + Vector2.new(0, 42)
+            TextRATHUB.Position = VeryBackGUI.Position + Vector2.new(48, 13)
+            TextLOGO.Position = VeryBackGUI.Position + Vector2.new(20, 13)
+            BackContentTabs.Position = VeryBackGUI.Position + Vector2.new(0, 84)
+            BackContentTabs_Border.Position = BackContentTabs.Position
+            BackGUI2.Position = VeryBackGUI.Position + Vector2.new(0, 488)
+            BackGUI2_Border.Position = BackGUI2.Position
+            TabVisuals.Position = VeryBackGUI.Position + Vector2.new(11, 51.5)
+            TabVisuals_Text.Position = TabVisuals.Position + Vector2.new(86/2, 22/2)
+            TabVisuals_Border.Position = TabVisuals.Position
+            TabExploits.Position = VeryBackGUI.Position + Vector2.new(105, 51.5)
+            TabExploits_Text.Position = TabExploits.Position + Vector2.new(86/2, 22/2)
+            TabExploits_Border.Position = TabExploits.Position
+            TabMisc.Position = VeryBackGUI.Position + Vector2.new(197, 52)
+            TabMisc_Text.Position = TabMisc.Position + Vector2.new(86/2, 22/2)
+            TabMisc_Border.Position = TabMisc.Position
+            TabInfo.Position = VeryBackGUI.Position + Vector2.new(290, 52)
+            TabInfo_Text.Position = TabInfo.Position + Vector2.new(86/2, 22/2)
+            TabInfo_Border.Position = TabInfo.Position
+            Square16.Position = VeryBackGUI.Position + Vector2.new(567, 41.5)
+
+            PresetContent.Position = VeryBackGUI.Position + Vector2.new(20, 97)
+            PresetContent_Border.Position = PresetContent.Position
+            PresetTitle.Position = VeryBackGUI.Position + Vector2.new(30, 110)
+            PresetDesc.Position = VeryBackGUI.Position + Vector2.new(36, 125)
+            SwitchPreset.Position = VeryBackGUI.Position + Vector2.new(210, 106)
+            SwitchPreset_Bg.Position = SwitchPreset.Position
+            SwitchPreset_Label.Position = SwitchPreset.Position + Vector2.new(35, 3.5)
+            if MainSwitchESP.IsChecked then
+                SwitchPreset_IndBorder.Position = SwitchPreset.Position + Vector2.new(11, 1)
+                SwitchPreset_Ind.Position = SwitchPreset.Position + Vector2.new(11, 1)
+            else
+                SwitchPreset_IndBorder.Position = SwitchPreset.Position + Vector2.new(1, 1)
+                SwitchPreset_Ind.Position = SwitchPreset.Position + Vector2.new(1, 1)
+            end
+
+            ContentExploits1.Position = VeryBackGUI.Position + Vector2.new(20, 97)
+            ContentExploits1_Border.Position = ContentExploits1.Position
+            MannyTitle.Position = VeryBackGUI.Position + Vector2.new(35, 109)
+            MannyDesc.Position = VeryBackGUI.Position + Vector2.new(43, 126)
+            SwitchManny.Position = VeryBackGUI.Position + Vector2.new(212, 109)
+            SwitchManny_Bg.Position = SwitchManny.Position
+            SwitchManny_Label.Position = SwitchManny.Position + Vector2.new(35, 3.5)
+            if MainSwitchManny.IsChecked then
+                SwitchManny_IndBorder.Position = SwitchManny.Position + Vector2.new(11, 1)
+                SwitchManny_Ind.Position = SwitchManny.Position + Vector2.new(11, 1)
+            else
+                SwitchManny_IndBorder.Position = SwitchManny.Position + Vector2.new(1, 1)
+                SwitchManny_Ind.Position = SwitchManny.Position + Vector2.new(1, 1)
+            end
+
+            InvisibleSquare.Position = VeryBackGUI.Position + Vector2.new(-87, 96)
+            HereNoContentText.Position = VeryBackGUI.Position + Vector2.new(30, 116)
+
+            ContentInfo1.Position = VeryBackGUI.Position + Vector2.new(11, 101)
+            ContentInfo1_Border.Position = ContentInfo1.Position
+            TextInfo1.Position = VeryBackGUI.Position + Vector2.new(20, 139)
+            TextInfo2.Position = VeryBackGUI.Position + Vector2.new(28, 112)
+            ContentInfo2.Position = VeryBackGUI.Position + Vector2.new(11, 185)
+            ContentInfo2_Border.Position = ContentInfo2.Position
+            TextInfo3.Position = VeryBackGUI.Position + Vector2.new(26, 199)
+            for i, line in ipairs(ChangelogLines) do
+                line.Position = ContentInfo2.Position + Vector2.new(23, 30 + (i-1)*15)
+            end
+
+            if advancedWindowOpen then
+                UpdateAdvancedPositions()
+            end
+        end
+
+        -- Перетаскивание водмарка
+        if watermarkDragging and mouse1 then
+            local delta = mPos - watermarkDragStart
+            MainWatermark.Position = watermarkStartPos + delta
+            MainWatermark_Border.Position = MainWatermark.Position
+            LineWatermark1.Position = MainWatermark.Position + Vector2.new(35, 36.5)
+            TextRATHUB34.Position = MainWatermark.Position + Vector2.new(62, 12.5)
+            LogoRathub34.Position = MainWatermark.Position + Vector2.new(35, 11.5)
+            StatusWatermark.Position = MainWatermark.Position + Vector2.new(18, 47.5)
+            CurrentEntity.Position = MainWatermark.Position + Vector2.new(68, 47.5)
+        end
+
+        -- Перетаскивание слайдеров
+        if _G.adv_esp and _G.adv_esp.sliderDragging and mouse1 then
+            local a = _G.adv_esp
+            local relX = mPos.X - a.sliderTrack.Position.X
+            relX = math.max(0, math.min(a.sliderTrack.Size.X, relX))
+            local newVal = 15 + (relX / a.sliderTrack.Size.X) * (500-15)
+            newVal = math.max(15, math.min(500, newVal))
+            a.sliderValText.Text = tostring(math.floor(newVal))
+            a.sliderFill.Size = Vector2.new(a.sliderTrack.Size.X * ((newVal-15)/(500-15)), a.sliderFill.Size.Y)
+            a.sliderKnob.Position = a.sliderTrack.Position + Vector2.new(a.sliderTrack.Size.X * ((newVal-15)/(500-15)), 2)
+        end
+        if _G.adv_manny and _G.adv_manny.speedSlider and _G.adv_manny.speedSlider.dragging and mouse1 then
+            local a = _G.adv_manny.speedSlider
+            local relX = mPos.X - a.track.Position.X
+            relX = math.max(0, math.min(a.track.Size.X, relX))
+            local newVal = 0.1 + (relX / a.track.Size.X) * (10-0.1)
+            newVal = math.max(0.1, math.min(10, newVal))
+            mannySpeed = newVal
+            a.text.Text = string.format("%.1f", newVal) .. "s"
+            a.fill.Size = Vector2.new(a.track.Size.X * ((newVal-0.1)/(10-0.1)), a.fill.Size.Y)
+            a.knob.Position = a.track.Position + Vector2.new(a.track.Size.X * ((newVal-0.1)/(10-0.1)), 2)
+        end
+
+        lastMouse1 = mouse1
+        lastMouse2 = mouse2
+    end
+end
