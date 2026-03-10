@@ -20,7 +20,6 @@ local MainSwitchManny = { IsChecked = false, Bg = nil, Ind = nil, IndBorder = ni
 -- Переменные для Auto Manny
 local mannyEnabled = false
 local mannySpeed = 1.0
-local mannyThread = nil
 
 -- Элементы расширенных окон
 local AdvSwitchESP4
@@ -548,7 +547,7 @@ MainSwitchManny.Bg = SwitchManny_Bg
 MainSwitchManny.Ind = SwitchManny_Ind
 MainSwitchManny.IndBorder = SwitchManny_IndBorder
 
--- Остальные элементы (Misc, Info) без изменений
+-- Остальные элементы (Misc, Info)
 local InvisibleSquare = Drawing.new("Square")
 InvisibleSquare.Visible = false
 InvisibleSquare.Transparency = 0
@@ -1434,7 +1433,7 @@ local function CreateAdvancedESP()
     }
 end
 
--- Функция создания расширенного окна Auto Manny (с новым функционалом)
+-- Функция создания расширенного окна Auto Manny
 local function CreateAdvancedManny()
     if advancedWindowOpen then
         CloseAdvancedWindows()
@@ -1764,47 +1763,40 @@ local function CreateAdvancedManny()
     }
 end
 
--- Новая функция цикла Auto Manny (рабочий код)
-local function mannyLoop()
-    while mannyEnabled do
-        local folder = workspace:FindFirstChild("MannyMishapCollectibles")
-        if folder then
-            local objects = folder:GetChildren()
-            if #objects > 0 then
-                for _, model in ipairs(objects) do
-                    if not mannyEnabled then break end
-                    -- Получаем корневую часть модели
-                    local part = model.PrimaryPart or model:FindFirstChildWhichIsA("BasePart")
-                    if part then
-                        local root = player.Character and player.Character:FindFirstChild("HumanoidRootPart")
-                        if root then
-                            root.Position = part.Position
+-- Постоянный фоновый поток для Auto Manny (без goto)
+task.spawn(function()
+    while true do
+        if mannyEnabled then
+            local player = game:GetService("Players").LocalPlayer
+            local character = player.Character
+            local root = character and character:FindFirstChild("HumanoidRootPart")
+            if root then
+                local folder = workspace:FindFirstChild("MannyMishapCollectibles")
+                if folder then
+                    local models = {}
+                    for _, child in ipairs(folder:GetChildren()) do
+                        if child:IsA("Model") then
+                            table.insert(models, child)
                         end
                     end
-                    task.wait(mannySpeed)
+                    if #models > 0 then
+                        for _, model in ipairs(models) do
+                            if not mannyEnabled then break end
+                            local part = model.PrimaryPart or model:FindFirstChildWhichIsA("BasePart")
+                            if part then
+                                root.Position = part.Position
+                            end
+                            wait(mannySpeed)
+                        end
+                    end
                 end
-            else
-                task.wait(1)
             end
-        else
-            task.wait(2)
         end
+        wait(0.1)
     end
-end
+end)
 
--- Управление потоком
-local function updateMannyThread()
-    if mannyEnabled then
-        if not mannyThread or coroutine.status(mannyThread) == "dead" then
-            mannyThread = coroutine.create(mannyLoop)
-            coroutine.resume(mannyThread)
-        end
-    else
-        mannyThread = nil
-    end
-end
-
--- Лоадер (без изменений)
+-- Лоадер
 local MainLoader1 = Drawing.new("Square")
 MainLoader1.Visible = true
 MainLoader1.Transparency = 1
@@ -1923,7 +1915,7 @@ local loadMessages = {
 local totalSteps = 16
 local maxWidth = 367
 local logIndex = 1
-local duration = 4.0
+local duration = 5.0
 local startTime = tick()
 
 local logQueue = {}
@@ -2255,7 +2247,6 @@ while true do
                         AdvSwitchMannyEnable.Ind.Position = AdvSwitchMannyEnable.Bg.Position + Vector2.new(1, 1)
                     end
                 end
-                updateMannyThread()
             end
 
             -- Перетаскивание главного окна
@@ -2367,7 +2358,6 @@ while true do
                             SwitchManny_IndBorder.Position = SwitchManny.Position + Vector2.new(1, 1)
                             SwitchManny_Ind.Position = SwitchManny.Position + Vector2.new(1, 1)
                         end
-                        updateMannyThread()
                     end
                     if a.speedSlider and a.speedSlider.track and a.speedSlider.track.Visible and mPos.X >= a.speedSlider.track.Position.X and mPos.X <= a.speedSlider.track.Position.X + a.speedSlider.track.Size.X and
                        mPos.Y >= a.speedSlider.track.Position.Y-10 and mPos.Y <= a.speedSlider.track.Position.Y+10 then
