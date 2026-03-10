@@ -19,7 +19,7 @@ local MainSwitchManny = { IsChecked = false, Bg = nil, Ind = nil, IndBorder = ni
 
 
 local mannyEnabled = false
-local mannySpeed = 1.0
+local mannySpeed = 0.3
 
 
 local AdvSwitchESP4
