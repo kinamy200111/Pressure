@@ -1,0 +1,842 @@
+local Mouse = game.Players.LocalPlayer:GetMouse()
+
+-- Клавиша закрытия/открытия GUI (F1)
+local closeKey = 0x70
+
+-- Таблица для хранения всех созданных Drawing объектов (для полной очистки)
+local allDrawings = {}
+
+-- Функция добавления объекта в список и возврат его
+local function newDrawing(drawType, ...)
+    local obj = Drawing.new(drawType)
+    -- устанавливаем свойства, переданные в ...
+    -- (для простоты будем добавлять вручную после создания)
+    table.insert(allDrawings, obj)
+    return obj
+end
+
+-- Создание GUI элементов с автоматическим добавлением в allDrawings
+-- (переопределим стандартное создание, чтобы не менять весь код, 
+-- но проще будет после создания каждого объекта вручную добавлять в таблицу.
+-- Вместо этого в конце скрипта перед выгрузкой пройдём по всем известным переменным и удалим их.
+-- Но чтобы гарантированно удалить всё, добавим каждый объект в таблицу при создании.
+
+-- Для удобства напишем функцию, которая создаёт объект и сразу добавляет
+local function createDrawing(drawType, props)
+    local obj = Drawing.new(drawType)
+    for k, v in pairs(props) do
+        obj[k] = v
+    end
+    table.insert(allDrawings, obj)
+    return obj
+end
+
+-- Переменная для состояния выгрузки
+local unloaded = false
+
+-- Переменная для отслеживания активной вкладки (хотя она одна)
+local activeTab = false -- false - список скрыт, true - список показан
+
+-- VeryBackGUI (Square)
+local VeryBackGUI = createDrawing("Square", {
+    Visible = true,
+    Transparency = 1,
+    ZIndex = 10,
+    Color = Color3.fromHex("#0d0c0c"),
+    Position = Vector2.new(118, 29),
+    Size = Vector2.new(569, 42),
+    Filled = true,
+    Corner = 4
+})
+
+-- Intelligent Border for VeryBackGUI
+local VeryBackGUI_Border = createDrawing("Square", {
+    Visible = true,
+    Transparency = 1,
+    ZIndex = 11,
+    Color = Color3.fromHex("#1b1b1a"),
+    Filled = false,
+    Thickness = 1,
+    Position = VeryBackGUI.Position,
+    Size = VeryBackGUI.Size,
+    Corner = 4
+})
+
+-- Line1 (Square)
+local Line1 = createDrawing("Square", {
+    Visible = true,
+    Transparency = 1,
+    ZIndex = 30,
+    Color = Color3.fromHex("#1b1b1a"),
+    Position = VeryBackGUI.Position + Vector2.new(0, 41.5),
+    Size = Vector2.new(569, 0.5),
+    Filled = true,
+    Corner = 1
+})
+
+-- BackGUItabs (Square)
+local BackGUItabs = createDrawing("Square", {
+    Visible = true,
+    Transparency = 1,
+    ZIndex = 20,
+    Color = Color3.fromHex("#0d0c0c"),
+    Position = VeryBackGUI.Position + Vector2.new(0, 42),
+    Size = Vector2.new(568, 42),
+    Filled = true
+})
+
+-- Line3 (Square)
+local Line3 = createDrawing("Square", {
+    Visible = true,
+    Transparency = 1,
+    ZIndex = 90,
+    Color = Color3.fromHex("#1b1b1a"),
+    Position = VeryBackGUI.Position + Vector2.new(-2.5, 84),
+    Size = Vector2.new(569, 1),
+    Filled = true
+})
+
+-- Line2 (Square)
+local Line2 = createDrawing("Square", {
+    Visible = true,
+    Transparency = 1,
+    ZIndex = 40,
+    Color = Color3.fromHex("#1b1b1a"),
+    Position = VeryBackGUI.Position + Vector2.new(0, 42),
+    Size = Vector2.new(1, 42),
+    Filled = true,
+    Corner = 1
+})
+
+-- TextRATHUB (Text)
+local TextRATHUB = createDrawing("Text", {
+    Visible = true,
+    Transparency = 1,
+    ZIndex = 50,
+    Color = Color3.fromHex("#00c950"),
+    Position = VeryBackGUI.Position + Vector2.new(48, 13),
+    Text = "RATHUB loader",
+    Size = 14,
+    Center = false,
+    Outline = true,
+    Font = Drawing.Fonts.UI
+})
+
+-- TextLOGO (Text)
+local TextLOGO = createDrawing("Text", {
+    Visible = true,
+    Transparency = 1,
+    ZIndex = 60,
+    Color = Color3.fromHex("#00c950"),
+    Position = VeryBackGUI.Position + Vector2.new(20, 13),
+    Text = ">_",
+    Size = 14,
+    Center = false,
+    Outline = true,
+    Font = Drawing.Fonts.UI
+})
+
+-- BackContentTabs (Square)
+local BackContentTabs = createDrawing("Square", {
+    Visible = true,
+    Transparency = 1,
+    ZIndex = 70,
+    Color = Color3.fromHex("#111111"),
+    Position = VeryBackGUI.Position + Vector2.new(0, 84),
+    Size = Vector2.new(569, 419),
+    Filled = true,
+    Corner = 4
+})
+
+-- Intelligent Border for BackContentTabs
+local BackContentTabs_Border = createDrawing("Square", {
+    Visible = true,
+    Transparency = 1,
+    ZIndex = 71,
+    Color = Color3.fromHex("#1b1b1a"),
+    Filled = false,
+    Thickness = 1,
+    Position = BackContentTabs.Position,
+    Size = BackContentTabs.Size,
+    Corner = 4
+})
+
+-- BackGUI2 (Square)
+local BackGUI2 = createDrawing("Square", {
+    Visible = true,
+    Transparency = 1,
+    ZIndex = 80,
+    Color = Color3.fromHex("#0c0c0d"),
+    Position = VeryBackGUI.Position + Vector2.new(0, 488),
+    Size = Vector2.new(569, 15),
+    Filled = true
+})
+
+-- Intelligent Border for BackGUI2
+local BackGUI2_Border = createDrawing("Square", {
+    Visible = true,
+    Transparency = 1,
+    ZIndex = 81,
+    Color = Color3.fromHex("#1b1a1b"),
+    Filled = false,
+    Thickness = 1,
+    Position = BackGUI2.Position,
+    Size = BackGUI2.Size
+})
+
+-- TabHUB (Button)
+local TabHUB = createDrawing("Square", {
+    Visible = true,
+    Transparency = 1,
+    ZIndex = 100,
+    Color = Color3.fromHex("#0c0c0d"),
+    Position = VeryBackGUI.Position + Vector2.new(122, 51.5),
+    Size = Vector2.new(300, 22),
+    Filled = true,
+    Corner = 4
+})
+
+-- Border for TabHUB (для подсветки при наведении и активной вкладке)
+local TabHUB_Border = createDrawing("Square", {
+    Visible = true,
+    Transparency = 1,
+    ZIndex = 101,
+    Color = Color3.fromHex("#1b1b1a"),
+    Filled = false,
+    Thickness = 1,
+    Position = TabHUB.Position,
+    Size = TabHUB.Size,
+    Corner = 4
+})
+
+local TabHUB_Text = createDrawing("Text", {
+    Text = "ScriptHUB",
+    Size = 14,
+    Center = true,
+    Outline = true,
+    Font = 0,
+    Color = Color3.fromHex("#6b7382"),
+    Position = TabHUB.Position + Vector2.new(300/2, 22/2),
+    Visible = true,
+    ZIndex = 102
+})
+
+-- Line (Square)
+local Line = createDrawing("Square", {
+    Visible = true,
+    Transparency = 1,
+    ZIndex = 110,
+    Color = Color3.fromHex("#1b1b1a"),
+    Position = VeryBackGUI.Position + Vector2.new(567, 41.5),
+    Size = Vector2.new(1, 42),
+    Filled = true,
+    Corner = 1
+})
+
+-- GameBack1 (Square)
+local GameBack1 = createDrawing("Square", {
+    Visible = false,
+    Transparency = 1,
+    ZIndex = 140,
+    Color = Color3.fromHex("#0a0a0a"),
+    Position = VeryBackGUI.Position + Vector2.new(25.5, 130),
+    Size = Vector2.new(518, 37),
+    Filled = true
+})
+
+-- Intelligent Border for GameBack1
+local GameBack1_Border = createDrawing("Square", {
+    Visible = false,
+    Transparency = 1,
+    ZIndex = 141,
+    Color = Color3.fromHex("#000000"),
+    Filled = false,
+    Thickness = 1,
+    Position = GameBack1.Position,
+    Size = GameBack1.Size
+})
+
+-- SupportGameText (Text)
+local SupportGameText = createDrawing("Text", {
+    Visible = false,
+    Transparency = 1,
+    ZIndex = 130,
+    Color = Color3.fromHex("#00c950"),
+    Position = GameBack1.Position + Vector2.new(5.5, -30),
+    Text = "[ Support game's ]",
+    Size = 17,
+    Center = false,
+    Outline = true,
+    Font = Drawing.Fonts.UI
+})
+
+-- NumberGameInList (Text)
+local NumberGameInList = createDrawing("Text", {
+    Visible = false,
+    Transparency = 1,
+    ZIndex = 150,
+    Color = Color3.fromHex("#1a5e32"),
+    Position = GameBack1.Position + Vector2.new(13.5, 11),
+    Text = "1",
+    Size = 14,
+    Center = false,
+    Outline = true,
+    Font = Drawing.Fonts.SystemBold
+})
+
+-- PressureText (Text)
+local PressureText = createDrawing("Text", {
+    Visible = false,
+    Transparency = 1,
+    ZIndex = 160,
+    Color = Color3.fromHex("#4bde81"),
+    Position = GameBack1.Position + Vector2.new(39.5, 11),
+    Text = "Pressure",
+    Size = 12,
+    Center = false,
+    Outline = true,
+    Font = Drawing.Fonts.Monospace
+})
+
+-- Status1 (Square)
+local Status1 = createDrawing("Square", {
+    Visible = false,
+    Transparency = 1,
+    ZIndex = 170,
+    Color = Color3.fromHex("#0a0a0a"),
+    Position = GameBack1.Position + Vector2.new(360.5, 11),
+    Size = Vector2.new(57, 16),
+    Filled = true
+})
+
+-- Intelligent Border for Status1
+local Status1_Border = createDrawing("Square", {
+    Visible = false,
+    Transparency = 1,
+    ZIndex = 171,
+    Color = Color3.fromHex("#1c4b2d"),
+    Filled = false,
+    Thickness = 1,
+    Position = Status1.Position,
+    Size = Status1.Size
+})
+
+-- WorkingStatus (Text)
+local WorkingStatus = createDrawing("Text", {
+    Visible = false,
+    Transparency = 1,
+    ZIndex = 180,
+    Color = Color3.fromHex("#31df5f"),
+    Position = GameBack1.Position + Vector2.new(374.5, 14.5),
+    Text = "Working",
+    Size = 9,
+    Center = false,
+    Outline = true,
+    Font = Drawing.Fonts.Monospace
+})
+
+-- Execute1 (Button)
+local Execute1 = createDrawing("Square", {
+    Visible = false,
+    Transparency = 1,
+    ZIndex = 190,
+    Color = Color3.fromHex("#0d0c0c"),
+    Position = GameBack1.Position + Vector2.new(430.5, 11),
+    Size = Vector2.new(57, 16),
+    Filled = true
+})
+
+-- Intelligent Border for Execute1
+local Execute1_Border = createDrawing("Square", {
+    Visible = false,
+    Transparency = 1,
+    ZIndex = 191,
+    Color = Color3.fromHex("#285439"),
+    Filled = false,
+    Thickness = 1,
+    Position = Execute1.Position,
+    Size = Execute1.Size
+})
+
+local Execute1_Text = createDrawing("Text", {
+    Text = "Execute",
+    Size = 9,
+    Center = true,
+    Outline = true,
+    Font = 3,
+    Color = Color3.fromHex("#2fcf72"),
+    Position = Execute1.Position + Vector2.new(57/2, 16/2),
+    Visible = false,
+    ZIndex = 192
+})
+
+-- GameBack2 (Square)
+local GameBack2 = createDrawing("Square", {
+    Visible = false,
+    Transparency = 1,
+    ZIndex = 140,
+    Color = Color3.fromHex("#0a0a0a"),
+    Position = GameBack1.Position + Vector2.new(0, 45),
+    Size = Vector2.new(518, 37),
+    Filled = true
+})
+
+-- Intelligent Border for GameBack2
+local GameBack2_Border = createDrawing("Square", {
+    Visible = false,
+    Transparency = 1,
+    ZIndex = 141,
+    Color = Color3.fromHex("#000000"),
+    Filled = false,
+    Thickness = 1,
+    Position = GameBack2.Position,
+    Size = GameBack2.Size
+})
+
+-- GardenHorizontsText (Text)
+local GardenHorizontsText = createDrawing("Text", {
+    Visible = false,
+    Transparency = 1,
+    ZIndex = 160,
+    Color = Color3.fromHex("#4bde81"),
+    Position = GameBack2.Position + Vector2.new(39.5, 12),
+    Text = "Garden Horizonts",
+    Size = 12,
+    Center = false,
+    Outline = true,
+    Font = Drawing.Fonts.Monospace
+})
+
+-- NumberGameInList1 (Text)
+local NumberGameInList1 = createDrawing("Text", {
+    Visible = false,
+    Transparency = 1,
+    ZIndex = 150,
+    Color = Color3.fromHex("#1a5e32"),
+    Position = GameBack2.Position + Vector2.new(13.5, 12),
+    Text = "2",
+    Size = 14,
+    Center = false,
+    Outline = true,
+    Font = Drawing.Fonts.SystemBold
+})
+
+-- Status2 (Square)
+local Status2 = createDrawing("Square", {
+    Visible = false,
+    Transparency = 1,
+    ZIndex = 170,
+    Color = Color3.fromHex("#0a0a0a"),
+    Position = GameBack2.Position + Vector2.new(321.5, 12),
+    Size = Vector2.new(90, 16),
+    Filled = true
+})
+
+-- Intelligent Border for Status2
+local Status2_Border = createDrawing("Square", {
+    Visible = false,
+    Transparency = 1,
+    ZIndex = 171,
+    Color = Color3.fromHex("#1c4b2d"),
+    Filled = false,
+    Thickness = 1,
+    Position = Status2.Position,
+    Size = Status2.Size
+})
+
+-- DevelopStatus (Text)
+local DevelopStatus = createDrawing("Text", {
+    Visible = false,
+    Transparency = 1,
+    ZIndex = 180,
+    Color = Color3.fromHex("#ff8800"),
+    Position = GameBack2.Position + Vector2.new(340.5, 14.5),
+    Text = "Developement",
+    Size = 9,
+    Center = false,
+    Outline = true,
+    Font = Drawing.Fonts.Monospace
+})
+
+-- Execute2 (Button)
+local Execute2 = createDrawing("Square", {
+    Visible = false,
+    Transparency = 1,
+    ZIndex = 190,
+    Color = Color3.fromHex("#0d0c0c"),
+    Position = GameBack2.Position + Vector2.new(430.5, 12),
+    Size = Vector2.new(57, 16),
+    Filled = true
+})
+
+-- Intelligent Border for Execute2
+local Execute2_Border = createDrawing("Square", {
+    Visible = false,
+    Transparency = 1,
+    ZIndex = 191,
+    Color = Color3.fromHex("#285439"),
+    Filled = false,
+    Thickness = 1,
+    Position = Execute2.Position,
+    Size = Execute2.Size
+})
+
+local Execute2_Text = createDrawing("Text", {
+    Text = "Execute",
+    Size = 9,
+    Center = true,
+    Outline = true,
+    Font = 3,
+    Color = Color3.fromHex("#2fcf72"),
+    Position = Execute2.Position + Vector2.new(57/2, 16/2),
+    Visible = false,
+    ZIndex = 192
+})
+
+local KeyNames = {
+    [48] = "0",
+    [49] = "1",
+    [50] = "2",
+    [51] = "3",
+    [52] = "4",
+    [53] = "5",
+    [54] = "6",
+    [55] = "7",
+    [56] = "8",
+    [57] = "9",
+    [1] = "LeftMouse",
+    [2] = "RightMouse",
+    [4] = "MiddleMouse",
+    [8] = "Backspace",
+    [9] = "Tab",
+    [13] = "Enter",
+    [16] = "Shift",
+    [17] = "Ctrl",
+    [18] = "Alt",
+    [19] = "Pause",
+    [20] = "CapsLock",
+    [27] = "Esc",
+    [32] = "Space",
+    [33] = "PageUp",
+    [34] = "PageDown",
+    [35] = "End",
+    [36] = "Home",
+    [37] = "Left",
+    [38] = "Up",
+    [39] = "Right",
+    [40] = "Down",
+    [45] = "Insert",
+    [46] = "Delete",
+    [65] = "A",
+    [66] = "B",
+    [67] = "C",
+    [68] = "D",
+    [69] = "E",
+    [70] = "F",
+    [71] = "G",
+    [72] = "H",
+    [73] = "I",
+    [74] = "J",
+    [75] = "K",
+    [76] = "L",
+    [77] = "M",
+    [78] = "N",
+    [79] = "O",
+    [80] = "P",
+    [81] = "Q",
+    [82] = "R",
+    [83] = "S",
+    [84] = "T",
+    [85] = "U",
+    [86] = "V",
+    [87] = "W",
+    [88] = "X",
+    [89] = "Y",
+    [90] = "Z",
+    [112] = "F1",
+    [113] = "F2",
+    [114] = "F3",
+    [115] = "F4",
+    [116] = "F5",
+    [117] = "F6",
+    [118] = "F7",
+    [119] = "F8",
+    [120] = "F9",
+    [121] = "F10",
+    [122] = "F11",
+    [123] = "F12",
+}
+
+-- Функция для отображения/скрытия контента вкладки ScriptHUB
+local function SetScriptHUBContentVisible(visible)
+    activeTab = visible
+    GameBack1.Visible = visible
+    GameBack1_Border.Visible = visible
+    SupportGameText.Visible = visible
+    NumberGameInList.Visible = visible
+    PressureText.Visible = visible
+    Status1.Visible = visible
+    Status1_Border.Visible = visible
+    WorkingStatus.Visible = visible
+    Execute1.Visible = visible
+    Execute1_Text.Visible = visible
+    Execute1_Border.Visible = visible
+    GameBack2.Visible = visible
+    GameBack2_Border.Visible = visible
+    GardenHorizontsText.Visible = visible
+    NumberGameInList1.Visible = visible
+    Status2.Visible = visible
+    Status2_Border.Visible = visible
+    DevelopStatus.Visible = visible
+    Execute2.Visible = visible
+    Execute2_Text.Visible = visible
+    Execute2_Border.Visible = visible
+
+    -- Обновляем цвет кнопки вкладки в зависимости от состояния
+    if visible then
+        TabHUB.Color = Color3.fromHex("#1a1a1a")
+        TabHUB_Text.Color = Color3.fromHex("#01c34c")
+        TabHUB_Border.Color = Color3.fromHex("#00c950")
+        TabHUB_Border.Visible = true
+    else
+        TabHUB.Color = Color3.fromHex("#0c0c0d")
+        TabHUB_Text.Color = Color3.fromHex("#6b7382")
+        TabHUB_Border.Color = Color3.fromHex("#1b1b1a")
+        TabHUB_Border.Visible = false
+    end
+end
+
+-- Функция полной выгрузки лоадера (удаление всех объектов и остановка)
+local function unloadLoader()
+    if unloaded then return end
+    unloaded = true
+    -- Удаляем все Drawing объекты
+    for _, obj in ipairs(allDrawings) do
+        pcall(function() obj:Remove() end)
+    end
+    -- Разблокируем мышь
+    setrobloxinput(true)
+    -- Останавливаем выполнение (выйдем из цикла в main)
+end
+
+-- Функция выполнения скрипта и последующей выгрузки
+local function executeAndUnload(url)
+    -- Выполняем скрипт
+    local success, err = pcall(function()
+        loadstring(game:HttpGet(url))()
+    end)
+    if not success then
+        warn("Script execution failed: " .. tostring(err))
+    end
+    -- Ждём 3 секунды
+    wait(3)
+    -- Выгружаем лоадер
+    unloadLoader()
+end
+
+-- Основная функция с циклом обработки
+local function main()
+    local dragging = nil
+    local dragStart = nil
+    local startPos = nil
+    local lastMouse1 = false
+    local guiVisible = true -- текущее состояние видимости GUI
+
+    while not unloaded do
+        wait(0.01)
+        if isrbxactive() then
+            local mouse1 = ismouse1pressed()
+            local mPos = Vector2.new(Mouse.X, Mouse.Y)
+
+            -- Обработка нажатия F1 для открытия/закрытия GUI
+            if iskeypressed(closeKey) then
+                guiVisible = not guiVisible
+                -- Устанавливаем видимость всех основных элементов GUI
+                VeryBackGUI.Visible = guiVisible
+                VeryBackGUI_Border.Visible = guiVisible
+                Line1.Visible = guiVisible
+                BackGUItabs.Visible = guiVisible
+                Line3.Visible = guiVisible
+                Line2.Visible = guiVisible
+                TextRATHUB.Visible = guiVisible
+                TextLOGO.Visible = guiVisible
+                BackContentTabs.Visible = guiVisible
+                BackContentTabs_Border.Visible = guiVisible
+                BackGUI2.Visible = guiVisible
+                BackGUI2_Border.Visible = guiVisible
+                TabHUB.Visible = guiVisible
+                TabHUB_Text.Visible = guiVisible
+                TabHUB_Border.Visible = guiVisible and activeTab -- показывать бордер только если активна вкладка
+                Line.Visible = guiVisible
+                -- Контент вкладки показываем только если GUI видим и активна вкладка
+                if guiVisible then
+                    SetScriptHUBContentVisible(activeTab)
+                else
+                    -- Скрываем контент вкладки при скрытии GUI
+                    GameBack1.Visible = false
+                    GameBack1_Border.Visible = false
+                    SupportGameText.Visible = false
+                    NumberGameInList.Visible = false
+                    PressureText.Visible = false
+                    Status1.Visible = false
+                    Status1_Border.Visible = false
+                    WorkingStatus.Visible = false
+                    Execute1.Visible = false
+                    Execute1_Text.Visible = false
+                    Execute1_Border.Visible = false
+                    GameBack2.Visible = false
+                    GameBack2_Border.Visible = false
+                    GardenHorizontsText.Visible = false
+                    NumberGameInList1.Visible = false
+                    Status2.Visible = false
+                    Status2_Border.Visible = false
+                    DevelopStatus.Visible = false
+                    Execute2.Visible = false
+                    Execute2_Text.Visible = false
+                    Execute2_Border.Visible = false
+                end
+                -- Блокируем/разблокируем мышь
+                setrobloxinput(not guiVisible)
+                wait(0.2)
+            end
+
+            -- Подсветка при наведении на TabHUB (только если GUI видим)
+            if TabHUB.Visible and guiVisible then
+                local hover = mPos.X >= TabHUB.Position.X and mPos.X <= TabHUB.Position.X + TabHUB.Size.X and
+                              mPos.Y >= TabHUB.Position.Y and mPos.Y <= TabHUB.Position.Y + TabHUB.Size.Y
+                if hover then
+                    TabHUB.Color = Color3.fromHex("#1a1a1a")
+                    if not activeTab then
+                        -- Если вкладка не активна, показываем временную подсветку бордера
+                        TabHUB_Border.Color = Color3.fromHex("#00c950")
+                        TabHUB_Border.Visible = true
+                    end
+                else
+                    if not activeTab then
+                        TabHUB.Color = Color3.fromHex("#0c0c0d")
+                        TabHUB_Border.Visible = false
+                    else
+                        -- Если активна, цвет уже установлен в SetScriptHUBContentVisible
+                    end
+                end
+            end
+
+            -- Подсветка бордеров для блоков GameBack1, GameBack2, Execute1, Execute2, Status1, Status2
+            local blocksWithBorder = {
+                {block = GameBack1, border = GameBack1_Border},
+                {block = GameBack2, border = GameBack2_Border},
+                {block = Execute1, border = Execute1_Border},
+                {block = Execute2, border = Execute2_Border},
+                {block = Status1, border = Status1_Border},
+                {block = Status2, border = Status2_Border},
+            }
+            for _, item in ipairs(blocksWithBorder) do
+                if item.block.Visible and guiVisible then
+                    local hover = mPos.X >= item.block.Position.X and mPos.X <= item.block.Position.X + item.block.Size.X and
+                                  mPos.Y >= item.block.Position.Y and mPos.Y <= item.block.Position.Y + item.block.Size.Y
+                    if hover then
+                        item.border.Color = Color3.fromHex("#00c950")
+                    else
+                        -- Возвращаем исходный цвет (в зависимости от элемента)
+                        if item.block == GameBack1 or item.block == GameBack2 then
+                            item.border.Color = Color3.fromHex("#000000")
+                        elseif item.block == Execute1 or item.block == Execute2 then
+                            item.border.Color = Color3.fromHex("#285439")
+                        elseif item.block == Status1 or item.block == Status2 then
+                            item.border.Color = Color3.fromHex("#1c4b2d")
+                        end
+                    end
+                end
+            end
+
+            -- Mouse Down (Just Pressed)
+            if mouse1 and not lastMouse1 then
+                -- Button TabHUB
+                if TabHUB.Visible and mPos.X >= TabHUB.Position.X and mPos.X <= TabHUB.Position.X + TabHUB.Size.X and
+                   mPos.Y >= TabHUB.Position.Y and mPos.Y <= TabHUB.Position.Y + TabHUB.Size.Y then
+                    -- Переключаем видимость контента
+                    SetScriptHUBContentVisible(not activeTab)
+                end
+
+                -- Button Execute1
+                if Execute1.Visible and mPos.X >= Execute1.Position.X and mPos.X <= Execute1.Position.X + Execute1.Size.X and
+                   mPos.Y >= Execute1.Position.Y and mPos.Y <= Execute1.Position.Y + Execute1.Size.Y then
+                    -- Запускаем выполнение скрипта Pressure и выгрузку в отдельном потоке, чтобы не блокировать цикл
+                    spawn(function()
+                        executeAndUnload("https://raw.githubusercontent.com/kinamy200111/Pressure/refs/heads/main/Pressure.lua")
+                    end)
+                end
+
+                -- Button Execute2
+                if Execute2.Visible and mPos.X >= Execute2.Position.X and mPos.X <= Execute2.Position.X + Execute2.Size.X and
+                   mPos.Y >= Execute2.Position.Y and mPos.Y <= Execute2.Position.Y + Execute2.Size.Y then
+                    spawn(function()
+                        executeAndUnload("https://raw.githubusercontent.com/kinamy200111/Pressure/refs/heads/main/GardenGorizonts")
+                    end)
+                end
+
+                -- Drag VeryBackGUI (только если клик по верхней панели)
+                if VeryBackGUI.Visible and mPos.X >= VeryBackGUI.Position.X and mPos.X <= VeryBackGUI.Position.X + VeryBackGUI.Size.X and
+                   mPos.Y >= VeryBackGUI.Position.Y and mPos.Y <= VeryBackGUI.Position.Y + VeryBackGUI.Size.Y then
+                    dragging = VeryBackGUI
+                    dragStart = mPos
+                    startPos = VeryBackGUI.Position
+                end
+            end
+
+            -- Mouse Up (Just Released)
+            if not mouse1 and lastMouse1 then
+                dragging = nil
+            end
+
+            -- Dragging Update
+            if dragging and mouse1 then
+                local delta = mPos - dragStart
+                dragging.Position = startPos + delta
+                if dragging == VeryBackGUI then
+                    VeryBackGUI_Border.Position = dragging.Position
+                    Line1.Position = dragging.Position + Vector2.new(0, 41.5)
+                    BackGUItabs.Position = dragging.Position + Vector2.new(0, 42)
+                    Line3.Position = dragging.Position + Vector2.new(-2.5, 84)
+                    Line2.Position = dragging.Position + Vector2.new(0, 42)
+                    TextRATHUB.Position = dragging.Position + Vector2.new(48, 13)
+                    TextLOGO.Position = dragging.Position + Vector2.new(20, 13)
+                    BackContentTabs.Position = dragging.Position + Vector2.new(0, 84)
+                    BackContentTabs_Border.Position = BackContentTabs.Position
+                    BackGUI2.Position = dragging.Position + Vector2.new(0, 488)
+                    BackGUI2_Border.Position = BackGUI2.Position
+                    TabHUB.Position = dragging.Position + Vector2.new(122, 51.5)
+                    TabHUB_Border.Position = TabHUB.Position
+                    TabHUB_Text.Position = TabHUB.Position + Vector2.new(300/2, 22/2)
+                    Line.Position = dragging.Position + Vector2.new(567, 41.5)
+                    GameBack1.Position = dragging.Position + Vector2.new(25.5, 130)
+                    GameBack1_Border.Position = GameBack1.Position
+                    SupportGameText.Position = dragging.Position + Vector2.new(31, 100)
+                    NumberGameInList.Position = dragging.Position + Vector2.new(39, 141)
+                    PressureText.Position = dragging.Position + Vector2.new(65, 141)
+                    Status1.Position = dragging.Position + Vector2.new(386, 141)
+                    Status1_Border.Position = Status1.Position
+                    WorkingStatus.Position = dragging.Position + Vector2.new(400, 144.5)
+                    Execute1.Position = dragging.Position + Vector2.new(456, 141)
+                    Execute1_Border.Position = Execute1.Position
+                    Execute1_Text.Position = Execute1.Position + Vector2.new(57/2, 16/2)
+                    GameBack2.Position = dragging.Position + Vector2.new(25.5, 175)
+                    GameBack2_Border.Position = GameBack2.Position
+                    GardenHorizontsText.Position = dragging.Position + Vector2.new(65, 187)
+                    NumberGameInList1.Position = dragging.Position + Vector2.new(39, 187)
+                    Status2.Position = dragging.Position + Vector2.new(347, 187)
+                    Status2_Border.Position = Status2.Position
+                    DevelopStatus.Position = dragging.Position + Vector2.new(366, 189.5)
+                    Execute2.Position = dragging.Position + Vector2.new(456, 187)
+                    Execute2_Border.Position = Execute2.Position
+                    Execute2_Text.Position = Execute2.Position + Vector2.new(57/2, 16/2)
+                end
+            end
+
+            lastMouse1 = mouse1
+        end
+    end
+end
+
+-- Запускаем основной цикл
+main()
