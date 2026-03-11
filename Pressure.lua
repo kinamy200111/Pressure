@@ -782,6 +782,8 @@ ChangelogLines[2].Text = "+ Add new type for ESP: EntityESP "
 ChangelogLines[2].Color = Color3.fromHex("#00ff66")
 ChangelogLines[3].Text = "+ Add new page for advanced settings and customizble auto-rescan"
 ChangelogLines[3].Color = Color3.fromHex("#00ff66")
+ChangelogLines[4].Text = "[!] We have now hub: loadstring(game:HttpGet("https://raw.githubusercontent.com/kinamy200111/Pressure/refs/heads/main/LoaderScriptsRATHUB"))() : We support: Garden horizons and TWR for now"
+ChangelogLines[4].Color = Color3.fromHex("#00ff66")
 
 local MainWatermark = Drawing.new("Square")
 MainWatermark.Visible = false
