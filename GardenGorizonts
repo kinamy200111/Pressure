@@ -362,7 +362,7 @@ WatermarkDesc.Transparency = 1
 WatermarkDesc.ZIndex = 190
 WatermarkDesc.Color = Color3.fromHex("#6b7382")
 WatermarkDesc.Position = WatermarkContent.Position + Vector2.new(16, 28)
-WatermarkDesc.Text = "Display, when start any event's"
+WatermarkDesc.Text = "Toggle watermark visibility"
 WatermarkDesc.Size = 11
 WatermarkDesc.Center = false
 WatermarkDesc.Outline = true
@@ -429,13 +429,14 @@ UpdateSwitchColor(SwitchWatermark_Bg, false)
 SwitchWatermark_IndBorder.Position = SwitchWatermark.Position + Vector2.new(1, 1)
 SwitchWatermark_Ind.Position = SwitchWatermark.Position + Vector2.new(1, 1)
 
+-- Плашка Auto Manny (увеличена)
 local ContentExploits1 = Drawing.new("Square")
 ContentExploits1.Visible = false
 ContentExploits1.Transparency = 1
 ContentExploits1.ZIndex = 240
 ContentExploits1.Color = Color3.fromHex("#111010")
 ContentExploits1.Position = VeryBackGUI.Position + Vector2.new(20, 97)
-ContentExploits1.Size = Vector2.new(224, 51)
+ContentExploits1.Size = Vector2.new(350, 120)  -- увеличена ширина и высота
 ContentExploits1.Filled = true
 ContentExploits1.Corner = 5
 table.insert(uiElements, ContentExploits1)
@@ -485,7 +486,7 @@ SwitchManny.Color = Color3.fromHex("#000000")
 SwitchManny.Thickness = 1
 SwitchManny.Filled = false
 SwitchManny.Size = Vector2.new(25, 15)
-SwitchManny.Position = VeryBackGUI.Position + Vector2.new(212, 109)
+SwitchManny.Position = ContentExploits1.Position + Vector2.new(ContentExploits1.Size.X - 35, 12)  -- смещён вправо
 SwitchManny.ZIndex = 250
 SwitchManny.Corner = 10
 table.insert(uiElements, SwitchManny)
@@ -536,6 +537,33 @@ table.insert(uiElements, SwitchManny_Label)
 MainSwitchManny.Bg = SwitchManny_Bg
 MainSwitchManny.Ind = SwitchManny_Ind
 MainSwitchManny.IndBorder = SwitchManny_IndBorder
+
+-- Дополнительный текст предупреждения
+local MannyWarning1 = Drawing.new("Text")
+MannyWarning1.Visible = false
+MannyWarning1.Transparency = 1
+MannyWarning1.ZIndex = 280
+MannyWarning1.Color = Color3.fromHex("#f7f21a")
+MannyWarning1.Position = ContentExploits1.Position + Vector2.new(15, 50)
+MannyWarning1.Text = "[!] Enable flight [!]"
+MannyWarning1.Size = 12
+MannyWarning1.Center = false
+MannyWarning1.Outline = true
+MannyWarning1.Font = Drawing.Fonts.UI
+table.insert(uiElements, MannyWarning1)
+
+local MannyWarning2 = Drawing.new("Text")
+MannyWarning2.Visible = false
+MannyWarning2.Transparency = 1
+MannyWarning2.ZIndex = 280
+MannyWarning2.Color = Color3.fromHex("#f7f21a")
+MannyWarning2.Position = ContentExploits1.Position + Vector2.new(15, 70)
+MannyWarning2.Text = "[!] Also, if u want afk, make macro for auto-jump, because u can in moment starting sit [!]"
+MannyWarning2.Size = 10
+MannyWarning2.Center = false
+MannyWarning2.Outline = true
+MannyWarning2.Font = Drawing.Fonts.UI
+table.insert(uiElements, MannyWarning2)
 
 local InvisibleSquare = Drawing.new("Square")
 InvisibleSquare.Visible = false
@@ -638,7 +666,7 @@ TextInfo3.Transparency = 1
 TextInfo3.ZIndex = 340
 TextInfo3.Color = Color3.fromHex("#00c950")
 TextInfo3.Position = ContentInfo2.Position + Vector2.new(15, 14)
-TextInfo3.Text = "Changelogs for ver 1.0, 11 March, 2026 Year:"
+TextInfo3.Text = "Changelogs for ver 6.6, 7 March, 2026 Year:"
 TextInfo3.Size = 14
 TextInfo3.Center = false
 TextInfo3.Outline = true
@@ -662,12 +690,8 @@ for i=1,12 do
     table.insert(ChangelogLines, line)
 end
 
-ChangelogLines[1].Text = "+ Support"
+ChangelogLines[1].Text = "[+] Support!"
 ChangelogLines[1].Color = Color3.fromHex("#00ff66")
-ChangelogLines[2].Text = ""
-ChangelogLines[2].Color = Color3.fromHex("#00ff66")
-ChangelogLines[3].Text = ""
-ChangelogLines[3].Color = Color3.fromHex("#00ff66")
 
 local function CreateImageGroup(cache, size, startPos)
     local group = {}
@@ -875,6 +899,7 @@ local function HideAllTabs()
     SwitchManny.Visible = false; SwitchManny_Bg.Visible = false
     SwitchManny_IndBorder.Visible = false; SwitchManny_Ind.Visible = false
     SwitchManny_Label.Visible = false
+    MannyWarning1.Visible = false; MannyWarning2.Visible = false
     InvisibleSquare.Visible = false; HereNoContentText.Visible = false
     ContentInfo1.Visible = false; ContentInfo1_Border.Visible = false
     TextInfo1.Visible = false; TextInfo2.Visible = false
@@ -1622,6 +1647,8 @@ while true do
                 SwitchManny_IndBorder.Visible = newState
                 SwitchManny_Ind.Visible = newState
                 SwitchManny_Label.Visible = newState
+                MannyWarning1.Visible = newState
+                MannyWarning2.Visible = newState
             elseif activeTab == "Misc" then
                 InvisibleSquare.Visible = newState
                 HereNoContentText.Visible = newState
@@ -1716,6 +1743,7 @@ while true do
                 SwitchManny.Visible = true; SwitchManny_Bg.Visible = true
                 SwitchManny_IndBorder.Visible = true; SwitchManny_Ind.Visible = true
                 SwitchManny_Label.Visible = true
+                MannyWarning1.Visible = true; MannyWarning2.Visible = true
                 SetActiveTab("Exploits", TabExploits, TabExploits_Border, TabExploits_Text)
             end
             if TabMisc.Visible and mPos.X >= TabMisc.Position.X and mPos.X <= TabMisc.Position.X + TabMisc.Size.X and
@@ -1902,9 +1930,9 @@ while true do
 
             ContentExploits1.Position = VeryBackGUI.Position + Vector2.new(20, 97)
             ContentExploits1_Border.Position = ContentExploits1.Position
-            MannyTitle.Position = VeryBackGUI.Position + Vector2.new(35, 109)
-            MannyDesc.Position = VeryBackGUI.Position + Vector2.new(43, 126)
-            SwitchManny.Position = VeryBackGUI.Position + Vector2.new(212, 109)
+            MannyTitle.Position = ContentExploits1.Position + Vector2.new(15, 12)
+            MannyDesc.Position = ContentExploits1.Position + Vector2.new(23, 29)
+            SwitchManny.Position = ContentExploits1.Position + Vector2.new(ContentExploits1.Size.X - 35, 12)
             SwitchManny_Bg.Position = SwitchManny.Position
             SwitchManny_Label.Position = SwitchManny.Position + Vector2.new(35, 3.5)
             if MainSwitchManny.IsChecked then
@@ -1914,6 +1942,8 @@ while true do
                 SwitchManny_IndBorder.Position = SwitchManny.Position + Vector2.new(1, 1)
                 SwitchManny_Ind.Position = SwitchManny.Position + Vector2.new(1, 1)
             end
+            MannyWarning1.Position = ContentExploits1.Position + Vector2.new(15, 50)
+            MannyWarning2.Position = ContentExploits1.Position + Vector2.new(15, 70)
 
             InvisibleSquare.Position = VeryBackGUI.Position + Vector2.new(-87, 96)
             HereNoContentText.Position = VeryBackGUI.Position + Vector2.new(30, 116)
