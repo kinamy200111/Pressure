@@ -166,7 +166,7 @@ BackGUI2_Border.Position = BackGUI2.Position
 BackGUI2_Border.Size = BackGUI2.Size
 table.insert(uiElements, BackGUI2_Border)
 
--- Вкладка Exploits (теперь первая)
+
 local TabExploits = Drawing.new("Square")
 TabExploits.Visible = false
 TabExploits.Transparency = 1
@@ -202,7 +202,7 @@ TabExploits_Border.Size = TabExploits.Size
 TabExploits_Border.Corner = 4
 table.insert(uiElements, TabExploits_Border)
 
--- Вкладка Info (теперь вторая)
+
 local TabInfo = Drawing.new("Square")
 TabInfo.Visible = false
 TabInfo.Transparency = 1
@@ -249,7 +249,7 @@ Square16.Filled = true
 Square16.Corner = 1
 table.insert(uiElements, Square16)
 
--- Контент для Exploits
+
 local ContentExploits1 = Drawing.new("Square")
 ContentExploits1.Visible = false
 ContentExploits1.Transparency = 1
@@ -358,7 +358,7 @@ MainSwitchHitbox.Bg = SwitchHitbox_Bg
 MainSwitchHitbox.Ind = SwitchHitbox_Ind
 MainSwitchHitbox.IndBorder = SwitchHitbox_IndBorder
 
--- Контент для Info (оставляем как есть)
+
 local ContentInfo1 = Drawing.new("Square")
 ContentInfo1.Visible = false
 ContentInfo1.Transparency = 1
@@ -461,14 +461,14 @@ for i=1,12 do
     table.insert(ChangelogLines, line)
 end
 
-ChangelogLines[1].Text = "+ Recode auto-rescan for ESP's, and make it better"
+ChangelogLines[1].Text = "+ Support"
 ChangelogLines[1].Color = Color3.fromHex("#00ff66")
-ChangelogLines[2].Text = "+ Add new type for ESP: EntityESP "
+ChangelogLines[2].Text = ""
 ChangelogLines[2].Color = Color3.fromHex("#00ff66")
-ChangelogLines[3].Text = "+ Add new page for advanced settings and customizble auto-rescan"
+ChangelogLines[3].Text = ""
 ChangelogLines[3].Color = Color3.fromHex("#00ff66")
 
--- Watermark (оставляем)
+
 local MainWatermark = Drawing.new("Square")
 MainWatermark.Visible = false
 MainWatermark.Transparency = 1
