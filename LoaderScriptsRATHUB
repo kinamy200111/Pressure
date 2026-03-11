@@ -6,22 +6,7 @@ local closeKey = 0x70
 -- Таблица для хранения всех созданных Drawing объектов (для полной очистки)
 local allDrawings = {}
 
--- Функция добавления объекта в список и возврат его
-local function newDrawing(drawType, ...)
-    local obj = Drawing.new(drawType)
-    -- устанавливаем свойства, переданные в ...
-    -- (для простоты будем добавлять вручную после создания)
-    table.insert(allDrawings, obj)
-    return obj
-end
-
--- Создание GUI элементов с автоматическим добавлением в allDrawings
--- (переопределим стандартное создание, чтобы не менять весь код, 
--- но проще будет после создания каждого объекта вручную добавлять в таблицу.
--- Вместо этого в конце скрипта перед выгрузкой пройдём по всем известным переменным и удалим их.
--- Но чтобы гарантированно удалить всё, добавим каждый объект в таблицу при создании.
-
--- Для удобства напишем функцию, которая создаёт объект и сразу добавляет
+-- Функция для удобного создания объектов с авто-добавлением в allDrawings
 local function createDrawing(drawType, props)
     local obj = Drawing.new(drawType)
     for k, v in pairs(props) do
@@ -233,7 +218,7 @@ local Line = createDrawing("Square", {
     Corner = 1
 })
 
--- GameBack1 (Square)
+-- GameBack1 (Pressure)
 local GameBack1 = createDrawing("Square", {
     Visible = false,
     Transparency = 1,
@@ -270,7 +255,7 @@ local SupportGameText = createDrawing("Text", {
     Font = Drawing.Fonts.UI
 })
 
--- NumberGameInList (Text)
+-- NumberGameInList (Text) for Pressure
 local NumberGameInList = createDrawing("Text", {
     Visible = false,
     Transparency = 1,
@@ -321,7 +306,7 @@ local Status1_Border = createDrawing("Square", {
     Size = Status1.Size
 })
 
--- WorkingStatus (Text)
+-- WorkingStatus (Text) for Pressure
 local WorkingStatus = createDrawing("Text", {
     Visible = false,
     Transparency = 1,
@@ -370,7 +355,7 @@ local Execute1_Text = createDrawing("Text", {
     ZIndex = 192
 })
 
--- GameBack2 (Square)
+-- GameBack2 (Garden Horizonts)
 local GameBack2 = createDrawing("Square", {
     Visible = false,
     Transparency = 1,
@@ -407,7 +392,7 @@ local GardenHorizontsText = createDrawing("Text", {
     Font = Drawing.Fonts.Monospace
 })
 
--- NumberGameInList1 (Text)
+-- NumberGameInList1 (Text) for Garden Horizonts
 local NumberGameInList1 = createDrawing("Text", {
     Visible = false,
     Transparency = 1,
@@ -444,7 +429,7 @@ local Status2_Border = createDrawing("Square", {
     Size = Status2.Size
 })
 
--- DevelopStatus (Text)
+-- DevelopStatus (Text) for Garden Horizonts (Development)
 local DevelopStatus = createDrawing("Text", {
     Visible = false,
     Transparency = 1,
@@ -492,6 +477,122 @@ local Execute2_Text = createDrawing("Text", {
     Visible = false,
     ZIndex = 192
 })
+
+-- ========== НОВАЯ ПЛАШКА ДЛЯ Those Who Remain ==========
+local GameBack3 = createDrawing("Square", {
+    Visible = false,
+    Transparency = 1,
+    ZIndex = 140,
+    Color = Color3.fromHex("#0a0a0a"),
+    Position = GameBack2.Position + Vector2.new(0, 45), -- под GameBack2
+    Size = Vector2.new(518, 37),
+    Filled = true
+})
+
+local GameBack3_Border = createDrawing("Square", {
+    Visible = false,
+    Transparency = 1,
+    ZIndex = 141,
+    Color = Color3.fromHex("#000000"),
+    Filled = false,
+    Thickness = 1,
+    Position = GameBack3.Position,
+    Size = GameBack3.Size
+})
+
+local NumberGameInList2 = createDrawing("Text", {
+    Visible = false,
+    Transparency = 1,
+    ZIndex = 150,
+    Color = Color3.fromHex("#1a5e32"),
+    Position = GameBack3.Position + Vector2.new(13.5, 12),
+    Text = "3",
+    Size = 14,
+    Center = false,
+    Outline = true,
+    Font = Drawing.Fonts.SystemBold
+})
+
+local ThoseWhoRemainText = createDrawing("Text", {
+    Visible = false,
+    Transparency = 1,
+    ZIndex = 160,
+    Color = Color3.fromHex("#4bde81"),
+    Position = GameBack3.Position + Vector2.new(39.5, 12),
+    Text = "Those who remain",
+    Size = 12,
+    Center = false,
+    Outline = true,
+    Font = Drawing.Fonts.Monospace
+})
+
+local Status3 = createDrawing("Square", {
+    Visible = false,
+    Transparency = 1,
+    ZIndex = 170,
+    Color = Color3.fromHex("#0a0a0a"),
+    Position = GameBack3.Position + Vector2.new(360.5, 12),
+    Size = Vector2.new(57, 16),
+    Filled = true
+})
+
+local Status3_Border = createDrawing("Square", {
+    Visible = false,
+    Transparency = 1,
+    ZIndex = 171,
+    Color = Color3.fromHex("#1c4b2d"),
+    Filled = false,
+    Thickness = 1,
+    Position = Status3.Position,
+    Size = Status3.Size
+})
+
+local WorkingStatus2 = createDrawing("Text", {
+    Visible = false,
+    Transparency = 1,
+    ZIndex = 180,
+    Color = Color3.fromHex("#31df5f"),
+    Position = GameBack3.Position + Vector2.new(374.5, 15.5),
+    Text = "Working",
+    Size = 9,
+    Center = false,
+    Outline = true,
+    Font = Drawing.Fonts.Monospace
+})
+
+local Execute3 = createDrawing("Square", {
+    Visible = false,
+    Transparency = 1,
+    ZIndex = 190,
+    Color = Color3.fromHex("#0d0c0c"),
+    Position = GameBack3.Position + Vector2.new(430.5, 12),
+    Size = Vector2.new(57, 16),
+    Filled = true
+})
+
+local Execute3_Border = createDrawing("Square", {
+    Visible = false,
+    Transparency = 1,
+    ZIndex = 191,
+    Color = Color3.fromHex("#285439"),
+    Filled = false,
+    Thickness = 1,
+    Position = Execute3.Position,
+    Size = Execute3.Size
+})
+
+local Execute3_Text = createDrawing("Text", {
+    Text = "Execute",
+    Size = 9,
+    Center = true,
+    Outline = true,
+    Font = 3,
+    Color = Color3.fromHex("#2fcf72"),
+    Position = Execute3.Position + Vector2.new(57/2, 16/2),
+    Visible = false,
+    ZIndex = 192
+})
+-- ========================================================
 
 local KeyNames = {
     [48] = "0",
@@ -570,9 +671,10 @@ local KeyNames = {
 -- Функция для отображения/скрытия контента вкладки ScriptHUB
 local function SetScriptHUBContentVisible(visible)
     activeTab = visible
+
+    -- GameBack1 (Pressure)
     GameBack1.Visible = visible
     GameBack1_Border.Visible = visible
-    SupportGameText.Visible = visible
     NumberGameInList.Visible = visible
     PressureText.Visible = visible
     Status1.Visible = visible
@@ -581,16 +683,33 @@ local function SetScriptHUBContentVisible(visible)
     Execute1.Visible = visible
     Execute1_Text.Visible = visible
     Execute1_Border.Visible = visible
+
+    -- GameBack2 (Garden Horizonts)
     GameBack2.Visible = visible
     GameBack2_Border.Visible = visible
-    GardenHorizontsText.Visible = visible
     NumberGameInList1.Visible = visible
+    GardenHorizontsText.Visible = visible
     Status2.Visible = visible
     Status2_Border.Visible = visible
     DevelopStatus.Visible = visible
     Execute2.Visible = visible
     Execute2_Text.Visible = visible
     Execute2_Border.Visible = visible
+
+    -- GameBack3 (Those who remain)
+    GameBack3.Visible = visible
+    GameBack3_Border.Visible = visible
+    NumberGameInList2.Visible = visible
+    ThoseWhoRemainText.Visible = visible
+    Status3.Visible = visible
+    Status3_Border.Visible = visible
+    WorkingStatus2.Visible = visible
+    Execute3.Visible = visible
+    Execute3_Text.Visible = visible
+    Execute3_Border.Visible = visible
+
+    -- SupportGameText показываем только если видимы игры
+    SupportGameText.Visible = visible
 
     -- Обновляем цвет кнопки вкладки в зависимости от состояния
     if visible then
@@ -675,7 +794,6 @@ local function main()
                     -- Скрываем контент вкладки при скрытии GUI
                     GameBack1.Visible = false
                     GameBack1_Border.Visible = false
-                    SupportGameText.Visible = false
                     NumberGameInList.Visible = false
                     PressureText.Visible = false
                     Status1.Visible = false
@@ -686,14 +804,25 @@ local function main()
                     Execute1_Border.Visible = false
                     GameBack2.Visible = false
                     GameBack2_Border.Visible = false
-                    GardenHorizontsText.Visible = false
                     NumberGameInList1.Visible = false
+                    GardenHorizontsText.Visible = false
                     Status2.Visible = false
                     Status2_Border.Visible = false
                     DevelopStatus.Visible = false
                     Execute2.Visible = false
                     Execute2_Text.Visible = false
                     Execute2_Border.Visible = false
+                    GameBack3.Visible = false
+                    GameBack3_Border.Visible = false
+                    NumberGameInList2.Visible = false
+                    ThoseWhoRemainText.Visible = false
+                    Status3.Visible = false
+                    Status3_Border.Visible = false
+                    WorkingStatus2.Visible = false
+                    Execute3.Visible = false
+                    Execute3_Text.Visible = false
+                    Execute3_Border.Visible = false
+                    SupportGameText.Visible = false
                 end
                 -- Блокируем/разблокируем мышь
                 setrobloxinput(not guiVisible)
@@ -721,14 +850,17 @@ local function main()
                 end
             end
 
-            -- Подсветка бордеров для блоков GameBack1, GameBack2, Execute1, Execute2, Status1, Status2
+            -- Подсветка бордеров для всех блоков
             local blocksWithBorder = {
                 {block = GameBack1, border = GameBack1_Border},
                 {block = GameBack2, border = GameBack2_Border},
+                {block = GameBack3, border = GameBack3_Border},
                 {block = Execute1, border = Execute1_Border},
                 {block = Execute2, border = Execute2_Border},
+                {block = Execute3, border = Execute3_Border},
                 {block = Status1, border = Status1_Border},
                 {block = Status2, border = Status2_Border},
+                {block = Status3, border = Status3_Border},
             }
             for _, item in ipairs(blocksWithBorder) do
                 if item.block.Visible and guiVisible then
@@ -738,11 +870,11 @@ local function main()
                         item.border.Color = Color3.fromHex("#00c950")
                     else
                         -- Возвращаем исходный цвет (в зависимости от элемента)
-                        if item.block == GameBack1 or item.block == GameBack2 then
+                        if item.block == GameBack1 or item.block == GameBack2 or item.block == GameBack3 then
                             item.border.Color = Color3.fromHex("#000000")
-                        elseif item.block == Execute1 or item.block == Execute2 then
+                        elseif item.block == Execute1 or item.block == Execute2 or item.block == Execute3 then
                             item.border.Color = Color3.fromHex("#285439")
-                        elseif item.block == Status1 or item.block == Status2 then
+                        elseif item.block == Status1 or item.block == Status2 or item.block == Status3 then
                             item.border.Color = Color3.fromHex("#1c4b2d")
                         end
                     end
@@ -758,20 +890,27 @@ local function main()
                     SetScriptHUBContentVisible(not activeTab)
                 end
 
-                -- Button Execute1
+                -- Button Execute1 (Pressure)
                 if Execute1.Visible and mPos.X >= Execute1.Position.X and mPos.X <= Execute1.Position.X + Execute1.Size.X and
                    mPos.Y >= Execute1.Position.Y and mPos.Y <= Execute1.Position.Y + Execute1.Size.Y then
-                    -- Запускаем выполнение скрипта Pressure и выгрузку в отдельном потоке, чтобы не блокировать цикл
                     spawn(function()
                         executeAndUnload("https://raw.githubusercontent.com/kinamy200111/Pressure/refs/heads/main/Pressure.lua")
                     end)
                 end
 
-                -- Button Execute2
+                -- Button Execute2 (Garden Horizonts)
                 if Execute2.Visible and mPos.X >= Execute2.Position.X and mPos.X <= Execute2.Position.X + Execute2.Size.X and
                    mPos.Y >= Execute2.Position.Y and mPos.Y <= Execute2.Position.Y + Execute2.Size.Y then
                     spawn(function()
                         executeAndUnload("https://raw.githubusercontent.com/kinamy200111/Pressure/refs/heads/main/GardenGorizonts")
+                    end)
+                end
+
+                -- Button Execute3 (Those who remain)
+                if Execute3.Visible and mPos.X >= Execute3.Position.X and mPos.X <= Execute3.Position.X + Execute3.Size.X and
+                   mPos.Y >= Execute3.Position.Y and mPos.Y <= Execute3.Position.Y + Execute3.Size.Y then
+                    spawn(function()
+                        executeAndUnload("https://raw.githubusercontent.com/kinamy200111/Pressure/refs/heads/main/TWR")
                     end)
                 end
 
@@ -809,6 +948,8 @@ local function main()
                     TabHUB_Border.Position = TabHUB.Position
                     TabHUB_Text.Position = TabHUB.Position + Vector2.new(300/2, 22/2)
                     Line.Position = dragging.Position + Vector2.new(567, 41.5)
+
+                    -- GameBack1
                     GameBack1.Position = dragging.Position + Vector2.new(25.5, 130)
                     GameBack1_Border.Position = GameBack1.Position
                     SupportGameText.Position = dragging.Position + Vector2.new(31, 100)
@@ -820,16 +961,30 @@ local function main()
                     Execute1.Position = dragging.Position + Vector2.new(456, 141)
                     Execute1_Border.Position = Execute1.Position
                     Execute1_Text.Position = Execute1.Position + Vector2.new(57/2, 16/2)
+
+                    -- GameBack2
                     GameBack2.Position = dragging.Position + Vector2.new(25.5, 175)
                     GameBack2_Border.Position = GameBack2.Position
-                    GardenHorizontsText.Position = dragging.Position + Vector2.new(65, 187)
                     NumberGameInList1.Position = dragging.Position + Vector2.new(39, 187)
+                    GardenHorizontsText.Position = dragging.Position + Vector2.new(65, 187)
                     Status2.Position = dragging.Position + Vector2.new(347, 187)
                     Status2_Border.Position = Status2.Position
                     DevelopStatus.Position = dragging.Position + Vector2.new(366, 189.5)
                     Execute2.Position = dragging.Position + Vector2.new(456, 187)
                     Execute2_Border.Position = Execute2.Position
                     Execute2_Text.Position = Execute2.Position + Vector2.new(57/2, 16/2)
+
+                    -- GameBack3
+                    GameBack3.Position = dragging.Position + Vector2.new(25.5, 220)
+                    GameBack3_Border.Position = GameBack3.Position
+                    NumberGameInList2.Position = dragging.Position + Vector2.new(39, 232)
+                    ThoseWhoRemainText.Position = dragging.Position + Vector2.new(65, 232)
+                    Status3.Position = dragging.Position + Vector2.new(386, 232)
+                    Status3_Border.Position = Status3.Position
+                    WorkingStatus2.Position = dragging.Position + Vector2.new(400, 235.5)
+                    Execute3.Position = dragging.Position + Vector2.new(456, 232)
+                    Execute3_Border.Position = Execute3.Position
+                    Execute3_Text.Position = Execute3.Position + Vector2.new(57/2, 16/2)
                 end
             end
 
