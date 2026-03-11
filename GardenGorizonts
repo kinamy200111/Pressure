@@ -17,9 +17,16 @@ local MainSwitchManny = { IsChecked = false, Bg = nil, Ind = nil, IndBorder = ni
 
 local mannyEnabled = false
 local mannySpeed = 0.3
+local mannyMode = "Teleport" -- "Teleport" или "Tween"
+local tweenDuration = 3.0
+local yOffset = -3.0
 
 local AdvSwitchMannyEnable
 local AdvMannySpeedSlider
+local AdvMannyModeDropdown
+local AdvMannyTweenBlock
+local AdvMannyDurationSlider
+local AdvMannyYOffsetSlider
 
 local uiElements = {}
 local advMannyElements = {}
@@ -429,14 +436,13 @@ UpdateSwitchColor(SwitchWatermark_Bg, false)
 SwitchWatermark_IndBorder.Position = SwitchWatermark.Position + Vector2.new(1, 1)
 SwitchWatermark_Ind.Position = SwitchWatermark.Position + Vector2.new(1, 1)
 
--- Плашка Auto Manny (увеличена)
 local ContentExploits1 = Drawing.new("Square")
 ContentExploits1.Visible = false
 ContentExploits1.Transparency = 1
 ContentExploits1.ZIndex = 240
 ContentExploits1.Color = Color3.fromHex("#111010")
 ContentExploits1.Position = VeryBackGUI.Position + Vector2.new(20, 97)
-ContentExploits1.Size = Vector2.new(350, 120)  -- увеличена ширина и высота
+ContentExploits1.Size = Vector2.new(350, 120)
 ContentExploits1.Filled = true
 ContentExploits1.Corner = 5
 table.insert(uiElements, ContentExploits1)
@@ -486,7 +492,7 @@ SwitchManny.Color = Color3.fromHex("#000000")
 SwitchManny.Thickness = 1
 SwitchManny.Filled = false
 SwitchManny.Size = Vector2.new(25, 15)
-SwitchManny.Position = ContentExploits1.Position + Vector2.new(ContentExploits1.Size.X - 35, 12)  -- смещён вправо
+SwitchManny.Position = ContentExploits1.Position + Vector2.new(ContentExploits1.Size.X - 35, 12)
 SwitchManny.ZIndex = 250
 SwitchManny.Corner = 10
 table.insert(uiElements, SwitchManny)
@@ -538,7 +544,6 @@ MainSwitchManny.Bg = SwitchManny_Bg
 MainSwitchManny.Ind = SwitchManny_Ind
 MainSwitchManny.IndBorder = SwitchManny_IndBorder
 
--- Дополнительный текст предупреждения
 local MannyWarning1 = Drawing.new("Text")
 MannyWarning1.Visible = false
 MannyWarning1.Transparency = 1
@@ -666,7 +671,7 @@ TextInfo3.Transparency = 1
 TextInfo3.ZIndex = 340
 TextInfo3.Color = Color3.fromHex("#00c950")
 TextInfo3.Position = ContentInfo2.Position + Vector2.new(15, 14)
-TextInfo3.Text = "Changelogs for ver 6.6, 7 March, 2026 Year:"
+TextInfo3.Text = "Changelogs for ver 1.1, 12 March, 2026 Year:"
 TextInfo3.Size = 14
 TextInfo3.Center = false
 TextInfo3.Outline = true
@@ -690,8 +695,10 @@ for i=1,12 do
     table.insert(ChangelogLines, line)
 end
 
-ChangelogLines[1].Text = "[+] Support!"
+ChangelogLines[1].Text = "[+] Support"
 ChangelogLines[1].Color = Color3.fromHex("#00ff66")
+ChangelogLines[2].Text = "[+] Added dropdown for method teleport"
+ChangelogLines[2].Color = Color3.fromHex("#00ff66")
 
 local function CreateImageGroup(cache, size, startPos)
     local group = {}
@@ -943,6 +950,10 @@ local function CloseAdvancedWindows()
     end
     AdvSwitchMannyEnable = nil
     AdvMannySpeedSlider = nil
+    AdvMannyModeDropdown = nil
+    AdvMannyTweenBlock = nil
+    AdvMannyDurationSlider = nil
+    AdvMannyYOffsetSlider = nil
 end
 
 local function UpdateAdvancedPositions()
@@ -1030,6 +1041,7 @@ local function CreateAdvancedManny()
     table.insert(advMannyElements, title)
 
     local scrollY = win2.Position.Y + 43 + 35
+
 
     local s1 = Drawing.new("Square")
     s1.Visible = true
@@ -1154,6 +1166,7 @@ local function CreateAdvancedManny()
     end
     UpdateSwitchColor(AdvSwitchMannyEnable.Bg, AdvSwitchMannyEnable.IsChecked)
 
+
     local s2 = Drawing.new("Square")
     s2.Visible = true
     s2.Transparency = 1
@@ -1185,7 +1198,7 @@ local function CreateAdvancedManny()
     title2.ZIndex = 1080
     title2.Color = Color3.fromHex("#d1d4dd")
     title2.Position = s2.Position + Vector2.new(19, 12)
-    title2.Text = "Teleport Speed"
+    title2.Text = "Delay between objects"
     title2.Size = 14
     title2.Center = false
     title2.Outline = true
@@ -1247,7 +1260,7 @@ local function CreateAdvancedManny()
     desc2.ZIndex = 1110
     desc2.Color = Color3.fromHex("#6b7382")
     desc2.Position = s2.Position + Vector2.new(32, 62)
-    desc2.Text = "Delay between teleports"
+    desc2.Text = "Time between teleports"
     desc2.Size = 11
     desc2.Center = false
     desc2.Outline = true
@@ -1263,28 +1276,383 @@ local function CreateAdvancedManny()
         dragging = false
     }
 
+
+    local s3 = Drawing.new("Square")
+    s3.Visible = true
+    s3.Transparency = 1
+    s3.ZIndex = 1060
+    s3.Color = Color3.fromHex("#111010")
+    s3.Position = s2.Position + Vector2.new(0, 104)
+    s3.Size = Vector2.new(247, 90)
+    s3.Filled = true
+    s3.Corner = 5
+    table.insert(uiElements, s3)
+    table.insert(advMannyElements, s3)
+
+    local s3b = Drawing.new("Square")
+    s3b.Visible = true
+    s3b.Transparency = 1
+    s3b.ZIndex = 1061
+    s3b.Color = Color3.fromHex("#1b1a1b")
+    s3b.Filled = false
+    s3b.Thickness = 1
+    s3b.Position = s3.Position
+    s3b.Size = s3.Size
+    s3b.Corner = 5
+    table.insert(uiElements, s3b)
+    table.insert(advMannyElements, s3b)
+
+    local title3 = Drawing.new("Text")
+    title3.Visible = true
+    title3.Transparency = 1
+    title3.ZIndex = 1080
+    title3.Color = Color3.fromHex("#d1d4dd")
+    title3.Position = s3.Position + Vector2.new(11, 14)
+    title3.Text = "Teleport Mode"
+    title3.Size = 14
+    title3.Center = false
+    title3.Outline = true
+    title3.Font = Drawing.Fonts.UI
+    table.insert(uiElements, title3)
+    table.insert(advMannyElements, title3)
+
+    local desc3 = Drawing.new("Text")
+    desc3.Visible = true
+    desc3.Transparency = 1
+    desc3.ZIndex = 1100
+    desc3.Color = Color3.fromHex("#6b7382")
+    desc3.Position = s3.Position + Vector2.new(19, 38)
+    desc3.Text = "Select teleport behavior"
+    desc3.Size = 11
+    desc3.Center = false
+    desc3.Outline = true
+    desc3.Font = Drawing.Fonts.UI
+    table.insert(uiElements, desc3)
+    table.insert(advMannyElements, desc3)
+
+    local modeItems = {
+        { name = "Teleport", checked = (mannyMode == "Teleport") },
+        { name = "Tween", checked = (mannyMode == "Tween") }
+    }
+    local modeDropdownOpen = false
+    local modeDropdownMain = Drawing.new("Square")
+    modeDropdownMain.Visible = true
+    modeDropdownMain.Transparency = 1
+    modeDropdownMain.Color = Color3.fromHex("#1b1a1b")
+    modeDropdownMain.Filled = true
+    modeDropdownMain.Size = Vector2.new(140, 24)
+    modeDropdownMain.Position = s3.Position + Vector2.new(25, 52)
+    modeDropdownMain.ZIndex = 1140
+    modeDropdownMain.Corner = 4
+    table.insert(uiElements, modeDropdownMain)
+    table.insert(advMannyElements, modeDropdownMain)
+
+    local modeDropdownText = Drawing.new("Text")
+    modeDropdownText.Visible = true
+    modeDropdownText.Text = mannyMode
+    modeDropdownText.Size = 14
+    modeDropdownText.Outline = true
+    modeDropdownText.Font = 0
+    modeDropdownText.Color = Color3.fromHex("#d1d4dd")
+    modeDropdownText.Position = modeDropdownMain.Position + Vector2.new(8, 4)
+    modeDropdownText.ZIndex = 1142
+    table.insert(uiElements, modeDropdownText)
+    table.insert(advMannyElements, modeDropdownText)
+
+    local modeDropdownArrow = Drawing.new("Text")
+    modeDropdownArrow.Visible = true
+    modeDropdownArrow.Text = ""
+    modeDropdownArrow.Size = 12
+    modeDropdownArrow.Outline = true
+    modeDropdownArrow.Color = Color3.fromHex("#d1d4dd")
+    modeDropdownArrow.Position = modeDropdownMain.Position + Vector2.new(120, 4)
+    modeDropdownArrow.ZIndex = 1142
+    table.insert(uiElements, modeDropdownArrow)
+    table.insert(advMannyElements, modeDropdownArrow)
+
+    local modeDropdownBoxes = {}
+    for idx, item in ipairs(modeItems) do
+        local box = Drawing.new("Square")
+        box.Visible = false
+        box.Transparency = 1
+        box.Color = Color3.fromHex("#111010")
+        box.Filled = true
+        box.Size = Vector2.new(140, 24)
+        box.Position = modeDropdownMain.Position + Vector2.new(0, 24 * idx)
+        box.ZIndex = 1145
+        box.Corner = 4
+        table.insert(uiElements, box)
+        table.insert(advMannyElements, box)
+
+        local check = Drawing.new("Square")
+        check.Visible = false
+        check.Transparency = 1
+        check.Color = item.checked and Color3.fromHex("#04c838") or Color3.fromHex("#3a3a3a")
+        check.Filled = true
+        check.Size = Vector2.new(12, 12)
+        check.Position = box.Position + Vector2.new(6, 6)
+        check.ZIndex = 1146
+        check.Corner = 2
+        table.insert(uiElements, check)
+        table.insert(advMannyElements, check)
+
+        local txt = Drawing.new("Text")
+        txt.Visible = false
+        txt.Text = item.name
+        txt.Size = 14
+        txt.Outline = true
+        txt.Font = 0
+        txt.Color = Color3.fromHex("#d1d4dd")
+        txt.Position = box.Position + Vector2.new(24, 4)
+        txt.ZIndex = 1146
+        table.insert(uiElements, txt)
+        table.insert(advMannyElements, txt)
+
+        table.insert(modeDropdownBoxes, { Box = box, Check = check, Text = txt, Data = item })
+    end
+
+    local function UpdateModeDropdownText()
+        for _, it in ipairs(modeItems) do
+            if it.checked then
+                modeDropdownText.Text = it.name
+                break
+            end
+        end
+    end
+
+    AdvMannyModeDropdown = {
+        main = modeDropdownMain,
+        boxes = modeDropdownBoxes,
+        items = modeItems,
+        open = modeDropdownOpen,
+        text = modeDropdownText,
+        Update = UpdateModeDropdownText
+    }
+
+    local s4 = Drawing.new("Square")
+    s4.Visible = (mannyMode == "Tween")
+    s4.Transparency = 1
+    s4.ZIndex = 1060
+    s4.Color = Color3.fromHex("#111010")
+    s4.Position = s3.Position + Vector2.new(0, 104)
+    s4.Size = Vector2.new(247, 160) 
+    s4.Filled = true
+    s4.Corner = 5
+    table.insert(uiElements, s4)
+    table.insert(advMannyElements, s4)
+
+    local s4b = Drawing.new("Square")
+    s4b.Visible = (mannyMode == "Tween")
+    s4b.Transparency = 1
+    s4b.ZIndex = 1061
+    s4b.Color = Color3.fromHex("#1b1a1b")
+    s4b.Filled = false
+    s4b.Thickness = 1
+    s4b.Position = s4.Position
+    s4b.Size = s4.Size
+    s4b.Corner = 5
+    table.insert(uiElements, s4b)
+    table.insert(advMannyElements, s4b)
+
+    local title4 = Drawing.new("Text")
+    title4.Visible = (mannyMode == "Tween")
+    title4.Transparency = 1
+    title4.ZIndex = 1080
+    title4.Color = Color3.fromHex("#d1d4dd")
+    title4.Position = s4.Position + Vector2.new(11, 14)
+    title4.Text = "Tween Settings"
+    title4.Size = 14
+    title4.Center = false
+    title4.Outline = true
+    title4.Font = Drawing.Fonts.UI
+    table.insert(uiElements, title4)
+    table.insert(advMannyElements, title4)
+
+
+    local durTrack = Drawing.new("Square")
+    durTrack.Visible = (mannyMode == "Tween")
+    durTrack.Transparency = 1
+    durTrack.Color = Color3.fromHex("#2a2a2a")
+    durTrack.Filled = true
+    durTrack.Size = Vector2.new(200, 4)
+    durTrack.Position = s4.Position + Vector2.new(19, 40)
+    durTrack.ZIndex = 1130
+    durTrack.Corner = 2
+    table.insert(uiElements, durTrack)
+    table.insert(advMannyElements, durTrack)
+
+    local durFill = Drawing.new("Square")
+    durFill.Visible = (mannyMode == "Tween")
+    durFill.Transparency = 1
+    durFill.Color = Color3.fromHex("#04c838")
+    durFill.Filled = true
+    durFill.Size = Vector2.new(200 * ((tweenDuration-0.5)/(5-0.5)), 4)
+    durFill.Position = durTrack.Position
+    durFill.ZIndex = 1131
+    durFill.Corner = 2
+    table.insert(uiElements, durFill)
+    table.insert(advMannyElements, durFill)
+
+    local durKnob = Drawing.new("Circle")
+    durKnob.Visible = (mannyMode == "Tween")
+    durKnob.Transparency = 1
+    durKnob.Color = Color3.fromHex("#04c838")
+    durKnob.Filled = true
+    durKnob.Radius = 6
+    durKnob.NumSides = 16
+    durKnob.Position = durTrack.Position + Vector2.new(200 * ((tweenDuration-0.5)/(5-0.5)), 2)
+    durKnob.ZIndex = 1132
+    table.insert(uiElements, durKnob)
+    table.insert(advMannyElements, durKnob)
+
+    local durText = Drawing.new("Text")
+    durText.Visible = (mannyMode == "Tween")
+    durText.Transparency = 1
+    durText.Text = string.format("%.1f", tweenDuration) .. "s"
+    durText.Size = 14
+    durText.Center = true
+    durText.Outline = true
+    durText.Color = Color3.fromHex("#ffffff")
+    durText.Position = durTrack.Position + Vector2.new(100, -20)
+    durText.ZIndex = 1133
+    table.insert(uiElements, durText)
+    table.insert(advMannyElements, durText)
+
+    local durDesc = Drawing.new("Text")
+    durDesc.Visible = (mannyMode == "Tween")
+    durDesc.Transparency = 1
+    durDesc.ZIndex = 1110
+    durDesc.Color = Color3.fromHex("#6b7382")
+    durDesc.Position = s4.Position + Vector2.new(32, 62)
+    durDesc.Text = "Follow duration"
+    durDesc.Size = 11
+    durDesc.Center = false
+    durDesc.Outline = true
+    durDesc.Font = Drawing.Fonts.UI
+    table.insert(uiElements, durDesc)
+    table.insert(advMannyElements, durDesc)
+
+
+    local yTrack = Drawing.new("Square")
+    yTrack.Visible = (mannyMode == "Tween")
+    yTrack.Transparency = 1
+    yTrack.Color = Color3.fromHex("#2a2a2a")
+    yTrack.Filled = true
+    yTrack.Size = Vector2.new(200, 4)
+    yTrack.Position = s4.Position + Vector2.new(19, 90)
+    yTrack.ZIndex = 1130
+    yTrack.Corner = 2
+    table.insert(uiElements, yTrack)
+    table.insert(advMannyElements, yTrack)
+
+    local yFill = Drawing.new("Square")
+    yFill.Visible = (mannyMode == "Tween")
+    yFill.Transparency = 1
+    yFill.Color = Color3.fromHex("#04c838")
+    yFill.Filled = true
+    yFill.Size = Vector2.new(200 * ((yOffset+10)/(20)), 4) 
+    yFill.Position = yTrack.Position
+    yFill.ZIndex = 1131
+    yFill.Corner = 2
+    table.insert(uiElements, yFill)
+    table.insert(advMannyElements, yFill)
+
+    local yKnob = Drawing.new("Circle")
+    yKnob.Visible = (mannyMode == "Tween")
+    yKnob.Transparency = 1
+    yKnob.Color = Color3.fromHex("#04c838")
+    yKnob.Filled = true
+    yKnob.Radius = 6
+    yKnob.NumSides = 16
+    yKnob.Position = yTrack.Position + Vector2.new(200 * ((yOffset+10)/(20)), 2)
+    yKnob.ZIndex = 1132
+    table.insert(uiElements, yKnob)
+    table.insert(advMannyElements, yKnob)
+
+    local yText = Drawing.new("Text")
+    yText.Visible = (mannyMode == "Tween")
+    yText.Transparency = 1
+    yText.Text = string.format("%.1f", yOffset)
+    yText.Size = 14
+    yText.Center = true
+    yText.Outline = true
+    yText.Color = Color3.fromHex("#ffffff")
+    yText.Position = yTrack.Position + Vector2.new(100, -20)
+    yText.ZIndex = 1133
+    table.insert(uiElements, yText)
+    table.insert(advMannyElements, yText)
+
+    local yDesc = Drawing.new("Text")
+    yDesc.Visible = (mannyMode == "Tween")
+    yDesc.Transparency = 1
+    yDesc.ZIndex = 1110
+    yDesc.Color = Color3.fromHex("#6b7382")
+    yDesc.Position = s4.Position + Vector2.new(32, 112)
+    yDesc.Text = "Y offset"
+    yDesc.Size = 11
+    yDesc.Center = false
+    yDesc.Outline = true
+    yDesc.Font = Drawing.Fonts.UI
+    table.insert(uiElements, yDesc)
+    table.insert(advMannyElements, yDesc)
+
+    AdvMannyTweenBlock = {
+        block = s4,
+        border = s4b,
+        title = title4,
+        durTrack = durTrack,
+        durFill = durFill,
+        durKnob = durKnob,
+        durText = durText,
+        durDesc = durDesc,
+        yTrack = yTrack,
+        yFill = yFill,
+        yKnob = yKnob,
+        yText = yText,
+        yDesc = yDesc,
+        durationDragging = false,
+        yDragging = false
+    }
+
     local allElements = {
         win2, closeBtn, closeText, win, title,
         s1, s1b, title1, desc1, sw, swBg, swIndBorder, swInd, swLabel,
-        s2, s2b, title2, speedSliderTrack, speedFill, speedKnob, speedValText, desc2
+        s2, s2b, title2, speedSliderTrack, speedFill, speedKnob, speedValText, desc2,
+        s3, s3b, title3, desc3, modeDropdownMain, modeDropdownText, modeDropdownArrow,
+        s4, s4b, title4,
+        durTrack, durFill, durKnob, durText, durDesc,
+        yTrack, yFill, yKnob, yText, yDesc
     }
     for _, el in ipairs(allElements) do
         table.insert(uiElements, el)
         table.insert(advMannyElements, el)
+    end
+    for _, box in ipairs(modeDropdownBoxes) do
+        table.insert(uiElements, box.Box)
+        table.insert(uiElements, box.Check)
+        table.insert(uiElements, box.Text)
+        table.insert(advMannyElements, box.Box)
+        table.insert(advMannyElements, box.Check)
+        table.insert(advMannyElements, box.Text)
     end
 
     _G.adv_manny = {
         elements = allElements,
         swEnable = AdvSwitchMannyEnable,
         speedSlider = AdvMannySpeedSlider,
+        modeDropdown = AdvMannyModeDropdown,
+        tweenBlock = AdvMannyTweenBlock,
         closeBtn = closeBtn,
         basePos = basePos,
         blocks = {
             {block = s1, border = s1b},
             {block = s2, border = s2b},
+            {block = s3, border = s3b},
+            {block = s4, border = s4b},
         }
     }
 end
+
 
 task.spawn(function()
     while true do
@@ -1306,7 +1674,24 @@ task.spawn(function()
                             if not mannyEnabled then break end
                             local part = model.PrimaryPart or model:FindFirstChildWhichIsA("BasePart")
                             if part then
-                                root.Position = part.Position
+                                if mannyMode == "Teleport" then
+                                    root.Position = part.Position
+                                else -- Tween
+                                    local center = part.Position
+                                    local targetPos = Vector3.new(center.X, center.Y + yOffset, center.Z)
+                                    root.Position = targetPos
+                                    local startTime = tick()
+                                    while tick() - startTime < tweenDuration and mannyEnabled and model and model.Parent do
+                                        local currentPart = model.PrimaryPart or model:FindFirstChildWhichIsA("BasePart")
+                                        if currentPart then
+                                            local newCenter = currentPart.Position
+                                            root.Position = Vector3.new(newCenter.X, newCenter.Y + yOffset, newCenter.Z)
+                                        else
+                                            break
+                                        end
+                                        task.wait()
+                                    end
+                                end
                             end
                             wait(mannySpeed)
                         end
@@ -1864,6 +2249,84 @@ while true do
                         a.speedSlider.fill.Size = Vector2.new(a.speedSlider.track.Size.X * ((newVal-0.1)/(10-0.1)), a.speedSlider.fill.Size.Y)
                         a.speedSlider.knob.Position = a.speedSlider.track.Position + Vector2.new(a.speedSlider.track.Size.X * ((newVal-0.1)/(10-0.1)), 2)
                     end
+                    if a.modeDropdown and a.modeDropdown.main and a.modeDropdown.main.Visible and mPos.X >= a.modeDropdown.main.Position.X and mPos.X <= a.modeDropdown.main.Position.X + a.modeDropdown.main.Size.X and
+                       mPos.Y >= a.modeDropdown.main.Position.Y and mPos.Y <= a.modeDropdown.main.Position.Y + a.modeDropdown.main.Size.Y then
+                        a.modeDropdown.open = not a.modeDropdown.open
+                        for _, box in ipairs(a.modeDropdown.boxes) do
+                            if box and box.Box then
+                                box.Box.Visible = a.modeDropdown.open
+                                box.Check.Visible = a.modeDropdown.open
+                                box.Text.Visible = a.modeDropdown.open
+                            end
+                        end
+                    end
+                    if a.modeDropdown and a.modeDropdown.open then
+                        for _, box in ipairs(a.modeDropdown.boxes) do
+                            if box and box.Box and box.Box.Visible and mPos.X >= box.Box.Position.X and mPos.X <= box.Box.Position.X + box.Box.Size.X and
+                               mPos.Y >= box.Box.Position.Y and mPos.Y <= box.Box.Position.Y + box.Box.Size.Y then
+
+                                for _, b in ipairs(a.modeDropdown.items) do
+                                    b.checked = false
+                                end
+                                box.Data.checked = true
+
+                                for _, b in ipairs(a.modeDropdown.boxes) do
+                                    b.Check.Color = b.Data.checked and Color3.fromHex("#04c838") or Color3.fromHex("#3a3a3a")
+                                end
+                                mannyMode = box.Data.name
+                                a.modeDropdown.Update()
+                                a.modeDropdown.open = false
+
+                                for _, b in ipairs(a.modeDropdown.boxes) do
+                                    b.Box.Visible = false
+                                    b.Check.Visible = false
+                                    b.Text.Visible = false
+                                end
+
+                                if a.tweenBlock then
+                                    local show = (mannyMode == "Tween")
+                                    a.tweenBlock.block.Visible = show
+                                    a.tweenBlock.border.Visible = show
+                                    a.tweenBlock.title.Visible = show
+                                    a.tweenBlock.durTrack.Visible = show
+                                    a.tweenBlock.durFill.Visible = show
+                                    a.tweenBlock.durKnob.Visible = show
+                                    a.tweenBlock.durText.Visible = show
+                                    a.tweenBlock.durDesc.Visible = show
+                                    a.tweenBlock.yTrack.Visible = show
+                                    a.tweenBlock.yFill.Visible = show
+                                    a.tweenBlock.yKnob.Visible = show
+                                    a.tweenBlock.yText.Visible = show
+                                    a.tweenBlock.yDesc.Visible = show
+                                end
+                                break
+                            end
+                        end
+                    end
+                    if a.tweenBlock then
+                        if a.tweenBlock.durTrack and a.tweenBlock.durTrack.Visible and mPos.X >= a.tweenBlock.durTrack.Position.X and mPos.X <= a.tweenBlock.durTrack.Position.X + a.tweenBlock.durTrack.Size.X and
+                           mPos.Y >= a.tweenBlock.durTrack.Position.Y-10 and mPos.Y <= a.tweenBlock.durTrack.Position.Y+10 then
+                            a.tweenBlock.durationDragging = true
+                            local relX = mPos.X - a.tweenBlock.durTrack.Position.X
+                            local newVal = 0.5 + (relX / a.tweenBlock.durTrack.Size.X) * (5-0.5)
+                            newVal = math.max(0.5, math.min(5, newVal))
+                            tweenDuration = newVal
+                            a.tweenBlock.durText.Text = string.format("%.1f", newVal) .. "s"
+                            a.tweenBlock.durFill.Size = Vector2.new(a.tweenBlock.durTrack.Size.X * ((newVal-0.5)/(5-0.5)), a.tweenBlock.durFill.Size.Y)
+                            a.tweenBlock.durKnob.Position = a.tweenBlock.durTrack.Position + Vector2.new(a.tweenBlock.durTrack.Size.X * ((newVal-0.5)/(5-0.5)), 2)
+                        end
+                        if a.tweenBlock.yTrack and a.tweenBlock.yTrack.Visible and mPos.X >= a.tweenBlock.yTrack.Position.X and mPos.X <= a.tweenBlock.yTrack.Position.X + a.tweenBlock.yTrack.Size.X and
+                           mPos.Y >= a.tweenBlock.yTrack.Position.Y-10 and mPos.Y <= a.tweenBlock.yTrack.Position.Y+10 then
+                            a.tweenBlock.yDragging = true
+                            local relX = mPos.X - a.tweenBlock.yTrack.Position.X
+                            local newVal = -10 + (relX / a.tweenBlock.yTrack.Size.X) * 20
+                            newVal = math.max(-10, math.min(10, newVal))
+                            yOffset = newVal
+                            a.tweenBlock.yText.Text = string.format("%.1f", newVal)
+                            a.tweenBlock.yFill.Size = Vector2.new(a.tweenBlock.yTrack.Size.X * ((newVal+10)/20), a.tweenBlock.yFill.Size.Y)
+                            a.tweenBlock.yKnob.Position = a.tweenBlock.yTrack.Position + Vector2.new(a.tweenBlock.yTrack.Size.X * ((newVal+10)/20), 2)
+                        end
+                    end
                 end
             end
         end
@@ -1882,7 +2345,13 @@ while true do
         if not mouse1 and lastMouse1 then
             dragging = false
             watermarkDragging = false
-            if _G.adv_manny and _G.adv_manny.speedSlider then _G.adv_manny.speedSlider.dragging = false end
+            if _G.adv_manny then
+                if _G.adv_manny.speedSlider then _G.adv_manny.speedSlider.dragging = false end
+                if _G.adv_manny.tweenBlock then
+                    _G.adv_manny.tweenBlock.durationDragging = false
+                    _G.adv_manny.tweenBlock.yDragging = false
+                end
+            end
         end
 
         if dragging and mouse1 then
@@ -1979,16 +2448,42 @@ while true do
             if StocksICON then StocksICON.Position = MainWatermark.Position + Vector2.new(20, 65.5) end
         end
 
-        if _G.adv_manny and _G.adv_manny.speedSlider and _G.adv_manny.speedSlider.dragging and mouse1 then
-            local a = _G.adv_manny.speedSlider
-            local relX = mPos.X - a.track.Position.X
-            relX = math.max(0, math.min(a.track.Size.X, relX))
-            local newVal = 0.1 + (relX / a.track.Size.X) * (10-0.1)
-            newVal = math.max(0.1, math.min(10, newVal))
-            mannySpeed = newVal
-            a.text.Text = string.format("%.1f", newVal) .. "s"
-            a.fill.Size = Vector2.new(a.track.Size.X * ((newVal-0.1)/(10-0.1)), a.fill.Size.Y)
-            a.knob.Position = a.track.Position + Vector2.new(a.track.Size.X * ((newVal-0.1)/(10-0.1)), 2)
+        if _G.adv_manny then
+            if _G.adv_manny.speedSlider and _G.adv_manny.speedSlider.dragging and mouse1 then
+                local a = _G.adv_manny.speedSlider
+                local relX = mPos.X - a.track.Position.X
+                relX = math.max(0, math.min(a.track.Size.X, relX))
+                local newVal = 0.1 + (relX / a.track.Size.X) * (10-0.1)
+                newVal = math.max(0.1, math.min(10, newVal))
+                mannySpeed = newVal
+                a.text.Text = string.format("%.1f", newVal) .. "s"
+                a.fill.Size = Vector2.new(a.track.Size.X * ((newVal-0.1)/(10-0.1)), a.fill.Size.Y)
+                a.knob.Position = a.track.Position + Vector2.new(a.track.Size.X * ((newVal-0.1)/(10-0.1)), 2)
+            end
+            if _G.adv_manny.tweenBlock then
+                if _G.adv_manny.tweenBlock.durationDragging and mouse1 then
+                    local a = _G.adv_manny.tweenBlock
+                    local relX = mPos.X - a.durTrack.Position.X
+                    relX = math.max(0, math.min(a.durTrack.Size.X, relX))
+                    local newVal = 0.5 + (relX / a.durTrack.Size.X) * (5-0.5)
+                    newVal = math.max(0.5, math.min(5, newVal))
+                    tweenDuration = newVal
+                    a.durText.Text = string.format("%.1f", newVal) .. "s"
+                    a.durFill.Size = Vector2.new(a.durTrack.Size.X * ((newVal-0.5)/(5-0.5)), a.durFill.Size.Y)
+                    a.durKnob.Position = a.durTrack.Position + Vector2.new(a.durTrack.Size.X * ((newVal-0.5)/(5-0.5)), 2)
+                end
+                if _G.adv_manny.tweenBlock.yDragging and mouse1 then
+                    local a = _G.adv_manny.tweenBlock
+                    local relX = mPos.X - a.yTrack.Position.X
+                    relX = math.max(0, math.min(a.yTrack.Size.X, relX))
+                    local newVal = -10 + (relX / a.yTrack.Size.X) * 20
+                    newVal = math.max(-10, math.min(10, newVal))
+                    yOffset = newVal
+                    a.yText.Text = string.format("%.1f", newVal)
+                    a.yFill.Size = Vector2.new(a.yTrack.Size.X * ((newVal+10)/20), a.yFill.Size.Y)
+                    a.yKnob.Position = a.yTrack.Position + Vector2.new(a.yTrack.Size.X * ((newVal+10)/20), 2)
+                end
+            end
         end
 
         lastMouse1 = mouse1
