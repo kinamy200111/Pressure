@@ -194,6 +194,7 @@ local Line = createDrawing("Square", {
     Corner = 1
 })
 
+-- Game 1: Pressure
 local GameBack1 = createDrawing("Square", {
     Visible = false,
     Transparency = 1,
@@ -321,6 +322,7 @@ local Execute1_Text = createDrawing("Text", {
     ZIndex = 192
 })
 
+-- Game 2: Garden Horizonts
 local GameBack2 = createDrawing("Square", {
     Visible = false,
     Transparency = 1,
@@ -435,6 +437,7 @@ local Execute2_Text = createDrawing("Text", {
     ZIndex = 192
 })
 
+-- Game 3: Those who remain
 local GameBack3 = createDrawing("Square", {
     Visible = false,
     Transparency = 1,
@@ -549,6 +552,121 @@ local Execute3_Text = createDrawing("Text", {
     ZIndex = 192
 })
 
+-- Game 4: Fundamental Paper Education
+local GameBack4 = createDrawing("Square", {
+    Visible = false,
+    Transparency = 1,
+    ZIndex = 140,
+    Color = Color3.fromHex("#0a0a0a"),
+    Position = GameBack3.Position + Vector2.new(0, 45),
+    Size = Vector2.new(518, 37),
+    Filled = true
+})
+
+local GameBack4_Border = createDrawing("Square", {
+    Visible = false,
+    Transparency = 1,
+    ZIndex = 141,
+    Color = Color3.fromHex("#000000"),
+    Filled = false,
+    Thickness = 1,
+    Position = GameBack4.Position,
+    Size = GameBack4.Size
+})
+
+local FPEText = createDrawing("Text", {
+    Visible = false,
+    Transparency = 1,
+    ZIndex = 160,
+    Color = Color3.fromHex("#4bde81"),
+    Position = GameBack4.Position + Vector2.new(39.5, 12),
+    Text = "Fundamental Paper Education",
+    Size = 12,
+    Center = false,
+    Outline = true,
+    Font = Drawing.Fonts.Monospace
+})
+
+local NumberGameInList3 = createDrawing("Text", {
+    Visible = false,
+    Transparency = 1,
+    ZIndex = 150,
+    Color = Color3.fromHex("#1a5e32"),
+    Position = GameBack4.Position + Vector2.new(13.5, 12),
+    Text = "4",
+    Size = 14,
+    Center = false,
+    Outline = true,
+    Font = Drawing.Fonts.SystemBold
+})
+
+local Status4 = createDrawing("Square", {
+    Visible = false,
+    Transparency = 1,
+    ZIndex = 170,
+    Color = Color3.fromHex("#0a0a0a"),
+    Position = GameBack4.Position + Vector2.new(360.5, 12),
+    Size = Vector2.new(57, 16),
+    Filled = true
+})
+
+local Status4_Border = createDrawing("Square", {
+    Visible = false,
+    Transparency = 1,
+    ZIndex = 171,
+    Color = Color3.fromHex("#1c4b2d"),
+    Filled = false,
+    Thickness = 1,
+    Position = Status4.Position,
+    Size = Status4.Size
+})
+
+local WorkingStatus4 = createDrawing("Text", {
+    Visible = false,
+    Transparency = 1,
+    ZIndex = 180,
+    Color = Color3.fromHex("#31df5f"),
+    Position = GameBack4.Position + Vector2.new(374.5, 15.5),
+    Text = "Working",
+    Size = 9,
+    Center = false,
+    Outline = true,
+    Font = Drawing.Fonts.Monospace
+})
+
+local Execute4 = createDrawing("Square", {
+    Visible = false,
+    Transparency = 1,
+    ZIndex = 190,
+    Color = Color3.fromHex("#0d0c0c"),
+    Position = GameBack4.Position + Vector2.new(430.5, 12),
+    Size = Vector2.new(57, 16),
+    Filled = true
+})
+
+local Execute4_Border = createDrawing("Square", {
+    Visible = false,
+    Transparency = 1,
+    ZIndex = 191,
+    Color = Color3.fromHex("#285439"),
+    Filled = false,
+    Thickness = 1,
+    Position = Execute4.Position,
+    Size = Execute4.Size
+})
+
+local Execute4_Text = createDrawing("Text", {
+    Text = "Execute",
+    Size = 9,
+    Center = true,
+    Outline = true,
+    Font = 3,
+    Color = Color3.fromHex("#2fcf72"),
+    Position = Execute4.Position + Vector2.new(57/2, 16/2),
+    Visible = false,
+    ZIndex = 192
+})
+
 local KeyNames = {
     [48] = "0",
     [49] = "1",
@@ -656,6 +774,16 @@ local function SetScriptHUBContentVisible(visible)
     Execute3.Visible = visible
     Execute3_Text.Visible = visible
     Execute3_Border.Visible = visible
+    GameBack4.Visible = visible
+    GameBack4_Border.Visible = visible
+    FPEText.Visible = visible
+    NumberGameInList3.Visible = visible
+    Status4.Visible = visible
+    Status4_Border.Visible = visible
+    WorkingStatus4.Visible = visible
+    Execute4.Visible = visible
+    Execute4_Text.Visible = visible
+    Execute4_Border.Visible = visible
 
     if visible then
         TabHUB.Color = Color3.fromHex("#1a1a1a")
@@ -755,6 +883,16 @@ local function main()
                     Execute3.Visible = false
                     Execute3_Text.Visible = false
                     Execute3_Border.Visible = false
+                    GameBack4.Visible = false
+                    GameBack4_Border.Visible = false
+                    FPEText.Visible = false
+                    NumberGameInList3.Visible = false
+                    Status4.Visible = false
+                    Status4_Border.Visible = false
+                    WorkingStatus4.Visible = false
+                    Execute4.Visible = false
+                    Execute4_Text.Visible = false
+                    Execute4_Border.Visible = false
                 end
                 setrobloxinput(not guiVisible)
                 wait(0.2)
@@ -781,12 +919,15 @@ local function main()
                 {block = GameBack1, border = GameBack1_Border},
                 {block = GameBack2, border = GameBack2_Border},
                 {block = GameBack3, border = GameBack3_Border},
+                {block = GameBack4, border = GameBack4_Border},
                 {block = Execute1, border = Execute1_Border},
                 {block = Execute2, border = Execute2_Border},
                 {block = Execute3, border = Execute3_Border},
+                {block = Execute4, border = Execute4_Border},
                 {block = Status1, border = Status1_Border},
                 {block = Status2, border = Status2_Border},
                 {block = Status3, border = Status3_Border},
+                {block = Status4, border = Status4_Border},
             }
             for _, item in ipairs(blocksWithBorder) do
                 if item.block.Visible and guiVisible then
@@ -795,11 +936,11 @@ local function main()
                     if hover then
                         item.border.Color = Color3.fromHex("#00c950")
                     else
-                        if item.block == GameBack1 or item.block == GameBack2 or item.block == GameBack3 then
+                        if item.block == GameBack1 or item.block == GameBack2 or item.block == GameBack3 or item.block == GameBack4 then
                             item.border.Color = Color3.fromHex("#000000")
-                        elseif item.block == Execute1 or item.block == Execute2 or item.block == Execute3 then
+                        elseif item.block == Execute1 or item.block == Execute2 or item.block == Execute3 or item.block == Execute4 then
                             item.border.Color = Color3.fromHex("#285439")
-                        elseif item.block == Status1 or item.block == Status2 or item.block == Status3 then
+                        elseif item.block == Status1 or item.block == Status2 or item.block == Status3 or item.block == Status4 then
                             item.border.Color = Color3.fromHex("#1c4b2d")
                         end
                     end
@@ -830,6 +971,13 @@ local function main()
                    mPos.Y >= Execute3.Position.Y and mPos.Y <= Execute3.Position.Y + Execute3.Size.Y then
                     spawn(function()
                         executeAndUnload("https://raw.githubusercontent.com/kinamy200111/Pressure/refs/heads/main/TWR")
+                    end)
+                end
+
+                if Execute4.Visible and mPos.X >= Execute4.Position.X and mPos.X <= Execute4.Position.X + Execute4.Size.X and
+                   mPos.Y >= Execute4.Position.Y and mPos.Y <= Execute4.Position.Y + Execute4.Size.Y then
+                    spawn(function()
+                        executeAndUnload("https://raw.githubusercontent.com/kinamy200111/Pressure/refs/heads/main/Fundamental-Paper-Education")
                     end)
                 end
 
@@ -895,6 +1043,16 @@ local function main()
                     Execute3.Position = dragging.Position + Vector2.new(456, 232)
                     Execute3_Border.Position = Execute3.Position
                     Execute3_Text.Position = Execute3.Position + Vector2.new(57/2, 16/2)
+                    GameBack4.Position = dragging.Position + Vector2.new(25.5, 265)
+                    GameBack4_Border.Position = GameBack4.Position
+                    FPEText.Position = dragging.Position + Vector2.new(65, 277)
+                    NumberGameInList3.Position = dragging.Position + Vector2.new(39, 277)
+                    Status4.Position = dragging.Position + Vector2.new(386, 277)
+                    Status4_Border.Position = Status4.Position
+                    WorkingStatus4.Position = dragging.Position + Vector2.new(400, 280.5)
+                    Execute4.Position = dragging.Position + Vector2.new(456, 277)
+                    Execute4_Border.Position = Execute4.Position
+                    Execute4_Text.Position = Execute4.Position + Vector2.new(57/2, 16/2)
                 end
             end
 
