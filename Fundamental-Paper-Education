@@ -1,0 +1,2437 @@
+local Mouse = game.Players.LocalPlayer:GetMouse()
+local Viewport = workspace.CurrentCamera.ViewportSize
+
+local activeTab = nil
+local advancedWindowOpen = false
+local closeKey = 0x70
+
+local function UpdateSwitchColor(sw, checked)
+    if checked then
+        sw.Color = Color3.fromHex("#1a1a1a")
+    else
+        sw.Color = Color3.fromHex("#cbcfd5")
+    end
+end
+
+
+local WatermarkSwitch = { IsChecked = false, Bg = nil, Ind = nil, IndBorder = nil }
+local BookHelperSwitch = { IsChecked = false, Bg = nil, Ind = nil, IndBorder = nil }
+local InfinityStaminaSwitch = { IsChecked = false, Bg = nil, Ind = nil, IndBorder = nil }
+local AutoFarmSwitch = { IsChecked = false, Bg = nil, Ind = nil, IndBorder = nil }
+
+local AdvStaminaSwitch = nil
+
+local uiElements = {}
+
+
+local Overlay = Drawing.new("Square")
+Overlay.Visible = false
+Overlay.Transparency = 0.5
+Overlay.ZIndex = 5
+Overlay.Color = Color3.fromHex("#000000")
+Overlay.Position = Vector2.new(0, 0)
+Overlay.Size = Viewport
+Overlay.Filled = true
+table.insert(uiElements, Overlay)
+
+
+local VeryBackGUI = Drawing.new("Square")
+VeryBackGUI.Visible = false
+VeryBackGUI.Transparency = 1
+VeryBackGUI.ZIndex = 10
+VeryBackGUI.Color = Color3.fromHex("#0d0c0c")
+VeryBackGUI.Position = Vector2.new(118, 29)
+VeryBackGUI.Size = Vector2.new(569, 42)
+VeryBackGUI.Filled = true
+VeryBackGUI.Corner = 4
+table.insert(uiElements, VeryBackGUI)
+
+local VeryBackGUI_Border = Drawing.new("Square")
+VeryBackGUI_Border.Visible = false
+VeryBackGUI_Border.Transparency = 1
+VeryBackGUI_Border.ZIndex = 11
+VeryBackGUI_Border.Color = Color3.fromHex("#1b1b1a")
+VeryBackGUI_Border.Filled = false
+VeryBackGUI_Border.Thickness = 1
+VeryBackGUI_Border.Position = VeryBackGUI.Position
+VeryBackGUI_Border.Size = VeryBackGUI.Size
+VeryBackGUI_Border.Corner = 4
+table.insert(uiElements, VeryBackGUI_Border)
+
+local Line1 = Drawing.new("Square")
+Line1.Visible = false
+Line1.Transparency = 1
+Line1.ZIndex = 30
+Line1.Color = Color3.fromHex("#1b1b1a")
+Line1.Position = VeryBackGUI.Position + Vector2.new(0, 41.5)
+Line1.Size = Vector2.new(569, 0.5)
+Line1.Filled = true
+Line1.Corner = 1
+table.insert(uiElements, Line1)
+
+local BackGUItabs = Drawing.new("Square")
+BackGUItabs.Visible = false
+BackGUItabs.Transparency = 1
+BackGUItabs.ZIndex = 20
+BackGUItabs.Color = Color3.fromHex("#0d0c0c")
+BackGUItabs.Position = VeryBackGUI.Position + Vector2.new(0, 42)
+BackGUItabs.Size = Vector2.new(568, 42)
+BackGUItabs.Filled = true
+table.insert(uiElements, BackGUItabs)
+
+local Line3 = Drawing.new("Square")
+Line3.Visible = false
+Line3.Transparency = 1
+Line3.ZIndex = 90
+Line3.Color = Color3.fromHex("#1b1b1a")
+Line3.Position = VeryBackGUI.Position + Vector2.new(-2.5, 84)
+Line3.Size = Vector2.new(569, 1)
+Line3.Filled = true
+table.insert(uiElements, Line3)
+
+local Line2 = Drawing.new("Square")
+Line2.Visible = false
+Line2.Transparency = 1
+Line2.ZIndex = 40
+Line2.Color = Color3.fromHex("#1b1b1a")
+Line2.Position = VeryBackGUI.Position + Vector2.new(0, 42)
+Line2.Size = Vector2.new(1, 42)
+Line2.Filled = true
+Line2.Corner = 1
+table.insert(uiElements, Line2)
+
+local TextRATHUB = Drawing.new("Text")
+TextRATHUB.Visible = false
+TextRATHUB.Transparency = 1
+TextRATHUB.ZIndex = 50
+TextRATHUB.Color = Color3.fromHex("#00c950")
+TextRATHUB.Position = VeryBackGUI.Position + Vector2.new(48, 13)
+TextRATHUB.Text = "RATHUB"
+TextRATHUB.Size = 14
+TextRATHUB.Center = false
+TextRATHUB.Outline = true
+TextRATHUB.Font = Drawing.Fonts.UI
+table.insert(uiElements, TextRATHUB)
+
+local TextLOGO = Drawing.new("Text")
+TextLOGO.Visible = false
+TextLOGO.Transparency = 1
+TextLOGO.ZIndex = 60
+TextLOGO.Color = Color3.fromHex("#00c950")
+TextLOGO.Position = VeryBackGUI.Position + Vector2.new(20, 13)
+TextLOGO.Text = ">_"
+TextLOGO.Size = 14
+TextLOGO.Center = false
+TextLOGO.Outline = true
+TextLOGO.Font = Drawing.Fonts.UI
+table.insert(uiElements, TextLOGO)
+
+local BackContentTabs = Drawing.new("Square")
+BackContentTabs.Visible = false
+BackContentTabs.Transparency = 1
+BackContentTabs.ZIndex = 70
+BackContentTabs.Color = Color3.fromHex("#111111")
+BackContentTabs.Position = VeryBackGUI.Position + Vector2.new(0, 84)
+BackContentTabs.Size = Vector2.new(569, 419)
+BackContentTabs.Filled = true
+BackContentTabs.Corner = 4
+table.insert(uiElements, BackContentTabs)
+
+local BackContentTabs_Border = Drawing.new("Square")
+BackContentTabs_Border.Visible = false
+BackContentTabs_Border.Transparency = 1
+BackContentTabs_Border.ZIndex = 71
+BackContentTabs_Border.Color = Color3.fromHex("#1b1b1a")
+BackContentTabs_Border.Filled = false
+BackContentTabs_Border.Thickness = 1
+BackContentTabs_Border.Position = BackContentTabs.Position
+BackContentTabs_Border.Size = BackContentTabs.Size
+BackContentTabs_Border.Corner = 4
+table.insert(uiElements, BackContentTabs_Border)
+
+local BackGUI2 = Drawing.new("Square")
+BackGUI2.Visible = false
+BackGUI2.Transparency = 1
+BackGUI2.ZIndex = 80
+BackGUI2.Color = Color3.fromHex("#0c0c0d")
+BackGUI2.Position = VeryBackGUI.Position + Vector2.new(0, 488)
+BackGUI2.Size = Vector2.new(569, 15)
+BackGUI2.Filled = true
+table.insert(uiElements, BackGUI2)
+
+local BackGUI2_Border = Drawing.new("Square")
+BackGUI2_Border.Visible = false
+BackGUI2_Border.Transparency = 1
+BackGUI2_Border.ZIndex = 81
+BackGUI2_Border.Color = Color3.fromHex("#1b1a1b")
+BackGUI2_Border.Filled = false
+BackGUI2_Border.Thickness = 1
+BackGUI2_Border.Position = BackGUI2.Position
+BackGUI2_Border.Size = BackGUI2.Size
+table.insert(uiElements, BackGUI2_Border)
+
+
+local TabVisuals = Drawing.new("Square")
+TabVisuals.Visible = false
+TabVisuals.Transparency = 1
+TabVisuals.ZIndex = 100
+TabVisuals.Color = Color3.fromHex("#0c0c0d")
+TabVisuals.Position = VeryBackGUI.Position + Vector2.new(11, 51.5)
+TabVisuals.Size = Vector2.new(86, 22)
+TabVisuals.Filled = true
+TabVisuals.Corner = 4
+table.insert(uiElements, TabVisuals)
+
+local TabVisuals_Text = Drawing.new("Text")
+TabVisuals_Text.Text = "Visuals"
+TabVisuals_Text.Size = 14
+TabVisuals_Text.Center = true
+TabVisuals_Text.Outline = true
+TabVisuals_Text.Font = 0
+TabVisuals_Text.Color = Color3.fromHex("#6b7382")
+TabVisuals_Text.Position = TabVisuals.Position + Vector2.new(86/2, 22/2)
+TabVisuals_Text.Visible = false
+TabVisuals_Text.ZIndex = 102
+table.insert(uiElements, TabVisuals_Text)
+
+local TabExploits = Drawing.new("Square")
+TabExploits.Visible = false
+TabExploits.Transparency = 1
+TabExploits.ZIndex = 120
+TabExploits.Color = Color3.fromHex("#0c0c0d")
+TabExploits.Position = VeryBackGUI.Position + Vector2.new(105, 51.5)
+TabExploits.Size = Vector2.new(86, 22)
+TabExploits.Filled = true
+TabExploits.Corner = 4
+table.insert(uiElements, TabExploits)
+
+local TabExploits_Text = Drawing.new("Text")
+TabExploits_Text.Text = "Exploits"
+TabExploits_Text.Size = 14
+TabExploits_Text.Center = true
+TabExploits_Text.Outline = true
+TabExploits_Text.Font = 0
+TabExploits_Text.Color = Color3.fromHex("#6b7382")
+TabExploits_Text.Position = TabExploits.Position + Vector2.new(86/2, 22/2)
+TabExploits_Text.Visible = false
+TabExploits_Text.ZIndex = 122
+table.insert(uiElements, TabExploits_Text)
+
+local TabMisc = Drawing.new("Square")
+TabMisc.Visible = false
+TabMisc.Transparency = 1
+TabMisc.ZIndex = 130
+TabMisc.Color = Color3.fromHex("#0c0c0d")
+TabMisc.Position = VeryBackGUI.Position + Vector2.new(197, 52)
+TabMisc.Size = Vector2.new(86, 22)
+TabMisc.Filled = true
+TabMisc.Corner = 4
+table.insert(uiElements, TabMisc)
+
+local TabMisc_Text = Drawing.new("Text")
+TabMisc_Text.Text = "Misc"
+TabMisc_Text.Size = 14
+TabMisc_Text.Center = true
+TabMisc_Text.Outline = true
+TabMisc_Text.Font = 0
+TabMisc_Text.Color = Color3.fromHex("#6b7382")
+TabMisc_Text.Position = TabMisc.Position + Vector2.new(86/2, 22/2)
+TabMisc_Text.Visible = false
+TabMisc_Text.ZIndex = 132
+table.insert(uiElements, TabMisc_Text)
+
+local TabInfo = Drawing.new("Square")
+TabInfo.Visible = false
+TabInfo.Transparency = 1
+TabInfo.ZIndex = 140
+TabInfo.Color = Color3.fromHex("#0c0c0d")
+TabInfo.Position = VeryBackGUI.Position + Vector2.new(290, 52)
+TabInfo.Size = Vector2.new(86, 22)
+TabInfo.Filled = true
+TabInfo.Corner = 4
+table.insert(uiElements, TabInfo)
+
+local TabInfo_Text = Drawing.new("Text")
+TabInfo_Text.Text = "Info"
+TabInfo_Text.Size = 14
+TabInfo_Text.Center = true
+TabInfo_Text.Outline = true
+TabInfo_Text.Font = 0
+TabInfo_Text.Color = Color3.fromHex("#6b7382")
+TabInfo_Text.Position = TabInfo.Position + Vector2.new(86/2, 22/2)
+TabInfo_Text.Visible = false
+TabInfo_Text.ZIndex = 142
+table.insert(uiElements, TabInfo_Text)
+
+local Square16 = Drawing.new("Square")
+Square16.Visible = false
+Square16.Transparency = 1
+Square16.ZIndex = 110
+Square16.Color = Color3.fromHex("#1b1b1a")
+Square16.Position = VeryBackGUI.Position + Vector2.new(567, 41.5)
+Square16.Size = Vector2.new(1, 42)
+Square16.Filled = true
+Square16.Corner = 1
+table.insert(uiElements, Square16)
+
+local TabVisuals_Border = Drawing.new("Square")
+TabVisuals_Border.Visible = false
+TabVisuals_Border.Transparency = 1
+TabVisuals_Border.ZIndex = 101
+TabVisuals_Border.Color = Color3.fromHex("#085226")
+TabVisuals_Border.Filled = false
+TabVisuals_Border.Thickness = 1
+TabVisuals_Border.Position = TabVisuals.Position
+TabVisuals_Border.Size = TabVisuals.Size
+TabVisuals_Border.Corner = 4
+table.insert(uiElements, TabVisuals_Border)
+
+local TabExploits_Border = Drawing.new("Square")
+TabExploits_Border.Visible = false
+TabExploits_Border.Transparency = 1
+TabExploits_Border.ZIndex = 121
+TabExploits_Border.Color = Color3.fromHex("#085226")
+TabExploits_Border.Filled = false
+TabExploits_Border.Thickness = 1
+TabExploits_Border.Position = TabExploits.Position
+TabExploits_Border.Size = TabExploits.Size
+TabExploits_Border.Corner = 4
+table.insert(uiElements, TabExploits_Border)
+
+local TabMisc_Border = Drawing.new("Square")
+TabMisc_Border.Visible = false
+TabMisc_Border.Transparency = 1
+TabMisc_Border.ZIndex = 131
+TabMisc_Border.Color = Color3.fromHex("#085226")
+TabMisc_Border.Filled = false
+TabMisc_Border.Thickness = 1
+TabMisc_Border.Position = TabMisc.Position
+TabMisc_Border.Size = TabMisc.Size
+TabMisc_Border.Corner = 4
+table.insert(uiElements, TabMisc_Border)
+
+local TabInfo_Border = Drawing.new("Square")
+TabInfo_Border.Visible = false
+TabInfo_Border.Transparency = 1
+TabInfo_Border.ZIndex = 141
+TabInfo_Border.Color = Color3.fromHex("#085226")
+TabInfo_Border.Filled = false
+TabInfo_Border.Thickness = 1
+TabInfo_Border.Position = TabInfo.Position
+TabInfo_Border.Size = TabInfo.Size
+TabInfo_Border.Corner = 4
+table.insert(uiElements, TabInfo_Border)
+
+
+local WatermarkContent = Drawing.new("Square")
+WatermarkContent.Visible = false
+WatermarkContent.Transparency = 1
+WatermarkContent.ZIndex = 150
+WatermarkContent.Color = Color3.fromHex("#111010")
+WatermarkContent.Position = VeryBackGUI.Position + Vector2.new(20, 97)
+WatermarkContent.Size = Vector2.new(224, 51)
+WatermarkContent.Filled = true
+WatermarkContent.Corner = 5
+table.insert(uiElements, WatermarkContent)
+
+local WatermarkContent_Border = Drawing.new("Square")
+WatermarkContent_Border.Visible = false
+WatermarkContent_Border.Transparency = 1
+WatermarkContent_Border.ZIndex = 151
+WatermarkContent_Border.Color = Color3.fromHex("#1b1a1b")
+WatermarkContent_Border.Filled = false
+WatermarkContent_Border.Thickness = 1
+WatermarkContent_Border.Position = WatermarkContent.Position
+WatermarkContent_Border.Size = WatermarkContent.Size
+WatermarkContent_Border.Corner = 5
+table.insert(uiElements, WatermarkContent_Border)
+
+local WatermarkTitle = Drawing.new("Text")
+WatermarkTitle.Visible = false
+WatermarkTitle.Transparency = 1
+WatermarkTitle.ZIndex = 170
+WatermarkTitle.Color = Color3.fromHex("#d1d4dd")
+WatermarkTitle.Position = WatermarkContent.Position + Vector2.new(10, 13)
+WatermarkTitle.Text = "Watermark"
+WatermarkTitle.Size = 14
+WatermarkTitle.Center = false
+WatermarkTitle.Outline = true
+WatermarkTitle.Font = Drawing.Fonts.UI
+table.insert(uiElements, WatermarkTitle)
+
+local WatermarkDesc = Drawing.new("Text")
+WatermarkDesc.Visible = false
+WatermarkDesc.Transparency = 1
+WatermarkDesc.ZIndex = 190
+WatermarkDesc.Color = Color3.fromHex("#6b7382")
+WatermarkDesc.Position = WatermarkContent.Position + Vector2.new(16, 28)
+WatermarkDesc.Text = "Toggle watermark"
+WatermarkDesc.Size = 11
+WatermarkDesc.Center = false
+WatermarkDesc.Outline = true
+WatermarkDesc.Font = Drawing.Fonts.UI
+table.insert(uiElements, WatermarkDesc)
+
+local SwitchWatermark = Drawing.new("Square")
+SwitchWatermark.Visible = false
+SwitchWatermark.Transparency = 1
+SwitchWatermark.Color = Color3.fromHex("#000000")
+SwitchWatermark.Thickness = 1
+SwitchWatermark.Filled = false
+SwitchWatermark.Size = Vector2.new(25, 15)
+SwitchWatermark.Position = VeryBackGUI.Position + Vector2.new(210, 106)
+SwitchWatermark.ZIndex = 210
+SwitchWatermark.Corner = 10
+table.insert(uiElements, SwitchWatermark)
+
+local SwitchWatermark_Bg = Drawing.new("Square")
+SwitchWatermark_Bg.Visible = false
+SwitchWatermark_Bg.Transparency = 1
+SwitchWatermark_Bg.Color = Color3.fromHex("#cbcfd5")
+SwitchWatermark_Bg.Filled = true
+SwitchWatermark_Bg.Size = SwitchWatermark.Size
+SwitchWatermark_Bg.Position = SwitchWatermark.Position
+SwitchWatermark_Bg.ZIndex = 210
+SwitchWatermark_Bg.Corner = 10
+table.insert(uiElements, SwitchWatermark_Bg)
+
+local SwitchWatermark_IndBorder = Drawing.new("Square")
+SwitchWatermark_IndBorder.Visible = false
+SwitchWatermark_IndBorder.Transparency = 1
+SwitchWatermark_IndBorder.Color = Color3.fromHex("#000000")
+SwitchWatermark_IndBorder.Thickness = 1
+SwitchWatermark_IndBorder.Filled = false
+SwitchWatermark_IndBorder.Size = Vector2.new(13, 13)
+SwitchWatermark_IndBorder.ZIndex = 212
+SwitchWatermark_IndBorder.Corner = 10
+table.insert(uiElements, SwitchWatermark_IndBorder)
+
+local SwitchWatermark_Ind = Drawing.new("Square")
+SwitchWatermark_Ind.Visible = false
+SwitchWatermark_Ind.Transparency = 1
+SwitchWatermark_Ind.Color = Color3.fromHex("#ffffff")
+SwitchWatermark_Ind.Filled = true
+SwitchWatermark_Ind.Size = Vector2.new(13, 13)
+SwitchWatermark_Ind.ZIndex = 212
+SwitchWatermark_Ind.Corner = 10
+table.insert(uiElements, SwitchWatermark_Ind)
+
+local SwitchWatermark_Label = Drawing.new("Text")
+SwitchWatermark_Label.Visible = false
+SwitchWatermark_Label.Text = ""
+SwitchWatermark_Label.Size = 8
+SwitchWatermark_Label.Color = Color3.fromHex("#FFFFFF")
+SwitchWatermark_Label.Outline = true
+SwitchWatermark_Label.Font = Drawing.Fonts.UI
+SwitchWatermark_Label.Position = SwitchWatermark.Position + Vector2.new(35, 3.5)
+SwitchWatermark_Label.ZIndex = 211
+table.insert(uiElements, SwitchWatermark_Label)
+
+WatermarkSwitch.Bg = SwitchWatermark_Bg
+WatermarkSwitch.Ind = SwitchWatermark_Ind
+WatermarkSwitch.IndBorder = SwitchWatermark_IndBorder
+
+
+local BookHelperContent = Drawing.new("Square")
+BookHelperContent.Visible = false
+BookHelperContent.Transparency = 1
+BookHelperContent.ZIndex = 150
+BookHelperContent.Color = Color3.fromHex("#111010")
+BookHelperContent.Position = VeryBackGUI.Position + Vector2.new(20, 167) 
+BookHelperContent.Size = Vector2.new(224, 51)
+BookHelperContent.Filled = true
+BookHelperContent.Corner = 5
+table.insert(uiElements, BookHelperContent)
+
+local BookHelperContent_Border = Drawing.new("Square")
+BookHelperContent_Border.Visible = false
+BookHelperContent_Border.Transparency = 1
+BookHelperContent_Border.ZIndex = 151
+BookHelperContent_Border.Color = Color3.fromHex("#1b1a1b")
+BookHelperContent_Border.Filled = false
+BookHelperContent_Border.Thickness = 1
+BookHelperContent_Border.Position = BookHelperContent.Position
+BookHelperContent_Border.Size = BookHelperContent.Size
+BookHelperContent_Border.Corner = 5
+table.insert(uiElements, BookHelperContent_Border)
+
+local BookHelperTitle = Drawing.new("Text")
+BookHelperTitle.Visible = false
+BookHelperTitle.Transparency = 1
+BookHelperTitle.ZIndex = 170
+BookHelperTitle.Color = Color3.fromHex("#d1d4dd")
+BookHelperTitle.Position = BookHelperContent.Position + Vector2.new(10, 13)
+BookHelperTitle.Text = "Book Helper"
+BookHelperTitle.Size = 14
+BookHelperTitle.Center = false
+BookHelperTitle.Outline = true
+BookHelperTitle.Font = Drawing.Fonts.UI
+table.insert(uiElements, BookHelperTitle)
+
+local BookHelperDesc = Drawing.new("Text")
+BookHelperDesc.Visible = false
+BookHelperDesc.Transparency = 1
+BookHelperDesc.ZIndex = 190
+BookHelperDesc.Color = Color3.fromHex("#6b7382")
+BookHelperDesc.Position = BookHelperContent.Position + Vector2.new(16, 28)
+BookHelperDesc.Text = "Toggle book helper"
+BookHelperDesc.Size = 11
+BookHelperDesc.Center = false
+BookHelperDesc.Outline = true
+BookHelperDesc.Font = Drawing.Fonts.UI
+table.insert(uiElements, BookHelperDesc)
+
+local SwitchBookHelper = Drawing.new("Square")
+SwitchBookHelper.Visible = false
+SwitchBookHelper.Transparency = 1
+SwitchBookHelper.Color = Color3.fromHex("#000000")
+SwitchBookHelper.Thickness = 1
+SwitchBookHelper.Filled = false
+SwitchBookHelper.Size = Vector2.new(25, 15)
+SwitchBookHelper.Position = VeryBackGUI.Position + Vector2.new(210, 176)
+SwitchBookHelper.ZIndex = 210
+SwitchBookHelper.Corner = 10
+table.insert(uiElements, SwitchBookHelper)
+
+local SwitchBookHelper_Bg = Drawing.new("Square")
+SwitchBookHelper_Bg.Visible = false
+SwitchBookHelper_Bg.Transparency = 1
+SwitchBookHelper_Bg.Color = Color3.fromHex("#cbcfd5")
+SwitchBookHelper_Bg.Filled = true
+SwitchBookHelper_Bg.Size = SwitchBookHelper.Size
+SwitchBookHelper_Bg.Position = SwitchBookHelper.Position
+SwitchBookHelper_Bg.ZIndex = 210
+SwitchBookHelper_Bg.Corner = 10
+table.insert(uiElements, SwitchBookHelper_Bg)
+
+local SwitchBookHelper_IndBorder = Drawing.new("Square")
+SwitchBookHelper_IndBorder.Visible = false
+SwitchBookHelper_IndBorder.Transparency = 1
+SwitchBookHelper_IndBorder.Color = Color3.fromHex("#000000")
+SwitchBookHelper_IndBorder.Thickness = 1
+SwitchBookHelper_IndBorder.Filled = false
+SwitchBookHelper_IndBorder.Size = Vector2.new(13, 13)
+SwitchBookHelper_IndBorder.ZIndex = 212
+SwitchBookHelper_IndBorder.Corner = 10
+table.insert(uiElements, SwitchBookHelper_IndBorder)
+
+local SwitchBookHelper_Ind = Drawing.new("Square")
+SwitchBookHelper_Ind.Visible = false
+SwitchBookHelper_Ind.Transparency = 1
+SwitchBookHelper_Ind.Color = Color3.fromHex("#ffffff")
+SwitchBookHelper_Ind.Filled = true
+SwitchBookHelper_Ind.Size = Vector2.new(13, 13)
+SwitchBookHelper_Ind.ZIndex = 212
+SwitchBookHelper_Ind.Corner = 10
+table.insert(uiElements, SwitchBookHelper_Ind)
+
+local SwitchBookHelper_Label = Drawing.new("Text")
+SwitchBookHelper_Label.Visible = false
+SwitchBookHelper_Label.Text = ""
+SwitchBookHelper_Label.Size = 8
+SwitchBookHelper_Label.Color = Color3.fromHex("#FFFFFF")
+SwitchBookHelper_Label.Outline = true
+SwitchBookHelper_Label.Font = Drawing.Fonts.UI
+SwitchBookHelper_Label.Position = SwitchBookHelper.Position + Vector2.new(35, 3.5)
+SwitchBookHelper_Label.ZIndex = 211
+table.insert(uiElements, SwitchBookHelper_Label)
+
+BookHelperSwitch.Bg = SwitchBookHelper_Bg
+BookHelperSwitch.Ind = SwitchBookHelper_Ind
+BookHelperSwitch.IndBorder = SwitchBookHelper_IndBorder
+
+
+local InfinityStaminaContent = Drawing.new("Square")
+InfinityStaminaContent.Visible = false
+InfinityStaminaContent.Transparency = 1
+InfinityStaminaContent.ZIndex = 240
+InfinityStaminaContent.Color = Color3.fromHex("#111010")
+InfinityStaminaContent.Position = VeryBackGUI.Position + Vector2.new(20, 97)
+InfinityStaminaContent.Size = Vector2.new(224, 51)
+InfinityStaminaContent.Filled = true
+InfinityStaminaContent.Corner = 5
+table.insert(uiElements, InfinityStaminaContent)
+
+local InfinityStaminaContent_Border = Drawing.new("Square")
+InfinityStaminaContent_Border.Visible = false
+InfinityStaminaContent_Border.Transparency = 1
+InfinityStaminaContent_Border.ZIndex = 241
+InfinityStaminaContent_Border.Color = Color3.fromHex("#1b1a1b")
+InfinityStaminaContent_Border.Filled = false
+InfinityStaminaContent_Border.Thickness = 1
+InfinityStaminaContent_Border.Position = InfinityStaminaContent.Position
+InfinityStaminaContent_Border.Size = InfinityStaminaContent.Size
+InfinityStaminaContent_Border.Corner = 5
+table.insert(uiElements, InfinityStaminaContent_Border)
+
+local InfinityStaminaTitle = Drawing.new("Text")
+InfinityStaminaTitle.Visible = false
+InfinityStaminaTitle.Transparency = 1
+InfinityStaminaTitle.ZIndex = 270
+InfinityStaminaTitle.Color = Color3.fromHex("#d1d4dd")
+InfinityStaminaTitle.Position = InfinityStaminaContent.Position + Vector2.new(10, 13)
+InfinityStaminaTitle.Text = "Infinity Stamina"
+InfinityStaminaTitle.Size = 14
+InfinityStaminaTitle.Center = false
+InfinityStaminaTitle.Outline = true
+InfinityStaminaTitle.Font = Drawing.Fonts.UI
+table.insert(uiElements, InfinityStaminaTitle)
+
+local InfinityStaminaDesc = Drawing.new("Text")
+InfinityStaminaDesc.Visible = false
+InfinityStaminaDesc.Transparency = 1
+InfinityStaminaDesc.ZIndex = 260
+InfinityStaminaDesc.Color = Color3.fromHex("#6b7382")
+InfinityStaminaDesc.Position = InfinityStaminaContent.Position + Vector2.new(16, 28)
+InfinityStaminaDesc.Text = "Toggle infinite stamina"
+InfinityStaminaDesc.Size = 11
+InfinityStaminaDesc.Center = false
+InfinityStaminaDesc.Outline = true
+InfinityStaminaDesc.Font = Drawing.Fonts.UI
+table.insert(uiElements, InfinityStaminaDesc)
+
+local SwitchInfinityStamina = Drawing.new("Square")
+SwitchInfinityStamina.Visible = false
+SwitchInfinityStamina.Transparency = 1
+SwitchInfinityStamina.Color = Color3.fromHex("#000000")
+SwitchInfinityStamina.Thickness = 1
+SwitchInfinityStamina.Filled = false
+SwitchInfinityStamina.Size = Vector2.new(25, 15)
+SwitchInfinityStamina.Position = VeryBackGUI.Position + Vector2.new(212, 106)
+SwitchInfinityStamina.ZIndex = 250
+SwitchInfinityStamina.Corner = 10
+table.insert(uiElements, SwitchInfinityStamina)
+
+local SwitchInfinityStamina_Bg = Drawing.new("Square")
+SwitchInfinityStamina_Bg.Visible = false
+SwitchInfinityStamina_Bg.Transparency = 1
+SwitchInfinityStamina_Bg.Color = Color3.fromHex("#cbcfd5")
+SwitchInfinityStamina_Bg.Filled = true
+SwitchInfinityStamina_Bg.Size = SwitchInfinityStamina.Size
+SwitchInfinityStamina_Bg.Position = SwitchInfinityStamina.Position
+SwitchInfinityStamina_Bg.ZIndex = 250
+SwitchInfinityStamina_Bg.Corner = 10
+table.insert(uiElements, SwitchInfinityStamina_Bg)
+
+local SwitchInfinityStamina_IndBorder = Drawing.new("Square")
+SwitchInfinityStamina_IndBorder.Visible = false
+SwitchInfinityStamina_IndBorder.Transparency = 1
+SwitchInfinityStamina_IndBorder.Color = Color3.fromHex("#000000")
+SwitchInfinityStamina_IndBorder.Thickness = 1
+SwitchInfinityStamina_IndBorder.Filled = false
+SwitchInfinityStamina_IndBorder.Size = Vector2.new(13, 13)
+SwitchInfinityStamina_IndBorder.ZIndex = 252
+SwitchInfinityStamina_IndBorder.Corner = 10
+table.insert(uiElements, SwitchInfinityStamina_IndBorder)
+
+local SwitchInfinityStamina_Ind = Drawing.new("Square")
+SwitchInfinityStamina_Ind.Visible = false
+SwitchInfinityStamina_Ind.Transparency = 1
+SwitchInfinityStamina_Ind.Color = Color3.fromHex("#ffffff")
+SwitchInfinityStamina_Ind.Filled = true
+SwitchInfinityStamina_Ind.Size = Vector2.new(13, 13)
+SwitchInfinityStamina_Ind.ZIndex = 252
+SwitchInfinityStamina_Ind.Corner = 10
+table.insert(uiElements, SwitchInfinityStamina_Ind)
+
+local SwitchInfinityStamina_Label = Drawing.new("Text")
+SwitchInfinityStamina_Label.Visible = false
+SwitchInfinityStamina_Label.Text = ""
+SwitchInfinityStamina_Label.Size = 8
+SwitchInfinityStamina_Label.Color = Color3.fromHex("#FFFFFF")
+SwitchInfinityStamina_Label.Outline = true
+SwitchInfinityStamina_Label.Font = Drawing.Fonts.UI
+SwitchInfinityStamina_Label.Position = SwitchInfinityStamina.Position + Vector2.new(35, 3.5)
+SwitchInfinityStamina_Label.ZIndex = 251
+table.insert(uiElements, SwitchInfinityStamina_Label)
+
+InfinityStaminaSwitch.Bg = SwitchInfinityStamina_Bg
+InfinityStaminaSwitch.Ind = SwitchInfinityStamina_Ind
+InfinityStaminaSwitch.IndBorder = SwitchInfinityStamina_IndBorder
+
+
+local AutoFarmContent = Drawing.new("Square")
+AutoFarmContent.Visible = false
+AutoFarmContent.Transparency = 1
+AutoFarmContent.ZIndex = 240
+AutoFarmContent.Color = Color3.fromHex("#111010")
+AutoFarmContent.Position = VeryBackGUI.Position + Vector2.new(20, 167) 
+AutoFarmContent.Size = Vector2.new(224, 51)
+AutoFarmContent.Filled = true
+AutoFarmContent.Corner = 5
+table.insert(uiElements, AutoFarmContent)
+
+local AutoFarmContent_Border = Drawing.new("Square")
+AutoFarmContent_Border.Visible = false
+AutoFarmContent_Border.Transparency = 1
+AutoFarmContent_Border.ZIndex = 241
+AutoFarmContent_Border.Color = Color3.fromHex("#1b1a1b")
+AutoFarmContent_Border.Filled = false
+AutoFarmContent_Border.Thickness = 1
+AutoFarmContent_Border.Position = AutoFarmContent.Position
+AutoFarmContent_Border.Size = AutoFarmContent.Size
+AutoFarmContent_Border.Corner = 5
+table.insert(uiElements, AutoFarmContent_Border)
+
+local AutoFarmTitle = Drawing.new("Text")
+AutoFarmTitle.Visible = false
+AutoFarmTitle.Transparency = 1
+AutoFarmTitle.ZIndex = 270
+AutoFarmTitle.Color = Color3.fromHex("#d1d4dd")
+AutoFarmTitle.Position = AutoFarmContent.Position + Vector2.new(10, 13)
+AutoFarmTitle.Text = "Auto-farm"
+AutoFarmTitle.Size = 14
+AutoFarmTitle.Center = false
+AutoFarmTitle.Outline = true
+AutoFarmTitle.Font = Drawing.Fonts.UI
+table.insert(uiElements, AutoFarmTitle)
+
+local AutoFarmDesc = Drawing.new("Text")
+AutoFarmDesc.Visible = false
+AutoFarmDesc.Transparency = 1
+AutoFarmDesc.ZIndex = 260
+AutoFarmDesc.Color = Color3.fromHex("#6b7382")
+AutoFarmDesc.Position = AutoFarmContent.Position + Vector2.new(16, 28)
+AutoFarmDesc.Text = "Toggle auto-farm win"
+AutoFarmDesc.Size = 11
+AutoFarmDesc.Center = false
+AutoFarmDesc.Outline = true
+AutoFarmDesc.Font = Drawing.Fonts.UI
+table.insert(uiElements, AutoFarmDesc)
+
+
+local AutoFarmWarning = Drawing.new("Text")
+AutoFarmWarning.Visible = false
+AutoFarmWarning.Transparency = 1
+AutoFarmWarning.ZIndex = 271
+AutoFarmWarning.Color = Color3.fromHex("#FFD700")
+AutoFarmWarning.Position = AutoFarmContent.Position + Vector2.new(120, 38)
+AutoFarmWarning.Text = "[!]Use Flight[!]"
+AutoFarmWarning.Size = 10
+AutoFarmWarning.Center = true
+AutoFarmWarning.Outline = true
+AutoFarmWarning.Font = Drawing.Fonts.UI
+table.insert(uiElements, AutoFarmWarning)
+
+local SwitchAutoFarm = Drawing.new("Square")
+SwitchAutoFarm.Visible = false
+SwitchAutoFarm.Transparency = 1
+SwitchAutoFarm.Color = Color3.fromHex("#000000")
+SwitchAutoFarm.Thickness = 1
+SwitchAutoFarm.Filled = false
+SwitchAutoFarm.Size = Vector2.new(25, 15)
+SwitchAutoFarm.Position = VeryBackGUI.Position + Vector2.new(212, 176)
+SwitchAutoFarm.ZIndex = 250
+SwitchAutoFarm.Corner = 10
+table.insert(uiElements, SwitchAutoFarm)
+
+local SwitchAutoFarm_Bg = Drawing.new("Square")
+SwitchAutoFarm_Bg.Visible = false
+SwitchAutoFarm_Bg.Transparency = 1
+SwitchAutoFarm_Bg.Color = Color3.fromHex("#cbcfd5")
+SwitchAutoFarm_Bg.Filled = true
+SwitchAutoFarm_Bg.Size = SwitchAutoFarm.Size
+SwitchAutoFarm_Bg.Position = SwitchAutoFarm.Position
+SwitchAutoFarm_Bg.ZIndex = 250
+SwitchAutoFarm_Bg.Corner = 10
+table.insert(uiElements, SwitchAutoFarm_Bg)
+
+local SwitchAutoFarm_IndBorder = Drawing.new("Square")
+SwitchAutoFarm_IndBorder.Visible = false
+SwitchAutoFarm_IndBorder.Transparency = 1
+SwitchAutoFarm_IndBorder.Color = Color3.fromHex("#000000")
+SwitchAutoFarm_IndBorder.Thickness = 1
+SwitchAutoFarm_IndBorder.Filled = false
+SwitchAutoFarm_IndBorder.Size = Vector2.new(13, 13)
+SwitchAutoFarm_IndBorder.ZIndex = 252
+SwitchAutoFarm_IndBorder.Corner = 10
+table.insert(uiElements, SwitchAutoFarm_IndBorder)
+
+local SwitchAutoFarm_Ind = Drawing.new("Square")
+SwitchAutoFarm_Ind.Visible = false
+SwitchAutoFarm_Ind.Transparency = 1
+SwitchAutoFarm_Ind.Color = Color3.fromHex("#ffffff")
+SwitchAutoFarm_Ind.Filled = true
+SwitchAutoFarm_Ind.Size = Vector2.new(13, 13)
+SwitchAutoFarm_Ind.ZIndex = 252
+SwitchAutoFarm_Ind.Corner = 10
+table.insert(uiElements, SwitchAutoFarm_Ind)
+
+local SwitchAutoFarm_Label = Drawing.new("Text")
+SwitchAutoFarm_Label.Visible = false
+SwitchAutoFarm_Label.Text = ""
+SwitchAutoFarm_Label.Size = 8
+SwitchAutoFarm_Label.Color = Color3.fromHex("#FFFFFF")
+SwitchAutoFarm_Label.Outline = true
+SwitchAutoFarm_Label.Font = Drawing.Fonts.UI
+SwitchAutoFarm_Label.Position = SwitchAutoFarm.Position + Vector2.new(35, 3.5)
+SwitchAutoFarm_Label.ZIndex = 251
+table.insert(uiElements, SwitchAutoFarm_Label)
+
+AutoFarmSwitch.Bg = SwitchAutoFarm_Bg
+AutoFarmSwitch.Ind = SwitchAutoFarm_Ind
+AutoFarmSwitch.IndBorder = SwitchAutoFarm_IndBorder
+
+
+local InvisibleSquare = Drawing.new("Square")
+InvisibleSquare.Visible = false
+InvisibleSquare.Transparency = 0
+InvisibleSquare.ZIndex = 290
+InvisibleSquare.Color = Color3.fromHex("#FFFFFF")
+InvisibleSquare.Position = VeryBackGUI.Position + Vector2.new(-87, 96)
+InvisibleSquare.Size = Vector2.new(10, 53)
+InvisibleSquare.Filled = true
+table.insert(uiElements, InvisibleSquare)
+
+local HereNoContentText = Drawing.new("Text")
+HereNoContentText.Visible = false
+HereNoContentText.Transparency = 1
+HereNoContentText.ZIndex = 280
+HereNoContentText.Color = Color3.fromHex("#ff0000")
+HereNoContentText.Position = InvisibleSquare.Position + Vector2.new(117, 20)
+HereNoContentText.Text = "Here no content"
+HereNoContentText.Size = 43
+HereNoContentText.Center = false
+HereNoContentText.Outline = false
+HereNoContentText.Font = Drawing.Fonts.UI
+table.insert(uiElements, HereNoContentText)
+
+
+local ContentInfo1 = Drawing.new("Square")
+ContentInfo1.Visible = false
+ContentInfo1.Transparency = 1
+ContentInfo1.ZIndex = 300
+ContentInfo1.Color = Color3.fromHex("#111010")
+ContentInfo1.Position = VeryBackGUI.Position + Vector2.new(11, 101)
+ContentInfo1.Size = Vector2.new(545, 75)
+ContentInfo1.Filled = true
+ContentInfo1.Corner = 5
+table.insert(uiElements, ContentInfo1)
+
+local ContentInfo1_Border = Drawing.new("Square")
+ContentInfo1_Border.Visible = false
+ContentInfo1_Border.Transparency = 1
+ContentInfo1_Border.ZIndex = 301
+ContentInfo1_Border.Color = Color3.fromHex("#1b1a1b")
+ContentInfo1_Border.Filled = false
+ContentInfo1_Border.Thickness = 1
+ContentInfo1_Border.Position = ContentInfo1.Position
+ContentInfo1_Border.Size = ContentInfo1.Size
+ContentInfo1_Border.Corner = 5
+table.insert(uiElements, ContentInfo1_Border)
+
+local TextInfo1 = Drawing.new("Text")
+TextInfo1.Visible = false
+TextInfo1.Transparency = 1
+TextInfo1.ZIndex = 310
+TextInfo1.Color = Color3.fromHex("#47f109")
+TextInfo1.Position = ContentInfo1.Position + Vector2.new(9, 38)
+TextInfo1.Text = "To open advanced settings, hover over the button and right-click!!"
+TextInfo1.Size = 15
+TextInfo1.Center = false
+TextInfo1.Outline = false
+TextInfo1.Font = Drawing.Fonts.UI
+table.insert(uiElements, TextInfo1)
+
+local TextInfo2 = Drawing.new("Text")
+TextInfo2.Visible = false
+TextInfo2.Transparency = 1
+TextInfo2.ZIndex = 320
+TextInfo2.Color = Color3.fromHex("#e3e3e3")
+TextInfo2.Position = ContentInfo1.Position + Vector2.new(17, 11)
+TextInfo2.Text = "Some usefull info"
+TextInfo2.Size = 17
+TextInfo2.Center = false
+TextInfo2.Outline = true
+TextInfo2.Font = Drawing.Fonts.UI
+table.insert(uiElements, TextInfo2)
+
+local ContentInfo2 = Drawing.new("Square")
+ContentInfo2.Visible = false
+ContentInfo2.Transparency = 1
+ContentInfo2.ZIndex = 300
+ContentInfo2.Color = Color3.fromHex("#111010")
+ContentInfo2.Position = ContentInfo1.Position + Vector2.new(0, 84)
+ContentInfo2.Size = Vector2.new(544, 156)
+ContentInfo2.Filled = true
+ContentInfo2.Corner = 5
+table.insert(uiElements, ContentInfo2)
+
+local ContentInfo2_Border = Drawing.new("Square")
+ContentInfo2_Border.Visible = false
+ContentInfo2_Border.Transparency = 1
+ContentInfo2_Border.ZIndex = 301
+ContentInfo2_Border.Color = Color3.fromHex("#1b1a1b")
+ContentInfo2_Border.Filled = false
+ContentInfo2_Border.Thickness = 1
+ContentInfo2_Border.Position = ContentInfo2.Position
+ContentInfo2_Border.Size = ContentInfo2.Size
+ContentInfo2_Border.Corner = 5
+table.insert(uiElements, ContentInfo2_Border)
+
+local TextInfo3 = Drawing.new("Text")
+TextInfo3.Visible = false
+TextInfo3.Transparency = 1
+TextInfo3.ZIndex = 340
+TextInfo3.Color = Color3.fromHex("#00c950")
+TextInfo3.Position = ContentInfo2.Position + Vector2.new(15, 14)
+TextInfo3.Text = "Changelogs for ver 1.0, 12 March, 2026 Year:"
+TextInfo3.Size = 14
+TextInfo3.Center = false
+TextInfo3.Outline = true
+TextInfo3.Font = Drawing.Fonts.UI
+table.insert(uiElements, TextInfo3)
+
+local ChangelogLines = {}
+for i=1,12 do
+    local line = Drawing.new("Text")
+    line.Visible = false
+    line.Transparency = 1
+    line.ZIndex = 340
+    line.Color = Color3.fromHex("#6b7382")
+    line.Position = ContentInfo2.Position + Vector2.new(23, 30 + (i-1)*15)
+    line.Text = ""
+    line.Size = 14
+    line.Center = false
+    line.Outline = true
+    line.Font = Drawing.Fonts.UI
+    table.insert(uiElements, line)
+    table.insert(ChangelogLines, line)
+end
+
+ChangelogLines[1].Text = "+ Support"
+ChangelogLines[1].Color = Color3.fromHex("#00ff66")
+
+
+
+local MainWatermark = Drawing.new("Square")
+MainWatermark.Visible = false
+MainWatermark.Transparency = 1
+MainWatermark.ZIndex = 20
+MainWatermark.Color = Color3.fromHex("#0b0b0b")
+MainWatermark.Position = Vector2.new(356, 50)
+MainWatermark.Size = Vector2.new(300, 100)
+MainWatermark.Filled = true
+MainWatermark.Corner = 8
+table.insert(uiElements, MainWatermark)
+
+local MainWatermark_Border = Drawing.new("Square")
+MainWatermark_Border.Visible = false
+MainWatermark_Border.Transparency = 1
+MainWatermark_Border.ZIndex = 21
+MainWatermark_Border.Color = Color3.fromHex("#1b1a1b")
+MainWatermark_Border.Filled = false
+MainWatermark_Border.Thickness = 1
+MainWatermark_Border.Position = MainWatermark.Position
+MainWatermark_Border.Size = MainWatermark.Size
+MainWatermark_Border.Corner = 8
+table.insert(uiElements, MainWatermark_Border)
+
+local LineWatermark1 = Drawing.new("Square")
+LineWatermark1.Visible = false
+LineWatermark1.Transparency = 1
+LineWatermark1.ZIndex = 30
+LineWatermark1.Color = Color3.fromHex("#1b1a1b")
+LineWatermark1.Position = MainWatermark.Position + Vector2.new(35, 36.5)
+LineWatermark1.Size = Vector2.new(126, 1)
+LineWatermark1.Filled = true
+table.insert(uiElements, LineWatermark1)
+
+local TextRATHUB34 = Drawing.new("Text")
+TextRATHUB34.Visible = false
+TextRATHUB34.Transparency = 1
+TextRATHUB34.ZIndex = 40
+TextRATHUB34.Color = Color3.fromHex("#01b349")
+TextRATHUB34.Position = MainWatermark.Position + Vector2.new(62, 12.5)
+TextRATHUB34.Text = "RATHUB"
+TextRATHUB34.Size = 14
+TextRATHUB34.Center = false
+TextRATHUB34.Outline = true
+TextRATHUB34.Font = Drawing.Fonts.SystemBold
+table.insert(uiElements, TextRATHUB34)
+
+local LogoRathub34 = Drawing.new("Text")
+LogoRathub34.Visible = false
+LogoRathub34.Transparency = 1
+LogoRathub34.ZIndex = 50
+LogoRathub34.Color = Color3.fromHex("#01b349")
+LogoRathub34.Position = MainWatermark.Position + Vector2.new(35, 11.5)
+LogoRathub34.Text = ">_"
+LogoRathub34.Size = 14
+LogoRathub34.Center = false
+LogoRathub34.Outline = true
+LogoRathub34.Font = Drawing.Fonts.SystemBold
+table.insert(uiElements, LogoRathub34)
+
+
+local teacherLines = {}
+local aliceLines = {}
+local lastTeacherData = {}
+local lastAliceData = {}
+
+
+local MainRatAnswers = Drawing.new("Square")
+MainRatAnswers.Visible = false
+MainRatAnswers.Transparency = 1
+MainRatAnswers.ZIndex = 20
+MainRatAnswers.Color = Color3.fromHex("#0b0b0b")
+MainRatAnswers.Position = Vector2.new(479, 132)
+MainRatAnswers.Size = Vector2.new(248, 175)
+MainRatAnswers.Filled = true
+MainRatAnswers.Corner = 8
+table.insert(uiElements, MainRatAnswers)
+
+local MainRatAnswers_Border = Drawing.new("Square")
+MainRatAnswers_Border.Visible = false
+MainRatAnswers_Border.Transparency = 1
+MainRatAnswers_Border.ZIndex = 21
+MainRatAnswers_Border.Color = Color3.fromHex("#1b1a1b")
+MainRatAnswers_Border.Filled = false
+MainRatAnswers_Border.Thickness = 1
+MainRatAnswers_Border.Position = MainRatAnswers.Position
+MainRatAnswers_Border.Size = MainRatAnswers.Size
+MainRatAnswers_Border.Corner = 8
+table.insert(uiElements, MainRatAnswers_Border)
+
+local LineAnswers1 = Drawing.new("Square")
+LineAnswers1.Visible = false
+LineAnswers1.Transparency = 1
+LineAnswers1.ZIndex = 30
+LineAnswers1.Color = Color3.fromHex("#1b1a1b")
+LineAnswers1.Position = MainRatAnswers.Position + Vector2.new(31, 36.5)
+LineAnswers1.Size = Vector2.new(190, 1)
+LineAnswers1.Filled = true
+table.insert(uiElements, LineAnswers1)
+
+local TextRATHUB35 = Drawing.new("Text")
+TextRATHUB35.Visible = false
+TextRATHUB35.Transparency = 1
+TextRATHUB35.ZIndex = 40
+TextRATHUB35.Color = Color3.fromHex("#01b349")
+TextRATHUB35.Position = MainRatAnswers.Position + Vector2.new(68, 13)
+TextRATHUB35.Text = "RATHUB answers"
+TextRATHUB35.Size = 14
+TextRATHUB35.Center = false
+TextRATHUB35.Outline = true
+TextRATHUB35.Font = Drawing.Fonts.SystemBold
+table.insert(uiElements, TextRATHUB35)
+
+local LogoRathub35 = Drawing.new("Text")
+LogoRathub35.Visible = false
+LogoRathub35.Transparency = 1
+LogoRathub35.ZIndex = 50
+LogoRathub35.Color = Color3.fromHex("#01b349")
+LogoRathub35.Position = MainRatAnswers.Position + Vector2.new(45, 12)
+LogoRathub35.Text = ">_"
+LogoRathub35.Size = 14
+LogoRathub35.Center = false
+LogoRathub35.Outline = true
+LogoRathub35.Font = Drawing.Fonts.SystemBold
+table.insert(uiElements, LogoRathub35)
+
+local Answer1 = Drawing.new("Text")
+Answer1.Visible = false
+Answer1.Transparency = 1
+Answer1.ZIndex = 60
+Answer1.Color = Color3.fromHex("#00d656")
+Answer1.Position = MainRatAnswers.Position + Vector2.new(24, 55)
+Answer1.Text = ""
+Answer1.Size = 22
+Answer1.Center = false
+Answer1.Outline = true
+Answer1.Font = Drawing.Fonts.SystemBold
+table.insert(uiElements, Answer1)
+
+local Answer2 = Drawing.new("Text")
+Answer2.Visible = false
+Answer2.Transparency = 1
+Answer2.ZIndex = 60
+Answer2.Color = Color3.fromHex("#00d656")
+Answer2.Position = MainRatAnswers.Position + Vector2.new(24, 89)
+Answer2.Text = ""
+Answer2.Size = 22
+Answer2.Center = false
+Answer2.Outline = true
+Answer2.Font = Drawing.Fonts.SystemBold
+table.insert(uiElements, Answer2)
+
+local Answer3 = Drawing.new("Text")
+Answer3.Visible = false
+Answer3.Transparency = 1
+Answer3.ZIndex = 60
+Answer3.Color = Color3.fromHex("#00d656")
+Answer3.Position = MainRatAnswers.Position + Vector2.new(24, 122)
+Answer3.Text = ""
+Answer3.Size = 22
+Answer3.Center = false
+Answer3.Outline = true
+Answer3.Font = Drawing.Fonts.SystemBold
+table.insert(uiElements, Answer3)
+
+
+local OreoICO_Data = nil
+local OreoICO_Cache = OreoICO_Data and DrawImage(OreoICO_Data, MainRatAnswers.Position + Vector2.new(9, 3.5), 0.47619047619047616, 0.53125, 90, 1) or {}
+local OreoICO = OreoICO_Data and CreateImageGroup(OreoICO_Cache, Vector2.new(30, 34), MainRatAnswers.Position + Vector2.new(9, 3.5)) or nil
+
+
+
+local function HideAllTabs()
+
+    WatermarkContent.Visible = false; WatermarkContent_Border.Visible = false
+    WatermarkTitle.Visible = false; WatermarkDesc.Visible = false
+    SwitchWatermark.Visible = false; SwitchWatermark_Bg.Visible = false
+    SwitchWatermark_IndBorder.Visible = false; SwitchWatermark_Ind.Visible = false
+    SwitchWatermark_Label.Visible = false
+
+    BookHelperContent.Visible = false; BookHelperContent_Border.Visible = false
+    BookHelperTitle.Visible = false; BookHelperDesc.Visible = false
+    SwitchBookHelper.Visible = false; SwitchBookHelper_Bg.Visible = false
+    SwitchBookHelper_IndBorder.Visible = false; SwitchBookHelper_Ind.Visible = false
+    SwitchBookHelper_Label.Visible = false
+
+
+    InfinityStaminaContent.Visible = false; InfinityStaminaContent_Border.Visible = false
+    InfinityStaminaTitle.Visible = false; InfinityStaminaDesc.Visible = false
+    SwitchInfinityStamina.Visible = false; SwitchInfinityStamina_Bg.Visible = false
+    SwitchInfinityStamina_IndBorder.Visible = false; SwitchInfinityStamina_Ind.Visible = false
+    SwitchInfinityStamina_Label.Visible = false
+
+    AutoFarmContent.Visible = false; AutoFarmContent_Border.Visible = false
+    AutoFarmTitle.Visible = false; AutoFarmDesc.Visible = false
+    AutoFarmWarning.Visible = false
+    SwitchAutoFarm.Visible = false; SwitchAutoFarm_Bg.Visible = false
+    SwitchAutoFarm_IndBorder.Visible = false; SwitchAutoFarm_Ind.Visible = false
+    SwitchAutoFarm_Label.Visible = false
+
+
+    InvisibleSquare.Visible = false; HereNoContentText.Visible = false
+
+
+    ContentInfo1.Visible = false; ContentInfo1_Border.Visible = false
+    TextInfo1.Visible = false; TextInfo2.Visible = false
+    ContentInfo2.Visible = false; ContentInfo2_Border.Visible = false
+    TextInfo3.Visible = false
+    for _, line in ipairs(ChangelogLines) do
+        line.Visible = false
+    end
+end
+
+local function SetActiveTab(tabName, tabButton, tabBorder, tabText)
+    local tabs = {
+        {btn = TabVisuals, border = TabVisuals_Border, txt = TabVisuals_Text},
+        {btn = TabExploits, border = TabExploits_Border, txt = TabExploits_Text},
+        {btn = TabMisc, border = TabMisc_Border, txt = TabMisc_Text},
+        {btn = TabInfo, border = TabInfo_Border, txt = TabInfo_Text}
+    }
+    for _, t in ipairs(tabs) do
+        t.btn.Color = Color3.fromHex("#0c0c0d")
+        t.txt.Color = Color3.fromHex("#6b7382")
+        t.border.Visible = false
+    end
+    if tabName then
+        tabButton.Color = Color3.fromHex("#0c2014")
+        tabText.Color = Color3.fromHex("#01c34c")
+        tabBorder.Visible = true
+        activeTab = tabName
+    else
+        activeTab = nil
+    end
+end
+
+local KeyNames = {
+    [0x70] = "F1",
+}
+
+local function CloseAdvancedWindows()
+    advancedWindowOpen = false
+    Overlay.Visible = false
+    if _G.adv_esp then
+        for _, el in ipairs(_G.adv_esp.elements) do
+            pcall(function() el:Remove() end)
+        end
+        _G.adv_esp = nil
+    end
+    AdvStaminaSwitch = nil
+end
+
+local function UpdateAdvancedPositions()
+    if not advancedWindowOpen then return end
+    local basePos = VeryBackGUI.Position + Vector2.new(VeryBackGUI.Size.X + 20, 0)
+    if _G.adv_esp and _G.adv_esp.basePos then
+        local delta = basePos - _G.adv_esp.basePos
+        for _, el in ipairs(_G.adv_esp.elements) do
+            if el and el.Position then
+                el.Position = el.Position + delta
+            end
+        end
+        _G.adv_esp.basePos = basePos
+    end
+end
+
+
+local function CreateAdvancedStamina()
+    if advancedWindowOpen then
+        CloseAdvancedWindows()
+        return
+    end
+    advancedWindowOpen = true
+    Overlay.Visible = true
+
+    local basePos = VeryBackGUI.Position + Vector2.new(VeryBackGUI.Size.X + 20, 0)
+
+    local win2 = Drawing.new("Square")
+    win2.Visible = true
+    win2.Transparency = 1
+    win2.ZIndex = 1000
+    win2.Color = Color3.fromHex("#111010")
+    win2.Position = basePos
+    win2.Size = Vector2.new(286, 46)
+    win2.Filled = true
+    win2.Corner = 0
+
+    local closeBtn = Drawing.new("Square")
+    closeBtn.Visible = true
+    closeBtn.Transparency = 1
+    closeBtn.ZIndex = 1010
+    closeBtn.Color = Color3.fromHex("#111010")
+    closeBtn.Position = win2.Position + Vector2.new(245, 5.5)
+    closeBtn.Size = Vector2.new(28, 28)
+    closeBtn.Filled = true
+
+    local closeText = Drawing.new("Text")
+    closeText.Visible = true
+    closeText.Text = "X"
+    closeText.Size = 18
+    closeText.Center = true
+    closeText.Outline = true
+    closeText.Font = 0
+    closeText.Color = Color3.fromHex("#b5b5b5")
+    closeText.Position = closeBtn.Position + Vector2.new(14, 14)
+    closeText.ZIndex = 1012
+
+    local win = Drawing.new("Square")
+    win.Visible = true
+    win.Transparency = 1
+    win.ZIndex = 1000
+    win.Color = Color3.fromHex("#0c0c0d")
+    win.Position = win2.Position + Vector2.new(-1, 43)
+    win.Size = Vector2.new(287, 506)
+    win.Filled = true
+
+    local title = Drawing.new("Text")
+    title.Visible = true
+    title.Transparency = 1
+    title.ZIndex = 1070
+    title.Color = Color3.fromHex("#04c838")
+    title.Position = win2.Position + Vector2.new(16, 12)
+    title.Text = "Stamina Settings"
+    title.Size = 17
+    title.Center = false
+    title.Outline = true
+    title.Font = Drawing.Fonts.UI
+
+    local scrollY = win2.Position.Y + 43 + 35
+
+
+    local sSwitch = Drawing.new("Square")
+    sSwitch.Visible = true
+    sSwitch.Transparency = 1
+    sSwitch.ZIndex = 1040
+    sSwitch.Color = Color3.fromHex("#111010")
+    sSwitch.Position = Vector2.new(win2.Position.X + 16, scrollY + 9)
+    sSwitch.Size = Vector2.new(247, 65)
+    sSwitch.Filled = true
+    sSwitch.Corner = 5
+
+    local sSwitchBorder = Drawing.new("Square")
+    sSwitchBorder.Visible = true
+    sSwitchBorder.Transparency = 1
+    sSwitchBorder.ZIndex = 1041
+    sSwitchBorder.Color = Color3.fromHex("#1b1a1b")
+    sSwitchBorder.Filled = false
+    sSwitchBorder.Thickness = 1
+    sSwitchBorder.Position = sSwitch.Position
+    sSwitchBorder.Size = sSwitch.Size
+    sSwitchBorder.Corner = 5
+
+    local sSwitchTitle = Drawing.new("Text")
+    sSwitchTitle.Visible = true
+    sSwitchTitle.Transparency = 1
+    sSwitchTitle.ZIndex = 1080
+    sSwitchTitle.Color = Color3.fromHex("#d1d4dd")
+    sSwitchTitle.Position = sSwitch.Position + Vector2.new(11, 14)
+    sSwitchTitle.Text = "Infinity Stamina"
+    sSwitchTitle.Size = 14
+    sSwitchTitle.Center = false
+    sSwitchTitle.Outline = true
+    sSwitchTitle.Font = Drawing.Fonts.UI
+
+    local sSwitchDesc = Drawing.new("Text")
+    sSwitchDesc.Visible = true
+    sSwitchDesc.Transparency = 1
+    sSwitchDesc.ZIndex = 1100
+    sSwitchDesc.Color = Color3.fromHex("#6b7382")
+    sSwitchDesc.Position = sSwitch.Position + Vector2.new(19, 38)
+    sSwitchDesc.Text = "Toggle infinite stamina"
+    sSwitchDesc.Size = 11
+    sSwitchDesc.Center = false
+    sSwitchDesc.Outline = true
+    sSwitchDesc.Font = Drawing.Fonts.UI
+
+    local sw = Drawing.new("Square")
+    sw.Visible = true
+    sw.Transparency = 1
+    sw.Color = Color3.fromHex("#000000")
+    sw.Thickness = 1
+    sw.Filled = false
+    sw.Size = Vector2.new(30, 15)
+    sw.Position = sSwitch.Position + Vector2.new(207, 14)
+    sw.ZIndex = 1120
+    sw.Corner = 10
+
+    local swBg = Drawing.new("Square")
+    swBg.Visible = true
+    swBg.Transparency = 1
+    swBg.Color = Color3.fromHex("#cbcfd5")
+    swBg.Filled = true
+    swBg.Size = sw.Size
+    swBg.Position = sw.Position
+    swBg.ZIndex = 1120
+    swBg.Corner = 10
+
+    local swIndBorder = Drawing.new("Square")
+    swIndBorder.Visible = true
+    swIndBorder.Transparency = 1
+    swIndBorder.Color = Color3.fromHex("#000000")
+    swIndBorder.Thickness = 1
+    swIndBorder.Filled = false
+    swIndBorder.Size = Vector2.new(13, 13)
+    swIndBorder.ZIndex = 1122
+    swIndBorder.Corner = 10
+
+    local swInd = Drawing.new("Square")
+    swInd.Visible = true
+    swInd.Transparency = 1
+    swInd.Color = Color3.fromHex("#ffffff")
+    swInd.Filled = true
+    swInd.Size = Vector2.new(13, 13)
+    swInd.ZIndex = 1122
+    swInd.Corner = 10
+
+    local swLabel = Drawing.new("Text")
+    swLabel.Visible = true
+    swLabel.Text = ""
+    swLabel.Size = 1
+    swLabel.Color = Color3.fromHex("#FFFFFF")
+    swLabel.Outline = true
+    swLabel.Font = Drawing.Fonts.UI
+    swLabel.Position = sw.Position + Vector2.new(40, 7)
+    swLabel.ZIndex = 1121
+
+    AdvStaminaSwitch = { Bg = swBg, Ind = swInd, IndBorder = swIndBorder, IsChecked = InfinityStaminaSwitch.IsChecked }
+    UpdateSwitchColor(AdvStaminaSwitch.Bg, AdvStaminaSwitch.IsChecked)
+    if AdvStaminaSwitch.IsChecked then
+        AdvStaminaSwitch.IndBorder.Position = AdvStaminaSwitch.Bg.Position + Vector2.new(16, 1)
+        AdvStaminaSwitch.Ind.Position = AdvStaminaSwitch.Bg.Position + Vector2.new(16, 1)
+    else
+        AdvStaminaSwitch.IndBorder.Position = AdvStaminaSwitch.Bg.Position + Vector2.new(1, 1)
+        AdvStaminaSwitch.Ind.Position = AdvStaminaSwitch.Bg.Position + Vector2.new(1, 1)
+    end
+
+
+    local function CreateSliderBlock(yPos, labelText, initialValue, minVal, maxVal)
+        local block = Drawing.new("Square")
+        block.Visible = true
+        block.Transparency = 1
+        block.ZIndex = 1040
+        block.Color = Color3.fromHex("#111010")
+        block.Position = Vector2.new(win2.Position.X + 16, yPos)
+        block.Size = Vector2.new(247, 80)
+        block.Filled = true
+        block.Corner = 5
+
+        local border = Drawing.new("Square")
+        border.Visible = true
+        border.Transparency = 1
+        border.ZIndex = 1041
+        border.Color = Color3.fromHex("#1b1a1b")
+        border.Filled = false
+        border.Thickness = 1
+        border.Position = block.Position
+        border.Size = block.Size
+        border.Corner = 5
+
+        local titleText = Drawing.new("Text")
+        titleText.Visible = true
+        titleText.Transparency = 1
+        titleText.ZIndex = 1080
+        titleText.Color = Color3.fromHex("#d1d4dd")
+        titleText.Position = block.Position + Vector2.new(19, 12)
+        titleText.Text = labelText
+        titleText.Size = 14
+        titleText.Center = false
+        titleText.Outline = true
+        titleText.Font = Drawing.Fonts.UI
+
+        local sliderTrack = Drawing.new("Square")
+        sliderTrack.Visible = true
+        sliderTrack.Transparency = 1
+        sliderTrack.Color = Color3.fromHex("#2a2a2a")
+        sliderTrack.Filled = true
+        sliderTrack.Size = Vector2.new(200, 4)
+        sliderTrack.Position = block.Position + Vector2.new(19, 40)
+        sliderTrack.ZIndex = 1130
+        sliderTrack.Corner = 2
+
+        local sliderFill = Drawing.new("Square")
+        sliderFill.Visible = true
+        sliderFill.Transparency = 1
+        sliderFill.Color = Color3.fromHex("#04c838")
+        sliderFill.Filled = true
+        sliderFill.Size = Vector2.new(200 * ((initialValue - minVal) / (maxVal - minVal)), 4)
+        sliderFill.Position = sliderTrack.Position
+        sliderFill.ZIndex = 1131
+        sliderFill.Corner = 2
+
+        local sliderKnob = Drawing.new("Circle")
+        sliderKnob.Visible = true
+        sliderKnob.Transparency = 1
+        sliderKnob.Color = Color3.fromHex("#04c838")
+        sliderKnob.Filled = true
+        sliderKnob.Radius = 6
+        sliderKnob.NumSides = 16
+        sliderKnob.Position = sliderTrack.Position + Vector2.new(200 * ((initialValue - minVal) / (maxVal - minVal)), 2)
+        sliderKnob.ZIndex = 1132
+
+        local sliderValText = Drawing.new("Text")
+        sliderValText.Visible = true
+        sliderValText.Text = tostring(math.floor(initialValue))
+        sliderValText.Size = 14
+        sliderValText.Center = true
+        sliderValText.Outline = true
+        sliderValText.Color = Color3.fromHex("#ffffff")
+        sliderValText.Position = sliderTrack.Position + Vector2.new(100, -20)
+        sliderValText.ZIndex = 1133
+
+        return {
+            block = block,
+            border = border,
+            titleText = titleText,  
+            sliderTrack = sliderTrack,
+            sliderFill = sliderFill,
+            sliderKnob = sliderKnob,
+            sliderValText = sliderValText,
+            value = initialValue,
+            min = minVal,
+            max = maxVal,
+            dragging = false
+        }
+    end
+
+    local slider1 = CreateSliderBlock(scrollY + 80, "Stamina", 100, 0, 5000)
+    local slider2 = CreateSliderBlock(scrollY + 175, "Regen", 50, 0, 5000)
+    local slider3 = CreateSliderBlock(scrollY + 270, "Max Stamina", 1000, 0, 5000)
+
+
+    local allElements = {
+        win2, closeBtn, closeText, win, title,
+        sSwitch, sSwitchBorder, sSwitchTitle, sSwitchDesc, sw, swBg, swIndBorder, swInd, swLabel,
+        slider1.block, slider1.border, slider1.titleText, slider1.sliderTrack, slider1.sliderFill, slider1.sliderKnob, slider1.sliderValText,
+        slider2.block, slider2.border, slider2.titleText, slider2.sliderTrack, slider2.sliderFill, slider2.sliderKnob, slider2.sliderValText,
+        slider3.block, slider3.border, slider3.titleText, slider3.sliderTrack, slider3.sliderFill, slider3.sliderKnob, slider3.sliderValText
+    }
+
+    _G.adv_esp = {
+        elements = allElements,
+        closeBtn = closeBtn,
+        basePos = basePos,
+        sliders = { slider1, slider2, slider3 },
+        advStaminaSwitch = AdvStaminaSwitch,
+        type = "stamina"
+    }
+end
+
+
+local dragging = false
+local dragStart = nil
+local startPos = nil
+local lastMouse1 = false
+local lastMouse2 = false
+local watermarkDragging = false
+local watermarkStartPos = nil
+local watermarkDragStart = nil
+local sliderDragging = false
+local currentSlider = nil
+local answersDragging = false
+local answersDragStart = nil
+local answersStartPos = nil
+
+-- Loader
+local MainLoader1 = Drawing.new("Square")
+MainLoader1.Visible = true
+MainLoader1.Transparency = 1
+MainLoader1.ZIndex = 10
+MainLoader1.Color = Color3.fromHex("#111010")
+MainLoader1.Position = Vector2.new(187, 146)
+MainLoader1.Size = Vector2.new(426, 289)
+MainLoader1.Filled = true
+MainLoader1.Corner = 6
+table.insert(uiElements, MainLoader1)
+
+local MainLoader1_Border = Drawing.new("Square")
+MainLoader1_Border.Visible = true
+MainLoader1_Border.Transparency = 1
+MainLoader1_Border.ZIndex = 11
+MainLoader1_Border.Color = Color3.fromHex("#1b1a1b")
+MainLoader1_Border.Filled = false
+MainLoader1_Border.Thickness = 1
+MainLoader1_Border.Position = MainLoader1.Position
+MainLoader1_Border.Size = MainLoader1.Size
+MainLoader1_Border.Corner = 6
+table.insert(uiElements, MainLoader1_Border)
+
+local LogoLoader = Drawing.new("Text")
+LogoLoader.Visible = true
+LogoLoader.Transparency = 1
+LogoLoader.ZIndex = 20
+LogoLoader.Color = Color3.fromHex("#00c950")
+LogoLoader.Position = MainLoader1.Position + Vector2.new(23, 16)
+LogoLoader.Text = ">_"
+LogoLoader.Size = 26
+LogoLoader.Center = false
+LogoLoader.Outline = true
+LogoLoader.Font = Drawing.Fonts.Monospace
+table.insert(uiElements, LogoLoader)
+
+local Initilizing = Drawing.new("Text")
+Initilizing.Visible = true
+Initilizing.Transparency = 1
+Initilizing.ZIndex = 30
+Initilizing.Color = Color3.fromHex("#00c950")
+Initilizing.Position = MainLoader1.Position + Vector2.new(67, 29)
+Initilizing.Text = "Initializing..."
+Initilizing.Size = 19
+Initilizing.Center = false
+Initilizing.Outline = true
+Initilizing.Font = Drawing.Fonts.Monospace
+table.insert(uiElements, Initilizing)
+
+local LoadLogs = {}
+for i=1,5 do
+    local log = Drawing.new("Text")
+    log.Visible = false
+    log.Transparency = 1
+    log.ZIndex = 40 + i
+    log.Color = Color3.fromHex("#00c950")
+    log.Position = MainLoader1.Position + Vector2.new(23, 72 + (i-1)*22)
+    log.Text = ""
+    log.Size = 14
+    log.Center = false
+    log.Outline = true
+    log.Font = Drawing.Fonts.Monospace
+    table.insert(LoadLogs, log)
+    table.insert(uiElements, log)
+end
+
+local AnimatingLineLoad = Drawing.new("Square")
+AnimatingLineLoad.Visible = true
+AnimatingLineLoad.Transparency = 1
+AnimatingLineLoad.ZIndex = 80
+AnimatingLineLoad.Color = Color3.fromHex("#00c950")
+AnimatingLineLoad.Position = MainLoader1.Position + Vector2.new(29.5, 262)
+AnimatingLineLoad.Size = Vector2.new(0, 6)
+AnimatingLineLoad.Filled = true
+AnimatingLineLoad.Corner = 8
+table.insert(uiElements, AnimatingLineLoad)
+
+local Loadingscripttext = Drawing.new("Text")
+Loadingscripttext.Visible = true
+Loadingscripttext.Transparency = 1
+Loadingscripttext.ZIndex = 90
+Loadingscripttext.Color = Color3.fromHex("#6b7382")
+Loadingscripttext.Position = MainLoader1.Position + Vector2.new(29.5, 240)
+Loadingscripttext.Text = "Loading script.."
+Loadingscripttext.Size = 14
+Loadingscripttext.Center = false
+Loadingscripttext.Outline = true
+Loadingscripttext.Font = Drawing.Fonts.Monospace
+table.insert(uiElements, Loadingscripttext)
+
+local CountLoadScript = Drawing.new("Text")
+CountLoadScript.Visible = true
+CountLoadScript.Transparency = 1
+CountLoadScript.ZIndex = 100
+CountLoadScript.Color = Color3.fromHex("#6b7382")
+CountLoadScript.Position = MainLoader1.Position + Vector2.new(381, 240)
+CountLoadScript.Text = "0/20"
+CountLoadScript.Size = 14
+CountLoadScript.Center = false
+CountLoadScript.Outline = true
+CountLoadScript.Font = Drawing.Fonts.Monospace
+table.insert(uiElements, CountLoadScript)
+
+local loadMessages = {
+    "Loading skibidi toilet",
+    "Initializing ESP",
+    "Teach pls me Ms.Circle",
+    "Kill stupod Leo",
+    "Ms.bloom, pls sry",
+    "Done",
+    "Verifying like alice",
+    "Starting ass script",
+    "Ready"
+}
+
+local totalSteps = 9
+local maxWidth = 367
+local logIndex = 1
+local duration = 7.0
+local startTime = tick()
+
+local logQueue = {}
+
+local function AddLog(msg, status)
+    local color
+    if status == "success" then
+        color = Color3.fromHex("#00c950")
+        msg = "[+] " .. msg
+    elseif status == "fail" then
+        color = Color3.fromHex("#c70000")
+        msg = "[-] " .. msg
+    elseif status == "warn" then
+        color = Color3.fromHex("#bac700")
+        msg = "[?] " .. msg
+    end
+    table.insert(logQueue, { text = msg, color = color })
+    if #logQueue > 5 then
+        table.remove(logQueue, 1)
+    end
+    for i, log in ipairs(LoadLogs) do
+        if i <= #logQueue then
+            log.Visible = true
+            log.Text = logQueue[i].text
+            log.Color = logQueue[i].color
+        else
+            log.Visible = false
+        end
+    end
+end
+
+spawn(function()
+    while tick() - startTime < duration do
+        local elapsed = tick() - startTime
+        local progress = elapsed / duration
+        AnimatingLineLoad.Size = Vector2.new(maxWidth * progress, 6)
+        local step = math.floor(progress * totalSteps) + 1
+        if step > totalSteps then step = totalSteps end
+        CountLoadScript.Text = step .. "/" .. totalSteps
+        if step > logIndex and logIndex <= totalSteps then
+            AddLog(loadMessages[logIndex], "success")
+            logIndex = logIndex + 1
+        end
+        wait()
+    end
+    AnimatingLineLoad.Size = Vector2.new(maxWidth, 6)
+    CountLoadScript.Text = totalSteps .. "/" .. totalSteps
+    while logIndex <= totalSteps do
+        AddLog(loadMessages[logIndex], "success")
+        logIndex = logIndex + 1
+        wait(0.1)
+    end
+    wait(0.5)
+    AddLog("Script loaded successfully", "success")
+    wait(1)
+    MainLoader1.Visible = false
+    MainLoader1_Border.Visible = false
+    LogoLoader.Visible = false
+    Initilizing.Visible = false
+    for _, log in ipairs(LoadLogs) do
+        log.Visible = false
+    end
+    AnimatingLineLoad.Visible = false
+    Loadingscripttext.Visible = false
+    CountLoadScript.Visible = false
+    VeryBackGUI.Visible = true
+    VeryBackGUI_Border.Visible = true
+    Line1.Visible = true
+    BackGUItabs.Visible = true
+    Line3.Visible = true
+    Line2.Visible = true
+    TextRATHUB.Visible = true
+    TextLOGO.Visible = true
+    BackContentTabs.Visible = true
+    BackContentTabs_Border.Visible = true
+    BackGUI2.Visible = true
+    BackGUI2_Border.Visible = true
+    TabVisuals.Visible = true
+    TabVisuals_Text.Visible = true
+    TabExploits.Visible = true
+    TabExploits_Text.Visible = true
+    TabMisc.Visible = true
+    TabMisc_Text.Visible = true
+    TabInfo.Visible = true
+    TabInfo_Text.Visible = true
+    Square16.Visible = true
+    HideAllTabs()
+    SetActiveTab("Visuals", TabVisuals, TabVisuals_Border, TabVisuals_Text)
+
+    WatermarkContent.Visible = true; WatermarkContent_Border.Visible = true
+    WatermarkTitle.Visible = true; WatermarkDesc.Visible = true
+    SwitchWatermark.Visible = true; SwitchWatermark_Bg.Visible = true
+    SwitchWatermark_IndBorder.Visible = true; SwitchWatermark_Ind.Visible = true
+    SwitchWatermark_Label.Visible = true
+
+    BookHelperContent.Visible = true; BookHelperContent_Border.Visible = true
+    BookHelperTitle.Visible = true; BookHelperDesc.Visible = true
+    SwitchBookHelper.Visible = true; SwitchBookHelper_Bg.Visible = true
+    SwitchBookHelper_IndBorder.Visible = true; SwitchBookHelper_Ind.Visible = true
+    SwitchBookHelper_Label.Visible = true
+    setrobloxinput(false)
+end)
+
+
+local watermarkUpdateTimer = 0
+local bookHelperUpdateTimer = 0
+
+while true do
+    wait(0.01)
+    if pcall(ismouse1pressed) and isrbxactive() then
+        local mouse1 = ismouse1pressed()
+        local mouse2 = ismouse2pressed()
+        local mPos = Vector2.new(Mouse.X, Mouse.Y)
+
+
+        if iskeypressed(closeKey) then
+            local newState = not VeryBackGUI.Visible
+            VeryBackGUI.Visible = newState
+            VeryBackGUI_Border.Visible = newState
+            Line1.Visible = newState
+            BackGUItabs.Visible = newState
+            Line3.Visible = newState
+            Line2.Visible = newState
+            TextRATHUB.Visible = newState
+            TextLOGO.Visible = newState
+            BackContentTabs.Visible = newState
+            BackContentTabs_Border.Visible = newState
+            BackGUI2.Visible = newState
+            BackGUI2_Border.Visible = newState
+            TabVisuals.Visible = newState
+            TabVisuals_Text.Visible = newState
+            TabExploits.Visible = newState
+            TabExploits_Text.Visible = newState
+            TabMisc.Visible = newState
+            TabMisc_Text.Visible = newState
+            TabInfo.Visible = newState
+            TabInfo_Text.Visible = newState
+            Square16.Visible = newState
+            TabVisuals_Border.Visible = newState and (activeTab == "Visuals")
+            TabExploits_Border.Visible = newState and (activeTab == "Exploits")
+            TabMisc_Border.Visible = newState and (activeTab == "Misc")
+            TabInfo_Border.Visible = newState and (activeTab == "Info")
+            if activeTab == "Visuals" then
+                WatermarkContent.Visible = newState; WatermarkContent_Border.Visible = newState
+                WatermarkTitle.Visible = newState; WatermarkDesc.Visible = newState
+                SwitchWatermark.Visible = newState; SwitchWatermark_Bg.Visible = newState
+                SwitchWatermark_IndBorder.Visible = newState; SwitchWatermark_Ind.Visible = newState
+                SwitchWatermark_Label.Visible = newState
+
+                BookHelperContent.Visible = newState; BookHelperContent_Border.Visible = newState
+                BookHelperTitle.Visible = newState; BookHelperDesc.Visible = newState
+                SwitchBookHelper.Visible = newState; SwitchBookHelper_Bg.Visible = newState
+                SwitchBookHelper_IndBorder.Visible = newState; SwitchBookHelper_Ind.Visible = newState
+                SwitchBookHelper_Label.Visible = newState
+            elseif activeTab == "Exploits" then
+                InfinityStaminaContent.Visible = newState; InfinityStaminaContent_Border.Visible = newState
+                InfinityStaminaTitle.Visible = newState; InfinityStaminaDesc.Visible = newState
+                SwitchInfinityStamina.Visible = newState; SwitchInfinityStamina_Bg.Visible = newState
+                SwitchInfinityStamina_IndBorder.Visible = newState; SwitchInfinityStamina_Ind.Visible = newState
+                SwitchInfinityStamina_Label.Visible = newState
+
+                AutoFarmContent.Visible = newState; AutoFarmContent_Border.Visible = newState
+                AutoFarmTitle.Visible = newState; AutoFarmDesc.Visible = newState
+                AutoFarmWarning.Visible = newState
+                SwitchAutoFarm.Visible = newState; SwitchAutoFarm_Bg.Visible = newState
+                SwitchAutoFarm_IndBorder.Visible = newState; SwitchAutoFarm_Ind.Visible = newState
+                SwitchAutoFarm_Label.Visible = newState
+            elseif activeTab == "Misc" then
+                InvisibleSquare.Visible = newState
+                HereNoContentText.Visible = newState
+            elseif activeTab == "Info" then
+                ContentInfo1.Visible = newState; ContentInfo1_Border.Visible = newState
+                TextInfo1.Visible = newState; TextInfo2.Visible = newState
+                ContentInfo2.Visible = newState; ContentInfo2_Border.Visible = newState
+                TextInfo3.Visible = newState
+                for _, line in ipairs(ChangelogLines) do
+                    line.Visible = newState
+                end
+            end
+            if not newState and advancedWindowOpen then
+                CloseAdvancedWindows()
+            end
+            if newState then
+                setrobloxinput(false)
+            else
+                setrobloxinput(true)
+            end
+            wait(0.2)
+        end
+
+
+        local tabs = {
+            {btn = TabVisuals, border = TabVisuals_Border, txt = TabVisuals_Text, name = "Visuals"},
+            {btn = TabExploits, border = TabExploits_Border, txt = TabExploits_Text, name = "Exploits"},
+            {btn = TabMisc, border = TabMisc_Border, txt = TabMisc_Text, name = "Misc"},
+            {btn = TabInfo, border = TabInfo_Border, txt = TabInfo_Text, name = "Info"}
+        }
+        for _, t in ipairs(tabs) do
+            if t.btn.Visible and mPos.X >= t.btn.Position.X and mPos.X <= t.btn.Position.X + t.btn.Size.X and
+               mPos.Y >= t.btn.Position.Y and mPos.Y <= t.btn.Position.Y + t.btn.Size.Y then
+                if t.name ~= activeTab then
+                    t.btn.Color = Color3.fromHex("#1a1a1a")
+                end
+            else
+                if t.name ~= activeTab then
+                    t.btn.Color = Color3.fromHex("#0c0c0d")
+                end
+            end
+        end
+
+
+        local blocks = {
+            {block = WatermarkContent, border = WatermarkContent_Border, visible = WatermarkContent.Visible},
+            {block = BookHelperContent, border = BookHelperContent_Border, visible = BookHelperContent.Visible},
+            {block = InfinityStaminaContent, border = InfinityStaminaContent_Border, visible = InfinityStaminaContent.Visible},
+            {block = AutoFarmContent, border = AutoFarmContent_Border, visible = AutoFarmContent.Visible},
+            {block = ContentInfo1, border = ContentInfo1_Border, visible = ContentInfo1.Visible},
+            {block = ContentInfo2, border = ContentInfo2_Border, visible = ContentInfo2.Visible},
+        }
+        for _, b in ipairs(blocks) do
+            if b.visible and mPos.X >= b.block.Position.X and mPos.X <= b.block.Position.X + b.block.Size.X and
+               mPos.Y >= b.block.Position.Y and mPos.Y <= b.block.Position.Y + b.block.Size.Y then
+                b.border.Color = Color3.fromHex("#00c950")
+            else
+                b.border.Color = Color3.fromHex("#1b1a1b")
+            end
+        end
+
+
+        if advancedWindowOpen and _G.adv_esp and _G.adv_esp.sliders then
+            for _, s in ipairs(_G.adv_esp.sliders) do
+                if s.block.Visible and mPos.X >= s.block.Position.X and mPos.X <= s.block.Position.X + s.block.Size.X and
+                   mPos.Y >= s.block.Position.Y and mPos.Y <= s.block.Position.Y + s.block.Size.Y then
+                    s.border.Color = Color3.fromHex("#00c950")
+                else
+                    s.border.Color = Color3.fromHex("#1b1a1b")
+                end
+            end
+        end
+
+        if mouse1 and not lastMouse1 then
+
+            if TabVisuals.Visible and mPos.X >= TabVisuals.Position.X and mPos.X <= TabVisuals.Position.X + TabVisuals.Size.X and
+               mPos.Y >= TabVisuals.Position.Y and mPos.Y <= TabVisuals.Position.Y + TabVisuals.Size.Y then
+                HideAllTabs()
+                WatermarkContent.Visible = true; WatermarkContent_Border.Visible = true
+                WatermarkTitle.Visible = true; WatermarkDesc.Visible = true
+                SwitchWatermark.Visible = true; SwitchWatermark_Bg.Visible = true
+                SwitchWatermark_IndBorder.Visible = true; SwitchWatermark_Ind.Visible = true
+                SwitchWatermark_Label.Visible = true
+
+                BookHelperContent.Visible = true; BookHelperContent_Border.Visible = true
+                BookHelperTitle.Visible = true; BookHelperDesc.Visible = true
+                SwitchBookHelper.Visible = true; SwitchBookHelper_Bg.Visible = true
+                SwitchBookHelper_IndBorder.Visible = true; SwitchBookHelper_Ind.Visible = true
+                SwitchBookHelper_Label.Visible = true
+                SetActiveTab("Visuals", TabVisuals, TabVisuals_Border, TabVisuals_Text)
+            end
+            if TabExploits.Visible and mPos.X >= TabExploits.Position.X and mPos.X <= TabExploits.Position.X + TabExploits.Size.X and
+               mPos.Y >= TabExploits.Position.Y and mPos.Y <= TabExploits.Position.Y + TabExploits.Size.Y then
+                HideAllTabs()
+                InfinityStaminaContent.Visible = true; InfinityStaminaContent_Border.Visible = true
+                InfinityStaminaTitle.Visible = true; InfinityStaminaDesc.Visible = true
+                SwitchInfinityStamina.Visible = true; SwitchInfinityStamina_Bg.Visible = true
+                SwitchInfinityStamina_IndBorder.Visible = true; SwitchInfinityStamina_Ind.Visible = true
+                SwitchInfinityStamina_Label.Visible = true
+
+                AutoFarmContent.Visible = true; AutoFarmContent_Border.Visible = true
+                AutoFarmTitle.Visible = true; AutoFarmDesc.Visible = true
+                AutoFarmWarning.Visible = true
+                SwitchAutoFarm.Visible = true; SwitchAutoFarm_Bg.Visible = true
+                SwitchAutoFarm_IndBorder.Visible = true; SwitchAutoFarm_Ind.Visible = true
+                SwitchAutoFarm_Label.Visible = true
+                SetActiveTab("Exploits", TabExploits, TabExploits_Border, TabExploits_Text)
+            end
+            if TabMisc.Visible and mPos.X >= TabMisc.Position.X and mPos.X <= TabMisc.Position.X + TabMisc.Size.X and
+               mPos.Y >= TabMisc.Position.Y and mPos.Y <= TabMisc.Position.Y + TabMisc.Size.Y then
+                HideAllTabs()
+                InvisibleSquare.Visible = true; HereNoContentText.Visible = true
+                SetActiveTab("Misc", TabMisc, TabMisc_Border, TabMisc_Text)
+            end
+            if TabInfo.Visible and mPos.X >= TabInfo.Position.X and mPos.X <= TabInfo.Position.X + TabInfo.Size.X and
+               mPos.Y >= TabInfo.Position.Y and mPos.Y <= TabInfo.Position.Y + TabInfo.Size.Y then
+                HideAllTabs()
+                ContentInfo1.Visible = true; ContentInfo1_Border.Visible = true
+                TextInfo1.Visible = true; TextInfo2.Visible = true
+                ContentInfo2.Visible = true; ContentInfo2_Border.Visible = true
+                TextInfo3.Visible = true
+                for _, line in ipairs(ChangelogLines) do
+                    line.Visible = true
+                end
+                SetActiveTab("Info", TabInfo, TabInfo_Border, TabInfo_Text)
+            end
+
+
+            if SwitchWatermark_Label.Visible and mPos.X >= SwitchWatermark.Position.X and mPos.X <= SwitchWatermark.Position.X + SwitchWatermark.Size.X and
+               mPos.Y >= SwitchWatermark.Position.Y and mPos.Y <= SwitchWatermark.Position.Y + SwitchWatermark.Size.Y then
+                WatermarkSwitch.IsChecked = not WatermarkSwitch.IsChecked
+                UpdateSwitchColor(SwitchWatermark_Bg, WatermarkSwitch.IsChecked)
+                if WatermarkSwitch.IsChecked then
+                    SwitchWatermark_IndBorder.Position = SwitchWatermark.Position + Vector2.new(11, 1)
+                    SwitchWatermark_Ind.Position = SwitchWatermark.Position + Vector2.new(11, 1)
+                else
+                    SwitchWatermark_IndBorder.Position = SwitchWatermark.Position + Vector2.new(1, 1)
+                    SwitchWatermark_Ind.Position = SwitchWatermark.Position + Vector2.new(1, 1)
+                end
+
+                MainWatermark.Visible = WatermarkSwitch.IsChecked
+                MainWatermark_Border.Visible = WatermarkSwitch.IsChecked
+                LineWatermark1.Visible = WatermarkSwitch.IsChecked
+                TextRATHUB34.Visible = WatermarkSwitch.IsChecked
+                LogoRathub34.Visible = WatermarkSwitch.IsChecked
+                for _, line in ipairs(teacherLines) do line.Visible = WatermarkSwitch.IsChecked end
+                for _, line in ipairs(aliceLines) do line.Visible = WatermarkSwitch.IsChecked end
+            end
+
+            if SwitchBookHelper_Label.Visible and mPos.X >= SwitchBookHelper.Position.X and mPos.X <= SwitchBookHelper.Position.X + SwitchBookHelper.Size.X and
+               mPos.Y >= SwitchBookHelper.Position.Y and mPos.Y <= SwitchBookHelper.Position.Y + SwitchBookHelper.Size.Y then
+                BookHelperSwitch.IsChecked = not BookHelperSwitch.IsChecked
+                UpdateSwitchColor(SwitchBookHelper_Bg, BookHelperSwitch.IsChecked)
+                if BookHelperSwitch.IsChecked then
+                    SwitchBookHelper_IndBorder.Position = SwitchBookHelper.Position + Vector2.new(11, 1)
+                    SwitchBookHelper_Ind.Position = SwitchBookHelper.Position + Vector2.new(11, 1)
+                else
+                    SwitchBookHelper_IndBorder.Position = SwitchBookHelper.Position + Vector2.new(1, 1)
+                    SwitchBookHelper_Ind.Position = SwitchBookHelper.Position + Vector2.new(1, 1)
+                end
+
+                MainRatAnswers.Visible = BookHelperSwitch.IsChecked
+                MainRatAnswers_Border.Visible = BookHelperSwitch.IsChecked
+                LineAnswers1.Visible = BookHelperSwitch.IsChecked
+                TextRATHUB35.Visible = BookHelperSwitch.IsChecked
+                LogoRathub35.Visible = BookHelperSwitch.IsChecked
+                Answer1.Visible = BookHelperSwitch.IsChecked
+                Answer2.Visible = BookHelperSwitch.IsChecked
+                Answer3.Visible = BookHelperSwitch.IsChecked
+                if OreoICO then OreoICO.Visible = BookHelperSwitch.IsChecked end
+            end
+
+            if SwitchInfinityStamina_Label.Visible and mPos.X >= SwitchInfinityStamina.Position.X and mPos.X <= SwitchInfinityStamina.Position.X + SwitchInfinityStamina.Size.X and
+               mPos.Y >= SwitchInfinityStamina.Position.Y and mPos.Y <= SwitchInfinityStamina.Position.Y + SwitchInfinityStamina.Size.Y then
+                InfinityStaminaSwitch.IsChecked = not InfinityStaminaSwitch.IsChecked
+                UpdateSwitchColor(SwitchInfinityStamina_Bg, InfinityStaminaSwitch.IsChecked)
+                if InfinityStaminaSwitch.IsChecked then
+                    SwitchInfinityStamina_IndBorder.Position = SwitchInfinityStamina.Position + Vector2.new(11, 1)
+                    SwitchInfinityStamina_Ind.Position = SwitchInfinityStamina.Position + Vector2.new(11, 1)
+                else
+                    SwitchInfinityStamina_IndBorder.Position = SwitchInfinityStamina.Position + Vector2.new(1, 1)
+                    SwitchInfinityStamina_Ind.Position = SwitchInfinityStamina.Position + Vector2.new(1, 1)
+                end
+
+                if AdvStaminaSwitch then
+                    AdvStaminaSwitch.IsChecked = InfinityStaminaSwitch.IsChecked
+                    UpdateSwitchColor(AdvStaminaSwitch.Bg, AdvStaminaSwitch.IsChecked)
+                    if AdvStaminaSwitch.IsChecked then
+                        AdvStaminaSwitch.IndBorder.Position = AdvStaminaSwitch.Bg.Position + Vector2.new(16, 1)
+                        AdvStaminaSwitch.Ind.Position = AdvStaminaSwitch.Bg.Position + Vector2.new(16, 1)
+                    else
+                        AdvStaminaSwitch.IndBorder.Position = AdvStaminaSwitch.Bg.Position + Vector2.new(1, 1)
+                        AdvStaminaSwitch.Ind.Position = AdvStaminaSwitch.Bg.Position + Vector2.new(1, 1)
+                    end
+                end
+            end
+
+            if SwitchAutoFarm_Label.Visible and mPos.X >= SwitchAutoFarm.Position.X and mPos.X <= SwitchAutoFarm.Position.X + SwitchAutoFarm.Size.X and
+               mPos.Y >= SwitchAutoFarm.Position.Y and mPos.Y <= SwitchAutoFarm.Position.Y + SwitchAutoFarm.Size.Y then
+                AutoFarmSwitch.IsChecked = not AutoFarmSwitch.IsChecked
+                UpdateSwitchColor(SwitchAutoFarm_Bg, AutoFarmSwitch.IsChecked)
+                if AutoFarmSwitch.IsChecked then
+                    SwitchAutoFarm_IndBorder.Position = SwitchAutoFarm.Position + Vector2.new(11, 1)
+                    SwitchAutoFarm_Ind.Position = SwitchAutoFarm.Position + Vector2.new(11, 1)
+                else
+                    SwitchAutoFarm_IndBorder.Position = SwitchAutoFarm.Position + Vector2.new(1, 1)
+                    SwitchAutoFarm_Ind.Position = SwitchAutoFarm.Position + Vector2.new(1, 1)
+                end
+            end
+
+
+            if VeryBackGUI.Visible and mPos.X >= VeryBackGUI.Position.X and mPos.X <= VeryBackGUI.Position.X + VeryBackGUI.Size.X and
+               mPos.Y >= VeryBackGUI.Position.Y and mPos.Y <= VeryBackGUI.Position.Y + VeryBackGUI.Size.Y then
+                dragging = true
+                dragStart = mPos
+                startPos = VeryBackGUI.Position
+            end
+
+
+            if MainWatermark.Visible and mPos.X >= MainWatermark.Position.X and mPos.X <= MainWatermark.Position.X + MainWatermark.Size.X and
+               mPos.Y >= MainWatermark.Position.Y and mPos.Y <= MainWatermark.Position.Y + MainWatermark.Size.Y then
+                watermarkDragging = true
+                watermarkDragStart = mPos
+                watermarkStartPos = MainWatermark.Position
+            end
+
+
+            if MainRatAnswers.Visible and mPos.X >= MainRatAnswers.Position.X and mPos.X <= MainRatAnswers.Position.X + MainRatAnswers.Size.X and
+               mPos.Y >= MainRatAnswers.Position.Y and mPos.Y <= MainRatAnswers.Position.Y + MainRatAnswers.Size.Y then
+                answersDragging = true
+                answersDragStart = mPos
+                answersStartPos = MainRatAnswers.Position
+            end
+
+
+            if advancedWindowOpen and _G.adv_esp and _G.adv_esp.closeBtn and
+               mPos.X >= _G.adv_esp.closeBtn.Position.X and mPos.X <= _G.adv_esp.closeBtn.Position.X + _G.adv_esp.closeBtn.Size.X and
+               mPos.Y >= _G.adv_esp.closeBtn.Position.Y and mPos.Y <= _G.adv_esp.closeBtn.Position.Y + _G.adv_esp.closeBtn.Size.Y then
+                CloseAdvancedWindows()
+            end
+
+
+            if advancedWindowOpen and _G.adv_esp then
+                local a = _G.adv_esp
+                if a.advStaminaSwitch and a.advStaminaSwitch.Bg and a.advStaminaSwitch.Bg.Visible and mPos.X >= a.advStaminaSwitch.Bg.Position.X and mPos.X <= a.advStaminaSwitch.Bg.Position.X + a.advStaminaSwitch.Bg.Size.X and
+                   mPos.Y >= a.advStaminaSwitch.Bg.Position.Y and mPos.Y <= a.advStaminaSwitch.Bg.Position.Y + a.advStaminaSwitch.Bg.Size.Y then
+                    a.advStaminaSwitch.IsChecked = not a.advStaminaSwitch.IsChecked
+                    UpdateSwitchColor(a.advStaminaSwitch.Bg, a.advStaminaSwitch.IsChecked)
+                    if a.advStaminaSwitch.IsChecked then
+                        a.advStaminaSwitch.IndBorder.Position = a.advStaminaSwitch.Bg.Position + Vector2.new(16, 1)
+                        a.advStaminaSwitch.Ind.Position = a.advStaminaSwitch.Bg.Position + Vector2.new(16, 1)
+                    else
+                        a.advStaminaSwitch.IndBorder.Position = a.advStaminaSwitch.Bg.Position + Vector2.new(1, 1)
+                        a.advStaminaSwitch.Ind.Position = a.advStaminaSwitch.Bg.Position + Vector2.new(1, 1)
+                    end
+                    InfinityStaminaSwitch.IsChecked = a.advStaminaSwitch.IsChecked
+                    UpdateSwitchColor(SwitchInfinityStamina_Bg, InfinityStaminaSwitch.IsChecked)
+                    if InfinityStaminaSwitch.IsChecked then
+                        SwitchInfinityStamina_IndBorder.Position = SwitchInfinityStamina.Position + Vector2.new(11, 1)
+                        SwitchInfinityStamina_Ind.Position = SwitchInfinityStamina.Position + Vector2.new(11, 1)
+                    else
+                        SwitchInfinityStamina_IndBorder.Position = SwitchInfinityStamina.Position + Vector2.new(1, 1)
+                        SwitchInfinityStamina_Ind.Position = SwitchInfinityStamina.Position + Vector2.new(1, 1)
+                    end
+                end
+                if a.sliders then
+                    for _, s in ipairs(a.sliders) do
+                        if s.sliderTrack.Visible and mPos.X >= s.sliderTrack.Position.X and mPos.X <= s.sliderTrack.Position.X + s.sliderTrack.Size.X and
+                           mPos.Y >= s.sliderTrack.Position.Y-10 and mPos.Y <= s.sliderTrack.Position.Y+10 then
+                            sliderDragging = true
+                            currentSlider = s
+                            local relX = mPos.X - s.sliderTrack.Position.X
+                            relX = math.max(0, math.min(s.sliderTrack.Size.X, relX))
+                            local newVal = s.min + (relX / s.sliderTrack.Size.X) * (s.max - s.min)
+                            s.value = newVal
+                            s.sliderValText.Text = tostring(math.floor(newVal))
+                            s.sliderFill.Size = Vector2.new(s.sliderTrack.Size.X * ((newVal - s.min) / (s.max - s.min)), s.sliderFill.Size.Y)
+                            s.sliderKnob.Position = s.sliderTrack.Position + Vector2.new(s.sliderTrack.Size.X * ((newVal - s.min) / (s.max - s.min)), 2)
+                            break
+                        end
+                    end
+                end
+            end
+        end
+
+        if mouse2 and not lastMouse2 then
+
+            if InfinityStaminaContent.Visible and mPos.X >= InfinityStaminaContent.Position.X and mPos.X <= InfinityStaminaContent.Position.X + InfinityStaminaContent.Size.X and
+               mPos.Y >= InfinityStaminaContent.Position.Y and mPos.Y <= InfinityStaminaContent.Position.Y + InfinityStaminaContent.Size.Y then
+                if advancedWindowOpen then
+                    CloseAdvancedWindows()
+                else
+                    CreateAdvancedStamina()
+                end
+            end
+        end
+
+        if not mouse1 and lastMouse1 then
+            dragging = false
+            watermarkDragging = false
+            answersDragging = false
+            sliderDragging = false
+            currentSlider = nil
+        end
+
+        if dragging and mouse1 then
+            local delta = mPos - dragStart
+            VeryBackGUI.Position = startPos + delta
+            VeryBackGUI_Border.Position = VeryBackGUI.Position
+            Line1.Position = VeryBackGUI.Position + Vector2.new(0, 41.5)
+            BackGUItabs.Position = VeryBackGUI.Position + Vector2.new(0, 42)
+            Line3.Position = VeryBackGUI.Position + Vector2.new(-2.5, 84)
+            Line2.Position = VeryBackGUI.Position + Vector2.new(0, 42)
+            TextRATHUB.Position = VeryBackGUI.Position + Vector2.new(48, 13)
+            TextLOGO.Position = VeryBackGUI.Position + Vector2.new(20, 13)
+            BackContentTabs.Position = VeryBackGUI.Position + Vector2.new(0, 84)
+            BackContentTabs_Border.Position = BackContentTabs.Position
+            BackGUI2.Position = VeryBackGUI.Position + Vector2.new(0, 488)
+            BackGUI2_Border.Position = BackGUI2.Position
+            TabVisuals.Position = VeryBackGUI.Position + Vector2.new(11, 51.5)
+            TabVisuals_Text.Position = TabVisuals.Position + Vector2.new(86/2, 22/2)
+            TabVisuals_Border.Position = TabVisuals.Position
+            TabExploits.Position = VeryBackGUI.Position + Vector2.new(105, 51.5)
+            TabExploits_Text.Position = TabExploits.Position + Vector2.new(86/2, 22/2)
+            TabExploits_Border.Position = TabExploits.Position
+            TabMisc.Position = VeryBackGUI.Position + Vector2.new(197, 52)
+            TabMisc_Text.Position = TabMisc.Position + Vector2.new(86/2, 22/2)
+            TabMisc_Border.Position = TabMisc.Position
+            TabInfo.Position = VeryBackGUI.Position + Vector2.new(290, 52)
+            TabInfo_Text.Position = TabInfo.Position + Vector2.new(86/2, 22/2)
+            TabInfo_Border.Position = TabInfo.Position
+            Square16.Position = VeryBackGUI.Position + Vector2.new(567, 41.5)
+
+            -- Visuals blocks
+            WatermarkContent.Position = VeryBackGUI.Position + Vector2.new(20, 97)
+            WatermarkContent_Border.Position = WatermarkContent.Position
+            WatermarkTitle.Position = VeryBackGUI.Position + Vector2.new(30, 110)
+            WatermarkDesc.Position = VeryBackGUI.Position + Vector2.new(36, 125)
+            SwitchWatermark.Position = VeryBackGUI.Position + Vector2.new(210, 106)
+            SwitchWatermark_Bg.Position = SwitchWatermark.Position
+            SwitchWatermark_Label.Position = SwitchWatermark.Position + Vector2.new(35, 3.5)
+            if WatermarkSwitch.IsChecked then
+                SwitchWatermark_IndBorder.Position = SwitchWatermark.Position + Vector2.new(11, 1)
+                SwitchWatermark_Ind.Position = SwitchWatermark.Position + Vector2.new(11, 1)
+            else
+                SwitchWatermark_IndBorder.Position = SwitchWatermark.Position + Vector2.new(1, 1)
+                SwitchWatermark_Ind.Position = SwitchWatermark.Position + Vector2.new(1, 1)
+            end
+
+            BookHelperContent.Position = VeryBackGUI.Position + Vector2.new(20, 167)
+            BookHelperContent_Border.Position = BookHelperContent.Position
+            BookHelperTitle.Position = VeryBackGUI.Position + Vector2.new(30, 180)
+            BookHelperDesc.Position = VeryBackGUI.Position + Vector2.new(36, 195)
+            SwitchBookHelper.Position = VeryBackGUI.Position + Vector2.new(210, 176)
+            SwitchBookHelper_Bg.Position = SwitchBookHelper.Position
+            SwitchBookHelper_Label.Position = SwitchBookHelper.Position + Vector2.new(35, 3.5)
+            if BookHelperSwitch.IsChecked then
+                SwitchBookHelper_IndBorder.Position = SwitchBookHelper.Position + Vector2.new(11, 1)
+                SwitchBookHelper_Ind.Position = SwitchBookHelper.Position + Vector2.new(11, 1)
+            else
+                SwitchBookHelper_IndBorder.Position = SwitchBookHelper.Position + Vector2.new(1, 1)
+                SwitchBookHelper_Ind.Position = SwitchBookHelper.Position + Vector2.new(1, 1)
+            end
+
+            -- Exploits blocks
+            InfinityStaminaContent.Position = VeryBackGUI.Position + Vector2.new(20, 97)
+            InfinityStaminaContent_Border.Position = InfinityStaminaContent.Position
+            InfinityStaminaTitle.Position = VeryBackGUI.Position + Vector2.new(30, 110)
+            InfinityStaminaDesc.Position = VeryBackGUI.Position + Vector2.new(36, 125)
+            SwitchInfinityStamina.Position = VeryBackGUI.Position + Vector2.new(212, 106)
+            SwitchInfinityStamina_Bg.Position = SwitchInfinityStamina.Position
+            SwitchInfinityStamina_Label.Position = SwitchInfinityStamina.Position + Vector2.new(35, 3.5)
+            if InfinityStaminaSwitch.IsChecked then
+                SwitchInfinityStamina_IndBorder.Position = SwitchInfinityStamina.Position + Vector2.new(11, 1)
+                SwitchInfinityStamina_Ind.Position = SwitchInfinityStamina.Position + Vector2.new(11, 1)
+            else
+                SwitchInfinityStamina_IndBorder.Position = SwitchInfinityStamina.Position + Vector2.new(1, 1)
+                SwitchInfinityStamina_Ind.Position = SwitchInfinityStamina.Position + Vector2.new(1, 1)
+            end
+
+            AutoFarmContent.Position = VeryBackGUI.Position + Vector2.new(20, 167)
+            AutoFarmContent_Border.Position = AutoFarmContent.Position
+            AutoFarmTitle.Position = VeryBackGUI.Position + Vector2.new(30, 180)
+            AutoFarmDesc.Position = VeryBackGUI.Position + Vector2.new(36, 195)
+            AutoFarmWarning.Position = VeryBackGUI.Position + Vector2.new(140, 180)
+            SwitchAutoFarm.Position = VeryBackGUI.Position + Vector2.new(212, 176)
+            SwitchAutoFarm_Bg.Position = SwitchAutoFarm.Position
+            SwitchAutoFarm_Label.Position = SwitchAutoFarm.Position + Vector2.new(35, 3.5)
+            if AutoFarmSwitch.IsChecked then
+                SwitchAutoFarm_IndBorder.Position = SwitchAutoFarm.Position + Vector2.new(11, 1)
+                SwitchAutoFarm_Ind.Position = SwitchAutoFarm.Position + Vector2.new(11, 1)
+            else
+                SwitchAutoFarm_IndBorder.Position = SwitchAutoFarm.Position + Vector2.new(1, 1)
+                SwitchAutoFarm_Ind.Position = SwitchAutoFarm.Position + Vector2.new(1, 1)
+            end
+
+            -- Misc
+            InvisibleSquare.Position = VeryBackGUI.Position + Vector2.new(-87, 96)
+            HereNoContentText.Position = VeryBackGUI.Position + Vector2.new(30, 116)
+
+            -- Info
+            ContentInfo1.Position = VeryBackGUI.Position + Vector2.new(11, 101)
+            ContentInfo1_Border.Position = ContentInfo1.Position
+            TextInfo1.Position = VeryBackGUI.Position + Vector2.new(20, 139)
+            TextInfo2.Position = VeryBackGUI.Position + Vector2.new(28, 112)
+            ContentInfo2.Position = VeryBackGUI.Position + Vector2.new(11, 185)
+            ContentInfo2_Border.Position = ContentInfo2.Position
+            TextInfo3.Position = VeryBackGUI.Position + Vector2.new(26, 199)
+            for i, line in ipairs(ChangelogLines) do
+                line.Position = ContentInfo2.Position + Vector2.new(23, 30 + (i-1)*15)
+            end
+
+            if advancedWindowOpen then
+                UpdateAdvancedPositions()
+            end
+        end
+
+        if watermarkDragging and mouse1 then
+            local delta = mPos - watermarkDragStart
+            MainWatermark.Position = watermarkStartPos + delta
+            MainWatermark_Border.Position = MainWatermark.Position
+            LineWatermark1.Position = MainWatermark.Position + Vector2.new(35, 36.5)
+            TextRATHUB34.Position = MainWatermark.Position + Vector2.new(62, 12.5)
+            LogoRathub34.Position = MainWatermark.Position + Vector2.new(35, 11.5)
+            for i, line in ipairs(teacherLines) do
+                line.Position = MainWatermark.Position + Vector2.new(23, 40 + (i-1)*22)
+            end
+            for i, line in ipairs(aliceLines) do
+                line.Position = MainWatermark.Position + Vector2.new(23, 40 + (#teacherLines + i-1)*22)
+            end
+        end
+
+        if answersDragging and mouse1 then
+            local delta = mPos - answersDragStart
+            MainRatAnswers.Position = answersStartPos + delta
+            MainRatAnswers_Border.Position = MainRatAnswers.Position
+            LineAnswers1.Position = MainRatAnswers.Position + Vector2.new(31, 36.5)
+            TextRATHUB35.Position = MainRatAnswers.Position + Vector2.new(68, 13)
+            LogoRathub35.Position = MainRatAnswers.Position + Vector2.new(45, 12)
+            Answer1.Position = MainRatAnswers.Position + Vector2.new(24, 55)
+            Answer2.Position = MainRatAnswers.Position + Vector2.new(24, 89)
+            Answer3.Position = MainRatAnswers.Position + Vector2.new(24, 122)
+            if OreoICO then OreoICO.Position = MainRatAnswers.Position + Vector2.new(9, 3.5) end
+        end
+
+        if sliderDragging and mouse1 and currentSlider then
+            local relX = mPos.X - currentSlider.sliderTrack.Position.X
+            relX = math.max(0, math.min(currentSlider.sliderTrack.Size.X, relX))
+            local newVal = currentSlider.min + (relX / currentSlider.sliderTrack.Size.X) * (currentSlider.max - currentSlider.min)
+            currentSlider.value = newVal
+            currentSlider.sliderValText.Text = tostring(math.floor(newVal))
+            currentSlider.sliderFill.Size = Vector2.new(currentSlider.sliderTrack.Size.X * ((newVal - currentSlider.min) / (currentSlider.max - currentSlider.min)), currentSlider.sliderFill.Size.Y)
+            currentSlider.sliderKnob.Position = currentSlider.sliderTrack.Position + Vector2.new(currentSlider.sliderTrack.Size.X * ((newVal - currentSlider.min) / (currentSlider.max - currentSlider.min)), 2)
+        end
+
+        lastMouse1 = mouse1
+        lastMouse2 = mouse2
+    end
+
+
+    local currentTime = tick()
+
+ 
+    if InfinityStaminaSwitch.IsChecked then
+        local player = game.Players.LocalPlayer
+        if player then
+            local character = player.Character
+            if character then
+                character:SetAttribute("Stamina", 5000)
+                character:SetAttribute("MaxStamina", 5001)
+                character:SetAttribute("StaminaRegen", 1000)
+            end
+        end
+    end
+
+
+    if AutoFarmSwitch.IsChecked then
+        local player = game.Players.LocalPlayer
+        if player then
+            local character = player.Character
+            if character then
+                local root = character:FindFirstChild("HumanoidRootPart")
+                if root then
+                    root.Position = Vector3.new(-1400.3829345703125, 1595.4720458984375, -1054.9542236328125)
+                end
+            end
+            local team = player.Team
+            if team and team.Name == "Teachers" then
+                local hum = character and character:FindFirstChildOfClass("Humanoid")
+                if hum and hum.Address then
+                    memory_write("float", hum.Address + 0x194, -10)
+                end
+            end
+        end
+    end
+
+
+    if BookHelperSwitch.IsChecked and currentTime - bookHelperUpdateTimer > 0.3 then
+        bookHelperUpdateTimer = currentTime
+        local player = game.Players.LocalPlayer
+        if player then
+            local playerGui = player:WaitForChild("PlayerGui")
+            local gameUI = playerGui:FindFirstChild("GameUI")
+            if gameUI then
+                local notebook = gameUI:FindFirstChild("Notebook")
+                if notebook then
+                    local questionsList = notebook:FindFirstChild("QuestionsList")
+                    if questionsList then
+                        local mainFrame = questionsList:FindFirstChild("MainFrame")
+                        if mainFrame then
+                            local allQuestions = {
+                                { question = "What is 2 - 3?", answer = "-1" },
+                                { question = "What is 7 x 8?", answer = "56" },
+                                { question = "What is 9 + 10?", answer = "19" },
+                                { question = "What is 10 / 100?", answer = "0.1" },
+                                { question = "What is 10 / 10?", answer = "1" },
+                                { question = "What is π?", answer = "3.14159" },
+                                { question = "Choose the correct option", answer = "Oreo" },
+                                { question = "What is Brazil's official language?", answer = "Portuguese" },
+                                { question = "Which language has the most native speakers in the world?", answer = "Mandarin" },
+                                { question = "What is Money called in Spanish?", answer = "Dinero" },
+                                { question = "What is an example of a Metaphor?", answer = "This test was a piece of cake!" },
+                                { question = "What is the powerhouse of a cell?", answer = "Mitochondria" },
+                                { question = "What is when a tadpole transforms into a frog?", answer = "Metamorphosis" },
+                                { question = "All living things are made up of cells", answer = "True" },
+                                { question = "What is when a plant uses sunlight to grow?", answer = "Photosynthesis" },
+                                { question = "What is the largest mammal on Earth?", answer = "Blue Whale" },
+                                { question = "Which isn't a characteristic of life?", answer = "Sentience" },
+                                { question = "Which symbol represents silver?", answer = "Ag" },
+                                { question = "At what temperature does water freeze (In Fahrenheit)?", answer = "32" },
+                                { question = "Who was the 1st president of the United States?", answer = "George W" },
+                                { question = "Which era marked a switch from agricultural practices to industrial practices?", answer = "Industrial Revolution" },
+                                { question = "What ended in 1985?", answer = "oreo" },
+                                { question = "When was Hersheys founded?", answer = "1894" },
+                                { question = "When did World War 1 start?", answer = "1914" },
+                                { question = "Which colors make up Orange?", answer = "Yellow & Red" },
+                                { question = "Which one of the following is a primary color?", answer = "Blue" },
+                                { question = "What is the drawing technique that creates the illusion of depth on a flat surface?", answer = "Perspective" },
+                                { question = "What is the complimentary color to Purple?", answer = "Yellow" },
+                                { question = "Which of the following is not a note in the musical scale?", answer = "H" },
+                                { question = "A Treble clef is used for illustrating notes that are:", answer = "Higher" },
+                                { question = "A staff consists of how many horizontal lines?", answer = "Five" },
+                                { question = "How many notes are in the scale?", answer = "Eight" },
+                                { question = "Which of the following markings would affect the length of a note?", answer = "Dot" }
+                            }
+                            local function findAnswerByQuestion(questionText)
+                                for _, item in ipairs(allQuestions) do
+                                    if item.question == questionText then
+                                        return item.answer
+                                    end
+                                end
+                                return nil
+                            end
+                            for i = 1, 3 do
+                                local qFrame = mainFrame:FindFirstChild("Question_" .. i)
+                                if qFrame then
+                                    local questionTextObj = qFrame:FindFirstChild("QuestionText")
+                                    if questionTextObj then
+                                        local qText = questionTextObj.Text
+                                        local answer = findAnswerByQuestion(qText) or "?"
+                                        if i == 1 then Answer1.Text = answer
+                                        elseif i == 2 then Answer2.Text = answer
+                                        elseif i == 3 then Answer3.Text = answer end
+                                    end
+                                end
+                            end
+                        end
+                    end
+                end
+            end
+        end
+    end
+
+
+    if WatermarkSwitch.IsChecked and currentTime - watermarkUpdateTimer > 1 then
+        watermarkUpdateTimer = currentTime
+        local workspace = game:GetService("Workspace")
+        local function getTeacherData()
+            local data = {}
+            local teachersFolder = workspace:FindFirstChild("Teachers")
+            if teachersFolder then
+                for _, child in ipairs(teachersFolder:GetChildren()) do
+                    if child:IsA("Model") then
+                        local teacherName = child:GetAttribute("TeacherName")
+                        local nick = child.Name
+                        table.insert(data, {
+                            text = (teacherName and tostring(teacherName) or "Unknown") .. ": " .. nick,
+                            color = Color3.fromHex("#21c462")
+                        })
+                    end
+                end
+            end
+            return data
+        end
+
+        local function getAliceData()
+            local data = {}
+            local alicesFolder = workspace:FindFirstChild("Alices")
+            if alicesFolder then
+                for _, child in ipairs(alicesFolder:GetChildren()) do
+                    if child:IsA("Model") then
+                        local nick = child.Name
+                        table.insert(data, {
+                            text = "Alice: " .. nick,
+                            color = Color3.fromHex("#c20000")
+                        })
+                    end
+                end
+            end
+            return data
+        end
+
+        local function compareData(a, b)
+            if #a ~= #b then return false end
+            for i = 1, #a do
+                if a[i].text ~= b[i].text or a[i].color ~= b[i].color then
+                    return false
+                end
+            end
+            return true
+        end
+
+        local teacherData = getTeacherData()
+        local aliceData = getAliceData()
+        if not compareData(teacherData, lastTeacherData) or not compareData(aliceData, lastAliceData) then
+            lastTeacherData = teacherData
+            lastAliceData = aliceData
+
+            for _, line in ipairs(teacherLines) do line:Remove() end
+            for _, line in ipairs(aliceLines) do line:Remove() end
+            teacherLines = {}
+            aliceLines = {}
+
+            local allLines = {}
+            for _, d in ipairs(teacherData) do table.insert(allLines, d) end
+            for _, d in ipairs(aliceData) do table.insert(allLines, d) end
+            local lineHeight = 22
+            local topMargin = 40
+            local bottomMargin = 20
+            local newHeight = topMargin + (#allLines * lineHeight) + bottomMargin
+            MainWatermark.Size = Vector2.new(300, newHeight)
+            MainWatermark_Border.Size = MainWatermark.Size
+            LineWatermark1.Position = MainWatermark.Position + Vector2.new(35, 36.5)
+            TextRATHUB34.Position = MainWatermark.Position + Vector2.new(62, 12.5)
+            LogoRathub34.Position = MainWatermark.Position + Vector2.new(35, 11.5)
+
+            for i, data in ipairs(teacherData) do
+                local line = Drawing.new("Text")
+                line.Visible = true
+                line.Transparency = 1
+                line.ZIndex = 50
+                line.Color = data.color
+                line.Position = MainWatermark.Position + Vector2.new(23, topMargin + (i-1) * lineHeight)
+                line.Text = data.text
+                line.Size = 14
+                line.Center = false
+                line.Outline = true
+                line.Font = Drawing.Fonts.System
+                table.insert(teacherLines, line)
+                table.insert(uiElements, line)
+            end
+            local tCount = #teacherData
+            for i, data in ipairs(aliceData) do
+                local line = Drawing.new("Text")
+                line.Visible = true
+                line.Transparency = 1
+                line.ZIndex = 50
+                line.Color = data.color
+                line.Position = MainWatermark.Position + Vector2.new(23, topMargin + (tCount + i - 1) * lineHeight)
+                line.Text = data.text
+                line.Size = 14
+                line.Center = false
+                line.Outline = true
+                line.Font = Drawing.Fonts.System
+                table.insert(aliceLines, line)
+                table.insert(uiElements, line)
+            end
+        end
+    end
+
+    task.wait()
+end
