@@ -22,6 +22,7 @@ local AdvSwitchESP, AdvSwitchESP4, AdvSwitchItems, AdvSwitchCurrency, AdvSwitchK
 local AdvSwitchNotif, AdvSwitchWatermark, AdvSwitchNotifKeycards
 local AdvSwitchMobs
 local AdvAutoRescan
+local AdvUseDistanceLimit
 
 local uiElements = {}
 
@@ -31,6 +32,7 @@ local espPage1BaseY = 0
 local espPage2BaseY = 0
 local notifPageElements = {}
 
+-- UI (This sucks, soon rework)
 local Overlay = Drawing.new("Square")
 Overlay.Visible = false
 Overlay.Transparency = 0.5
@@ -110,7 +112,7 @@ local TextRATHUB = Drawing.new("Text")
 TextRATHUB.Visible = false
 TextRATHUB.Transparency = 1
 TextRATHUB.ZIndex = 50
-TextRATHUB.Color = Color3.fromHex("#00c950")
+TextRATHUB.Color = Color3.fromHex("#906bff")
 TextRATHUB.Position = VeryBackGUI.Position + Vector2.new(48, 13)
 TextRATHUB.Text = "RATHUB"
 TextRATHUB.Size = 14
@@ -123,7 +125,7 @@ local TextLOGO = Drawing.new("Text")
 TextLOGO.Visible = false
 TextLOGO.Transparency = 1
 TextLOGO.ZIndex = 60
-TextLOGO.Color = Color3.fromHex("#00c950")
+TextLOGO.Color = Color3.fromHex("#906bff")
 TextLOGO.Position = VeryBackGUI.Position + Vector2.new(20, 13)
 TextLOGO.Text = ">_"
 TextLOGO.Size = 14
@@ -283,7 +285,7 @@ local TabVisuals_Border = Drawing.new("Square")
 TabVisuals_Border.Visible = false
 TabVisuals_Border.Transparency = 1
 TabVisuals_Border.ZIndex = 101
-TabVisuals_Border.Color = Color3.fromHex("#085226")
+TabVisuals_Border.Color = Color3.fromHex("#906bff")
 TabVisuals_Border.Filled = false
 TabVisuals_Border.Thickness = 1
 TabVisuals_Border.Position = TabVisuals.Position
@@ -295,7 +297,7 @@ local TabExploits_Border = Drawing.new("Square")
 TabExploits_Border.Visible = false
 TabExploits_Border.Transparency = 1
 TabExploits_Border.ZIndex = 121
-TabExploits_Border.Color = Color3.fromHex("#085226")
+TabExploits_Border.Color = Color3.fromHex("#906bff")
 TabExploits_Border.Filled = false
 TabExploits_Border.Thickness = 1
 TabExploits_Border.Position = TabExploits.Position
@@ -307,7 +309,7 @@ local TabMisc_Border = Drawing.new("Square")
 TabMisc_Border.Visible = false
 TabMisc_Border.Transparency = 1
 TabMisc_Border.ZIndex = 131
-TabMisc_Border.Color = Color3.fromHex("#085226")
+TabMisc_Border.Color = Color3.fromHex("#906bff")
 TabMisc_Border.Filled = false
 TabMisc_Border.Thickness = 1
 TabMisc_Border.Position = TabMisc.Position
@@ -319,7 +321,7 @@ local TabInfo_Border = Drawing.new("Square")
 TabInfo_Border.Visible = false
 TabInfo_Border.Transparency = 1
 TabInfo_Border.ZIndex = 141
-TabInfo_Border.Color = Color3.fromHex("#085226")
+TabInfo_Border.Color = Color3.fromHex("#906bff")
 TabInfo_Border.Filled = false
 TabInfo_Border.Thickness = 1
 TabInfo_Border.Position = TabInfo.Position
@@ -701,7 +703,7 @@ local TextInfo1 = Drawing.new("Text")
 TextInfo1.Visible = false
 TextInfo1.Transparency = 1
 TextInfo1.ZIndex = 310
-TextInfo1.Color = Color3.fromHex("#47f109")
+TextInfo1.Color = Color3.fromHex("#906bff")
 TextInfo1.Position = ContentInfo1.Position + Vector2.new(9, 38)
 TextInfo1.Text = "To open advanced settings, hover over the button and right-click!!"
 TextInfo1.Size = 15
@@ -750,7 +752,7 @@ local TextInfo3 = Drawing.new("Text")
 TextInfo3.Visible = false
 TextInfo3.Transparency = 1
 TextInfo3.ZIndex = 340
-TextInfo3.Color = Color3.fromHex("#00c950")
+TextInfo3.Color = Color3.fromHex("#906bff")
 TextInfo3.Position = ContentInfo2.Position + Vector2.new(15, 14)
 TextInfo3.Text = "Changelogs for ver 6.5, 11 March, 2026 Year:"
 TextInfo3.Size = 14
@@ -777,17 +779,18 @@ for i=1,12 do
 end
 
 ChangelogLines[1].Text = "+ Recode auto-rescan for ESP's, and make it better"
-ChangelogLines[1].Color = Color3.fromHex("#00ff66")
+ChangelogLines[1].Color = Color3.fromHex("#906bff")
 ChangelogLines[2].Text = "+ Add new type for ESP: EntityESP "
-ChangelogLines[2].Color = Color3.fromHex("#00ff66")
+ChangelogLines[2].Color = Color3.fromHex("#906bff")
 ChangelogLines[3].Text = "+ Add new page for advanced settings and customizble auto-rescan"
-ChangelogLines[3].Color = Color3.fromHex("#00ff66")
+ChangelogLines[3].Color = Color3.fromHex("#906bff")
 ChangelogLines[4].Text = "[!] We have now hub:"
 ChangelogLines[4].Color = Color3.fromHex("#E32636")
 ChangelogLines[5].Text = "[!] loadstring(game:HttpGet(\"https://raw.githubusercontent.com/kinamy200111/Pressure/refs/heads/main/LoaderScriptsRATHUB\"))()"
 ChangelogLines[5].Color = Color3.fromHex("#E32636")
 ChangelogLines[6].Text = "[!] Support games: Garden horizons and TWR"
 ChangelogLines[6].Color = Color3.fromHex("#E32636")
+
 
 local MainWatermark = Drawing.new("Square")
 MainWatermark.Visible = false
@@ -826,7 +829,7 @@ local TextRATHUB34 = Drawing.new("Text")
 TextRATHUB34.Visible = false
 TextRATHUB34.Transparency = 1
 TextRATHUB34.ZIndex = 40
-TextRATHUB34.Color = Color3.fromHex("#01b349")
+TextRATHUB34.Color = Color3.fromHex("#906bff")
 TextRATHUB34.Position = MainWatermark.Position + Vector2.new(62, 12.5)
 TextRATHUB34.Text = "RATHUB"
 TextRATHUB34.Size = 14
@@ -839,7 +842,7 @@ local LogoRathub34 = Drawing.new("Text")
 LogoRathub34.Visible = false
 LogoRathub34.Transparency = 1
 LogoRathub34.ZIndex = 50
-LogoRathub34.Color = Color3.fromHex("#01b349")
+LogoRathub34.Color = Color3.fromHex("#906bff")
 LogoRathub34.Position = MainWatermark.Position + Vector2.new(35, 11.5)
 LogoRathub34.Text = ">_"
 LogoRathub34.Size = 14
@@ -861,18 +864,82 @@ StatusWatermark.Outline = true
 StatusWatermark.Font = Drawing.Fonts.System
 table.insert(uiElements, StatusWatermark)
 
-local CurrentEntity = Drawing.new("Text")
-CurrentEntity.Visible = false
-CurrentEntity.Transparency = 1
-CurrentEntity.ZIndex = 70
-CurrentEntity.Color = Color3.fromHex("#656c7b")
-CurrentEntity.Position = MainWatermark.Position + Vector2.new(68, 47.5)
-CurrentEntity.Text = "None"
-CurrentEntity.Size = 14
-CurrentEntity.Center = false
-CurrentEntity.Outline = true
-CurrentEntity.Font = Drawing.Fonts.System
-table.insert(uiElements, CurrentEntity)
+local WatermarkTexts = {}
+local lastWatermarkMobs = {}
+
+local function GetMobRarity(mobName)
+    local common = { "Angler", "Froger", "Blitz", "Pinkie", "Chainsmoker" }
+    local rare = { "Pandemonium", "A60", "A200", "Bleach" }
+    local special = { "Painter", "Anglemonium", "Sebastian" }
+    for _, v in ipairs(common) do if v == mobName then return "common" end end
+    for _, v in ipairs(rare) do if v == mobName then return "rare" end end
+    return "special"
+end
+
+local function GetMobColorByRarity(rarity)
+    if rarity == "common" then return Color3.fromRGB(255, 80, 80) end
+    if rarity == "rare" then return Color3.fromHex("#906bff") end
+    return Color3.fromHex("#ffcc00")
+end
+
+local function UpdateWatermark()
+    local currentMobsList = {}
+    for mob, _ in pairs(detectedMobs) do
+        local simple = mob:gsub("Ridge","")
+        if Settings.watermarkMobsEnabled[simple] then
+            table.insert(currentMobsList, {name = mob, simple = simple})
+        end
+    end
+    table.sort(currentMobsList, function(a,b) return a.name < b.name end)
+    
+    if #currentMobsList ~= #lastWatermarkMobs then
+        for _, obj in ipairs(WatermarkTexts) do
+            pcall(function() obj.text:Remove() end)
+        end
+        WatermarkTexts = {}
+        local yOffset = 70
+        for i, mobData in ipairs(currentMobsList) do
+            local rarity = GetMobRarity(mobData.simple)
+            local color = GetMobColorByRarity(rarity)
+            local txt = Drawing.new("Text")
+            txt.Visible = true
+            txt.Text = mobData.name
+            txt.Color = color
+            txt.Size = 14
+            txt.Font = Drawing.Fonts.System
+            txt.Outline = true
+            txt.Center = false
+            txt.Position = MainWatermark.Position + Vector2.new(18, yOffset + (i-1)*20)
+            txt.ZIndex = 70
+            table.insert(uiElements, txt)
+            table.insert(WatermarkTexts, {text = txt, mob = mobData.name, rarity = rarity})
+        end
+        local newHeight = 106
+        if #currentMobsList > 0 then
+            newHeight = 106 + (#currentMobsList * 20)
+        else
+            newHeight = 106
+        end
+        MainWatermark.Size = Vector2.new(205, newHeight)
+        MainWatermark_Border.Size = MainWatermark.Size
+        LineWatermark1.Position = MainWatermark.Position + Vector2.new(35, 36.5)
+        TextRATHUB34.Position = MainWatermark.Position + Vector2.new(62, 12.5)
+        LogoRathub34.Position = MainWatermark.Position + Vector2.new(35, 11.5)
+        StatusWatermark.Position = MainWatermark.Position + Vector2.new(18, 47.5)
+        for i, obj in ipairs(WatermarkTexts) do
+            obj.text.Position = MainWatermark.Position + Vector2.new(18, 70 + (i-1)*20)
+        end
+    else
+        for i, obj in ipairs(WatermarkTexts) do
+            obj.text.Position = MainWatermark.Position + Vector2.new(18, 70 + (i-1)*20)
+            local rarity = GetMobRarity(obj.mob:gsub("Ridge",""))
+            obj.text.Color = GetMobColorByRarity(rarity)
+        end
+    end
+    lastWatermarkMobs = {}
+    for _, md in ipairs(currentMobsList) do table.insert(lastWatermarkMobs, md.name) end
+end
+
 
 local notifX = Viewport.X - 280
 local notifY = Viewport.Y - 70
@@ -892,7 +959,7 @@ local MainNotificationScriptExecut_Border = Drawing.new("Square")
 MainNotificationScriptExecut_Border.Visible = false
 MainNotificationScriptExecut_Border.Transparency = 0.65
 MainNotificationScriptExecut_Border.ZIndex = 401
-MainNotificationScriptExecut_Border.Color = Color3.fromHex("#10502e")
+MainNotificationScriptExecut_Border.Color = Color3.fromHex("#906bff")
 MainNotificationScriptExecut_Border.Filled = false
 MainNotificationScriptExecut_Border.Thickness = 1
 MainNotificationScriptExecut_Border.Position = MainNotificationScriptExecut.Position
@@ -930,7 +997,7 @@ local LogoNotificatorExecut = Drawing.new("Text")
 LogoNotificatorExecut.Visible = false
 LogoNotificatorExecut.Transparency = 1
 LogoNotificatorExecut.ZIndex = 430
-LogoNotificatorExecut.Color = Color3.fromHex("#13a300")
+LogoNotificatorExecut.Color = Color3.fromHex("#906bff")
 LogoNotificatorExecut.Position = Vector2.new(notifX + 14, notifY + 10)
 LogoNotificatorExecut.Text = "+"
 LogoNotificatorExecut.Size = 23
@@ -954,7 +1021,7 @@ local MainNotificationMob_Border = Drawing.new("Square")
 MainNotificationMob_Border.Visible = false
 MainNotificationMob_Border.Transparency = 0.65
 MainNotificationMob_Border.ZIndex = 401
-MainNotificationMob_Border.Color = Color3.fromHex("#5c181c")
+MainNotificationMob_Border.Color = Color3.fromHex("#906bff")
 MainNotificationMob_Border.Filled = false
 MainNotificationMob_Border.Thickness = 1
 MainNotificationMob_Border.Position = MainNotificationMob.Position
@@ -995,7 +1062,7 @@ local function ShowNotification(msgType, entityName)
         TextScriptExecuted.Visible = true
         NotificationDesc.Visible = true
         LogoNotificatorExecut.Visible = true
-        t.spawn(function()
+        task.spawn(function()
             task.wait(3)
             MainNotificationScriptExecut.Visible = false
             MainNotificationScriptExecut_Border.Visible = false
@@ -1004,7 +1071,11 @@ local function ShowNotification(msgType, entityName)
             LogoNotificatorExecut.Visible = false
         end)
     elseif msgType == "mob" then
-        WhatEntitySpawned.Text = entityName .. " spawned"
+        if entityName == "A200" then
+            WhatEntitySpawned.Text = entityName .. " spawned - For him auto-hide so unreal, use shelder"
+        else
+            WhatEntitySpawned.Text = entityName .. " spawned"
+        end
         MainNotificationMob.Visible = true
         MainNotificationMob_Border.Visible = true
         WhatEntitySpawned.Visible = true
@@ -1019,10 +1090,12 @@ local function ShowNotification(msgType, entityName)
     end
 end
 
+
 Settings = {
     globalESPEnabled = false,
     notificationsEnabled = { Angler = false, Froger = false, Pinkie = false, Blitz = false,
-        Pandemonium = false, Chainsmoker = false, ["A60"] = false, Harbinger = false, Painter = false },
+        Pandemonium = false, Chainsmoker = false, ["A60"] = false, Harbinger = false, Painter = false,
+        Bleach = false, NoGood = false, WitchingHour = false, A200 = false, Anglemonium = false, Sebastian = false },
     keycardESPEnabled = true,
     keycardTypes = {
         Normal = true,
@@ -1044,31 +1117,39 @@ Settings = {
         Chainsmoker = true,
         A60 = true,
         Harbinger = true,
-        Painter = true
+        Painter = true,
+        Bleach = true,
+        NoGood = true,
+        WitchingHour = true,
+        A200 = true,
+        Anglemonium = true,
+        Sebastian = true
     },
     autoRescanEnabled = true,
     rescanChunkSize = 50,
     rescanInterval = 5,
-    espDistance = 150,
+    espDistance = 1500,
+    useDistanceLimit = true,
     watermarkEnabled = false,
     watermarkMobsEnabled = { Angler = true, Blitz = true, Pinkie = true, Pandemonium = true, Froger = true,
-        Chainsmoker = true, ["A60"] = true, Harbinger = true, Painter = false }
+        Chainsmoker = true, ["A60"] = true, Harbinger = true, Painter = false,
+        Bleach = true, NoGood = true, WitchingHour = true, A200 = true, Anglemonium = true, Sebastian = true }
 }
 
+
 TrackedMobs = {"Angler", "Blitz", "Pinkie", "Pandemonium", "Froger", "Chainsmoker",
-    "RidgeAngler","RidgeBlitz","RidgePinkie","RidgePandemonium","RidgeFroger","RidgeChainsmoker","A60","Harbinger"}
+    "RidgeAngler","RidgeBlitz","RidgePinkie","RidgePandemonium","RidgeFroger","RidgeChainsmoker","A60","Harbinger",
+    "Bleach", "WitchingHour", "Anglemonium"}
 
 detectedMobs = {}
 
 function CheckForMobs()
     local currentFrameMobs = {}
-    local anyMob = false
     for _, obj in ipairs(workspace:GetChildren()) do
         local mobName = obj.Name
         for _, targetMob in ipairs(TrackedMobs) do
             if mobName == targetMob then
                 currentFrameMobs[mobName] = true
-                anyMob = true
                 if not detectedMobs[mobName] then
                     detectedMobs[mobName] = true
                     local simpleName = mobName:gsub("Ridge", "")
@@ -1088,14 +1169,22 @@ function CheckForMobs()
             for _, room in ipairs(rooms:GetChildren()) do
                 if room:FindFirstChild("Painter") then
                     currentFrameMobs[painterKey] = true
-                    anyMob = true
                     if not detectedMobs[painterKey] then
                         detectedMobs[painterKey] = true
                         if Settings.notificationsEnabled.Painter then
                             ShowNotification("mob", "Painter")
                         end
                     end
-                    break
+                end
+                local sabo = room:FindFirstChild("Saboterousrusrer")
+                if sabo then
+                    currentFrameMobs["Sebastian"] = true
+                    if not detectedMobs["Sebastian"] then
+                        detectedMobs["Sebastian"] = true
+                        if Settings.notificationsEnabled.Sebastian then
+                            ShowNotification("mob", "Sebastian")
+                        end
+                    end
                 end
             end
         end
@@ -1106,20 +1195,10 @@ function CheckForMobs()
         end
     end
     if MainWatermark.Visible then
-        local displayed = false
-        for mob,_ in pairs(detectedMobs) do
-            local simple = mob:gsub("Ridge","")
-            if Settings.watermarkMobsEnabled[simple] then
-                CurrentEntity.Text = mob
-                displayed = true
-                break
-            end
-        end
-        if not displayed then
-            CurrentEntity.Text = "None"
-        end
+        UpdateWatermark()
     end
 end
+
 
 espObjects = {}
 espDoorObjects = {}
@@ -1136,7 +1215,12 @@ end
 
 function getObjectType(instance)
     local success, attr = pcall(function() return instance:GetAttribute("InteractionType") end)
-    if success and attr then return attr end
+    if success and attr then
+        if attr == "NeoStykPickup" then
+            return "ItemBase"
+        end
+        return attr
+    end
     return nil
 end
 
@@ -1165,7 +1249,7 @@ function createESPForObject(obj, objType)
     elseif objType == "RidgeKeyCard" then
         color = Color3.fromRGB(169,169,169)
     elseif objType == "PasswordPaper" then
-        color = Color3.fromRGB(255,200,0)
+        color = Color3.fromHex("#d5d1f0")
         displayName = "Password"
     elseif objType == "CurrencyBase" then
         color = Color3.fromRGB(60,179,113)
@@ -1190,9 +1274,14 @@ end
 function createMobESP(mobInstance, mobName)
     local addr = tostring(mobInstance.Address)
     if espMobObjects[addr] then return false end
+    local simpleName = mobName:gsub("Ridge","")
+    if mobName == "Saboterousrusrer" then simpleName = "Sebastian" end
+    local rarity = GetMobRarity(simpleName)
+    local color = GetMobColorByRarity(rarity)
+    local displayName = (mobName == "Saboterousrusrer") and "Sebastian" or mobName
     local text = Drawing.new("Text")
-    text.Text = mobName
-    text.Color = Color3.fromRGB(255,0,0)
+    text.Text = displayName
+    text.Color = color
     text.Size = 18
     text.Font = Drawing.Fonts.SystemBold
     text.Outline = true
@@ -1238,6 +1327,184 @@ function removeDoorESP(key)
         espDoorObjects[key] = nil
     end
 end
+
+-- AutoRescan method, who want, u can use it
+local progressiveScanning = false
+local lastProgressiveScan = 0
+
+local function ProgressiveScan()
+    if progressiveScanning then return end
+    progressiveScanning = true
+
+    local root = workspace:FindFirstChild("GameplayFolder")
+    if root then
+        root = root:FindFirstChild("Rooms") or root
+    else
+        root = workspace
+    end
+    local descendants = root:GetDescendants()
+    local count = 0
+
+    for _, obj in ipairs(descendants) do
+        local objType = getObjectType(obj)
+        if objType then
+            local enabled = false
+            local keycardType = nil
+            if objType == "KeyCard" or objType == "InnerKeyCard" or objType == "RidgeKeyCard" or objType == "PasswordPaper" then
+                enabled = Settings.keycardESPEnabled
+                if enabled then
+                    keycardType = getKeycardTypeFromObjType(objType)
+                    if keycardType then
+                        enabled = Settings.keycardTypes[keycardType]
+                    end
+                end
+            elseif objType == "CurrencyBase" then
+                enabled = Settings.currencyESPEnabled
+            elseif objType == "ItemBase" then
+                enabled = Settings.itemsESPEnabled
+            end
+            if enabled and not espObjects[tostring(obj.Address)] then
+                createESPForObject(obj, objType)
+            end
+        end
+        count = count + 1
+        if count % Settings.rescanChunkSize == 0 then
+            task.wait()
+        end
+    end
+
+    progressiveScanning = false
+end
+
+DoorScanner = {}
+DoorScanner.__index = DoorScanner
+function DoorScanner.new()
+    local self = setmetatable({}, DoorScanner)
+    self.lastScan = 0
+    self.scanInterval = 2
+    return self
+end
+
+function DoorScanner:scan()
+    if not Settings.doorESPEnabled then
+        for k,_ in pairs(espDoorObjects) do removeDoorESP(k) end
+        return
+    end
+    local ct = tick()
+    if ct - self.lastScan < self.scanInterval then return end
+    self.lastScan = ct
+    local gf = workspace:FindFirstChild("GameplayFolder")
+    if not gf then return end
+    local rooms = gf:FindFirstChild("Rooms")
+    if not rooms then return end
+    local foundKeys = {}
+    for _, room in ipairs(rooms:GetChildren()) do
+        local exits = room:FindFirstChild("Exits")
+        if exits then
+            for _, exit in ipairs(exits:GetChildren()) do
+                local part = exit:IsA("BasePart") and exit or exit:FindFirstChildWhichIsA("BasePart", true)
+                if part then
+                    local key = exit:GetFullName()
+                    foundKeys[key] = part
+                    if not espDoorObjects[key] then createDoorESP(part, key) end
+                end
+            end
+        end
+    end
+    for k,_ in pairs(espDoorObjects) do
+        if not foundKeys[k] then removeDoorESP(k) end
+    end
+end
+
+local doorScanner = DoorScanner.new()
+
+function ForceRescanESP()
+    task.spawn(ProgressiveScan)
+end
+
+-- AutoHide
+AutoHideSystem = { enabled = false, isHiding = false, originalPosition = nil, checkInterval = 0.05, lastCheckTime = 0, holdLoop = false }
+AutoHideTrackedMobs = {"Angler", "Blitz", "Pinkie", "Pandemonium", "Froger", "Chainsmoker",
+    "RidgeAngler","RidgeBlitz","RidgePinkie","RidgePandemonium","RidgeFroger","RidgeChainsmoker","A60","Harbinger",
+    "Bleach", "WitchingHour", "Anglemonium"}
+AutoHideTrackedSet = {}
+for _, name in ipairs(AutoHideTrackedMobs) do AutoHideTrackedSet[name] = true end
+
+function getHRP()
+    local p = game.Players.LocalPlayer
+    if not p or not p.Character then return nil end
+    return p.Character:FindFirstChild("HumanoidRootPart")
+end
+
+function forceTeleport(pos)
+    for i=1,5 do
+        local h = getHRP()
+        if h then
+            h.AssemblyLinearVelocity = Vector3.new(0,0,0)
+            h.Position = pos
+        end
+        wait()
+    end
+end
+
+function AutoHideSystem:CheckForMobs()
+    for _, obj in ipairs(workspace:GetChildren()) do
+        if AutoHideTrackedSet[obj.Name] then return true end
+    end
+    return false
+end
+
+function AutoHideSystem:Hide()
+    if self.isHiding then return end
+    local hrp = getHRP()
+    if not hrp then return end
+    self.originalPosition = hrp.Position
+    self.isHiding = true
+    self.holdLoop = true
+    spawn(function() forceTeleport(self.originalPosition + Vector3.new(0,1000,0)) end)
+    spawn(function()
+        while self.holdLoop do
+            local h = getHRP()
+            if h then h.AssemblyLinearVelocity = Vector3.new(0,0,0) end
+            wait()
+        end
+    end)
+end
+
+function AutoHideSystem:Unhide()
+    if not self.isHiding then return end
+    self.holdLoop = false
+    self.isHiding = false
+    local sp = self.originalPosition
+    self.originalPosition = nil
+    spawn(function() if sp then forceTeleport(sp) end end)
+end
+
+function AutoHideSystem:Update()
+    if not self.enabled then
+        if self.isHiding then self:Unhide() end
+        return
+    end
+    if self.isHiding and not self.originalPosition then
+        self.isHiding = false
+        self.holdLoop = false
+    end
+    local ct = os.clock()
+    if ct - self.lastCheckTime < self.checkInterval then return end
+    self.lastCheckTime = ct
+    if self:CheckForMobs() then
+        if not self.isHiding then self:Hide() end
+    else
+        if self.isHiding then self:Unhide() end
+    end
+end
+
+spawn(function()
+    while true do
+        AutoHideSystem:Update()
+        wait()
+    end
+end)
 
 function updateAllESP()
     if not Settings.globalESPEnabled then
@@ -1325,25 +1592,92 @@ function updateAllESP()
     local playerPos = game.Players.LocalPlayer.Character and game.Players.LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
     if playerPos then playerPos = playerPos.Position else playerPos = nil end
 
+    if Settings.mobsESPEnabled then
+        local currentMobs = {}
+        for _, obj in ipairs(workspace:GetChildren()) do
+            for mobName, enabled in pairs(Settings.mobsESPList) do
+                if enabled and (obj.Name == mobName or (mobName == "A60" and obj.Name == "A60")) then
+                    local addr = tostring(obj.Address)
+                    currentMobs[addr] = obj
+                    if not espMobObjects[addr] then
+                        createMobESP(obj, obj.Name)
+                    end
+                    break
+                end
+            end
+        end
+        if Settings.mobsESPList.Painter then
+            local gf = workspace:FindFirstChild("GameplayFolder")
+            if gf then
+                local rooms = gf:FindFirstChild("Rooms")
+                if rooms then
+                    for _, room in ipairs(rooms:GetChildren()) do
+                        local painter = room:FindFirstChild("Painter")
+                        if painter then
+                            local addr = tostring(painter.Address)
+                            currentMobs[addr] = painter
+                            if not espMobObjects[addr] then
+                                createMobESP(painter, "Painter")
+                            end
+                        end
+                    end
+                end
+            end
+        end
+        if Settings.mobsESPList.Sebastian then
+            local gf = workspace:FindFirstChild("GameplayFolder")
+            if gf then
+                local rooms = gf:FindFirstChild("Rooms")
+                if rooms then
+                    for _, room in ipairs(rooms:GetChildren()) do
+                        local sabo = room:FindFirstChild("Saboterousrusrer")
+                        if sabo then
+                            local addr = tostring(sabo.Address)
+                            currentMobs[addr] = sabo
+                            if not espMobObjects[addr] then
+                                createMobESP(sabo, "Saboterousrusrer")
+                            end
+                        end
+                    end
+                end
+            end
+        end
+        for addr, espData in pairs(espMobObjects) do
+            if not currentMobs[addr] then
+                if espData.text then espData.text:Remove() end
+                espMobObjects[addr] = nil
+            end
+        end
+    else
+        for addr, espData in pairs(espMobObjects) do
+            if espData.text then espData.text:Remove() end
+        end
+        espMobObjects = {}
+    end
+
     for addr, espData in pairs(espMobObjects) do
         local mob = espData.obj
         if mob and mob.Parent then
-            if Settings.mobsESPEnabled then
-                local pos = getPosition(mob)
-                if pos then
-                    local dist = playerPos and (pos - playerPos).Magnitude or 0
-                    if dist <= Settings.espDistance then
-                        local screenPos, onScreen = WorldToScreen(pos)
-                        if onScreen and screenPos.X>-500 and screenPos.X<5000 and screenPos.Y>-500 and screenPos.Y<5000 then
-                            espData.text.Position = screenPos
-                            espData.text.Visible = true
-                            espData.lastSeen = tick()
-                        else espData.text.Visible = false end
-                    else
-                        espData.text.Visible = false
-                    end
-                else espData.text.Visible = false end
-            else espData.text.Visible = false end
+            local pos = getPosition(mob)
+            if pos then
+                local dist = playerPos and (pos - playerPos).Magnitude or 0
+                local show = true
+                if Settings.useDistanceLimit and dist > Settings.espDistance then
+                    show = false
+                end
+                if show then
+                    local screenPos, onScreen = WorldToScreen(pos)
+                    if onScreen and screenPos.X>-500 and screenPos.X<5000 and screenPos.Y>-500 and screenPos.Y<5000 then
+                        espData.text.Position = screenPos
+                        espData.text.Visible = true
+                        espData.lastSeen = tick()
+                    else espData.text.Visible = false end
+                else
+                    espData.text.Visible = false
+                end
+            else
+                espData.text.Visible = false
+            end
         else
             if espData.text then espData.text:Remove() end
             espMobObjects[addr] = nil
@@ -1351,203 +1685,22 @@ function updateAllESP()
     end
 end
 
-local progressiveScanning = false
-local lastProgressiveScan = 0
-
-local function ProgressiveScan()
-    if progressiveScanning then return end
-    progressiveScanning = true
-
-    local root = workspace:FindFirstChild("GameplayFolder")
-    if root then
-        root = root:FindFirstChild("Rooms") or root
-    else
-        root = workspace
-    end
-    local descendants = root:GetDescendants()
-    local count = 0
-    for _, obj in ipairs(descendants) do
-        local objType = getObjectType(obj)
-        if objType then
-            local enabled = false
-            local keycardType = nil
-            if objType == "KeyCard" or objType == "InnerKeyCard" or objType == "RidgeKeyCard" or objType == "PasswordPaper" then
-                enabled = Settings.keycardESPEnabled
-                if enabled then
-                    keycardType = getKeycardTypeFromObjType(objType)
-                    if keycardType then
-                        enabled = Settings.keycardTypes[keycardType]
-                    end
-                end
-            elseif objType == "CurrencyBase" then
-                enabled = Settings.currencyESPEnabled
-            elseif objType == "ItemBase" then
-                enabled = Settings.itemsESPEnabled
-            end
-            if enabled and not espObjects[tostring(obj.Address)] then
-                createESPForObject(obj, objType)
-            end
-        end
-        count = count + 1
-        if count % Settings.rescanChunkSize == 0 then
-            task.wait()
-        end
-    end
-
-    if Settings.mobsESPEnabled then
-        for _, obj in ipairs(workspace:GetChildren()) do
-            for mobName, enabled in pairs(Settings.mobsESPList) do
-                if enabled and (obj.Name == mobName or (mobName == "A60" and obj.Name == "A60")) then
-                    if not espMobObjects[tostring(obj.Address)] then
-                        createMobESP(obj, obj.Name)
-                    end
-                    break
-                end
-            end
-        end
-    end
-
-    if Settings.mobsESPEnabled and Settings.mobsESPList.Painter then
-        local gf = workspace:FindFirstChild("GameplayFolder")
-        if gf then
-            local rooms = gf:FindFirstChild("Rooms")
-            if rooms then
-                for _, room in ipairs(rooms:GetChildren()) do
-                    local painter = room:FindFirstChild("Painter")
-                    if painter and not espMobObjects[tostring(painter.Address)] then
-                        createMobESP(painter, "Painter")
-                    end
-                end
-            end
-        end
-    end
-
-    progressiveScanning = false
-end
-
-DoorScanner = {}
-DoorScanner.__index = DoorScanner
-function DoorScanner.new()
-    local self = setmetatable({}, DoorScanner)
-    self.lastScan = 0
-    self.scanInterval = 2
-    return self
-end
-
-function DoorScanner:scan()
-    if not Settings.doorESPEnabled then
-        for k,_ in pairs(espDoorObjects) do removeDoorESP(k) end
-        return
-    end
-    local ct = tick()
-    if ct - self.lastScan < self.scanInterval then return end
-    self.lastScan = ct
-    local gf = workspace:FindFirstChild("GameplayFolder")
-    if not gf then return end
-    local rooms = gf:FindFirstChild("Rooms")
-    if not rooms then return end
-    local foundKeys = {}
-    for _, room in ipairs(rooms:GetChildren()) do
-        local exits = room:FindFirstChild("Exits")
-        if exits then
-            for _, exit in ipairs(exits:GetChildren()) do
-                local part = exit:IsA("BasePart") and exit or exit:FindFirstChildWhichIsA("BasePart", true)
-                if part then
-                    local key = exit:GetFullName()
-                    foundKeys[key] = part
-                    if not espDoorObjects[key] then createDoorESP(part, key) end
-                end
-            end
-        end
-    end
-    for k,_ in pairs(espDoorObjects) do
-        if not foundKeys[k] then removeDoorESP(k) end
-    end
-end
-
-local doorScanner = DoorScanner.new()
-
-function ForceRescanESP()
-    task.spawn(ProgressiveScan)
-end
-
-AutoHideSystem = { enabled = false, isHiding = false, originalPosition = nil, checkInterval = 0.05, lastCheckTime = 0, holdLoop = false }
-TrackedMobsSet = {}
-for _, name in ipairs(TrackedMobs) do TrackedMobsSet[name] = true end
-
-function getHRP()
-    local p = game.Players.LocalPlayer
-    if not p or not p.Character then return nil end
-    return p.Character:FindFirstChild("HumanoidRootPart")
-end
-
-function forceTeleport(pos)
-    for i=1,5 do
-        local h = getHRP()
-        if h then
-            h.AssemblyLinearVelocity = Vector3.new(0,0,0)
-            h.Position = pos
-        end
-        wait()
-    end
-end
-
-function AutoHideSystem:CheckForMobs()
-    for _, obj in ipairs(workspace:GetChildren()) do
-        if TrackedMobsSet[obj.Name] then return true end
-    end
-    return false
-end
-
-function AutoHideSystem:Hide()
-    if self.isHiding then return end
-    local hrp = getHRP()
-    if not hrp then return end
-    self.originalPosition = hrp.Position
-    self.isHiding = true
-    self.holdLoop = true
-    spawn(function() forceTeleport(self.originalPosition + Vector3.new(0,1000,0)) end)
-    spawn(function()
-        while self.holdLoop do
-            local h = getHRP()
-            if h then h.AssemblyLinearVelocity = Vector3.new(0,0,0) end
-            wait()
-        end
-    end)
-end
-
-function AutoHideSystem:Unhide()
-    if not self.isHiding then return end
-    self.holdLoop = false
-    self.isHiding = false
-    local sp = self.originalPosition
-    self.originalPosition = nil
-    spawn(function() if sp then forceTeleport(sp) end end)
-end
-
-function AutoHideSystem:Update()
-    if not self.enabled then
-        if self.isHiding then self:Unhide() end
-        return
-    end
-    if self.isHiding and not self.originalPosition then
-        self.isHiding = false
-        self.holdLoop = false
-    end
-    local ct = os.clock()
-    if ct - self.lastCheckTime < self.checkInterval then return end
-    self.lastCheckTime = ct
-    if self:CheckForMobs() then
-        if not self.isHiding then self:Hide() end
-    else
-        if self.isHiding then self:Unhide() end
-    end
-end
-
+-- ESP System number 2
 spawn(function()
     while true do
-        AutoHideSystem:Update()
-        wait()
+        updateAllESP()
+        doorScanner:scan()
+        CheckForMobs()
+
+        if Settings.autoRescanEnabled then
+            local now = tick()
+            if now - lastProgressiveScan > Settings.rescanInterval then
+                lastProgressiveScan = now
+                task.spawn(ProgressiveScan)
+            end
+        end
+
+        task.wait(0.03)
     end
 end)
 
@@ -1590,8 +1743,8 @@ local function SetActiveTab(tabName, tabButton, tabBorder, tabText)
         t.border.Visible = false
     end
     if tabName then
-        tabButton.Color = Color3.fromHex("#0c2014")
-        tabText.Color = Color3.fromHex("#01c34c")
+        tabButton.Color = Color3.fromHex("#2a1a4a")
+        tabText.Color = Color3.fromHex("#906bff")
         tabBorder.Visible = true
         activeTab = tabName
     else
@@ -1628,6 +1781,7 @@ local function CloseAdvancedWindows()
     AdvSwitchNotif = nil
     AdvSwitchWatermark = nil
     AdvAutoRescan = nil
+    AdvUseDistanceLimit = nil
     currentPage = 1
 end
 
@@ -1693,8 +1847,8 @@ local function ShowESPPage(page)
     end
 
     if _G.adv_esp.page1Btn then
-        _G.adv_esp.page1Btn.Color = (page == 1) and Color3.fromHex("#04c838") or Color3.fromHex("#1b1a1b")
-        _G.adv_esp.page2Btn.Color = (page == 2) and Color3.fromHex("#04c838") or Color3.fromHex("#1b1a1b")
+        _G.adv_esp.page1Btn.Color = (page == 1) and Color3.fromHex("#906bff") or Color3.fromHex("#1b1a1b")
+        _G.adv_esp.page2Btn.Color = (page == 2) and Color3.fromHex("#906bff") or Color3.fromHex("#1b1a1b")
     end
 end
 
@@ -1754,7 +1908,7 @@ local function CreateAdvancedESP()
     title.Visible = true
     title.Transparency = 1
     title.ZIndex = 1070
-    title.Color = Color3.fromHex("#04c838")
+    title.Color = Color3.fromHex("#906bff")
     title.Position = win2.Position + Vector2.new(16, 12)
     title.Text = "ESP Settings"
     title.Size = 17
@@ -1767,7 +1921,7 @@ local function CreateAdvancedESP()
     page1Btn.Visible = true
     page1Btn.Transparency = 1
     page1Btn.ZIndex = 1080
-    page1Btn.Color = Color3.fromHex("#04c838")
+    page1Btn.Color = Color3.fromHex("#906bff")
     page1Btn.Filled = true
     page1Btn.Size = Vector2.new(40, 20)
     page1Btn.Position = win2.Position + Vector2.new(16, 55)
@@ -1933,13 +2087,14 @@ local function CreateAdvancedESP()
     end
     UpdateSwitchColor(AdvSwitchESP4.Bg, AdvSwitchESP4.IsChecked)
 
+
     local s2 = Drawing.new("Square")
     s2.Visible = true
     s2.Transparency = 1
     s2.ZIndex = 1050
     s2.Color = Color3.fromHex("#111010")
     s2.Position = s1.Position + Vector2.new(0, 80)
-    s2.Size = Vector2.new(247, 90)
+    s2.Size = Vector2.new(247, 110)
     s2.Filled = true
     s2.Corner = 5
     table.insert(uiElements, s2)
@@ -1964,7 +2119,7 @@ local function CreateAdvancedESP()
     distTxt.ZIndex = 1090
     distTxt.Color = Color3.fromHex("#d1d4dd")
     distTxt.Position = s2.Position + Vector2.new(19, 12)
-    distTxt.Text = "ESP distance"
+    distTxt.Text = "ESP distance limit"
     distTxt.Size = 14
     distTxt.Center = false
     distTxt.Outline = true
@@ -1988,9 +2143,9 @@ local function CreateAdvancedESP()
     local sliderFill = Drawing.new("Square")
     sliderFill.Visible = true
     sliderFill.Transparency = 1
-    sliderFill.Color = Color3.fromHex("#04c838")
+    sliderFill.Color = Color3.fromHex("#906bff")
     sliderFill.Filled = true
-    sliderFill.Size = Vector2.new(200 * ((sliderVal-15)/(500-15)), 4)
+    sliderFill.Size = Vector2.new(200 * ((sliderVal-15)/(5000-15)), 4)
     sliderFill.Position = sliderTrack.Position
     sliderFill.ZIndex = 1131
     sliderFill.Corner = 2
@@ -2000,11 +2155,11 @@ local function CreateAdvancedESP()
     local sliderKnob = Drawing.new("Circle")
     sliderKnob.Visible = true
     sliderKnob.Transparency = 1
-    sliderKnob.Color = Color3.fromHex("#04c838")
+    sliderKnob.Color = Color3.fromHex("#906bff")
     sliderKnob.Filled = true
     sliderKnob.Radius = 6
     sliderKnob.NumSides = 16
-    sliderKnob.Position = sliderTrack.Position + Vector2.new(200 * ((sliderVal-15)/(500-15)), 2)
+    sliderKnob.Position = sliderTrack.Position + Vector2.new(200 * ((sliderVal-15)/(5000-15)), 2)
     sliderKnob.ZIndex = 1132
     table.insert(uiElements, sliderKnob)
     table.insert(espPage1Elements, sliderKnob)
@@ -2021,13 +2176,97 @@ local function CreateAdvancedESP()
     table.insert(uiElements, sliderValText)
     table.insert(espPage1Elements, sliderValText)
 
+    local limitSwitchTxt = Drawing.new("Text")
+    limitSwitchTxt.Visible = true
+    limitSwitchTxt.Transparency = 1
+    limitSwitchTxt.ZIndex = 1080
+    limitSwitchTxt.Color = Color3.fromHex("#d1d4dd")
+    limitSwitchTxt.Position = s2.Position + Vector2.new(19, 65)
+    limitSwitchTxt.Text = "Use distance limit"
+    limitSwitchTxt.Size = 14
+    limitSwitchTxt.Center = false
+    limitSwitchTxt.Outline = true
+    limitSwitchTxt.Font = Drawing.Fonts.UI
+    table.insert(uiElements, limitSwitchTxt)
+    table.insert(espPage1Elements, limitSwitchTxt)
+
+    local swLimit = Drawing.new("Square")
+    swLimit.Visible = true
+    swLimit.Transparency = 1
+    swLimit.Color = Color3.fromHex("#000000")
+    swLimit.Thickness = 1
+    swLimit.Filled = false
+    swLimit.Size = Vector2.new(30, 15)
+    swLimit.Position = s2.Position + Vector2.new(207, 63)
+    swLimit.ZIndex = 1120
+    swLimit.Corner = 10
+    table.insert(uiElements, swLimit)
+    table.insert(espPage1Elements, swLimit)
+
+    local swLimitBg = Drawing.new("Square")
+    swLimitBg.Visible = true
+    swLimitBg.Transparency = 1
+    swLimitBg.Color = Color3.fromHex("#cbcfd5")
+    swLimitBg.Filled = true
+    swLimitBg.Size = swLimit.Size
+    swLimitBg.Position = swLimit.Position
+    swLimitBg.ZIndex = 1120
+    swLimitBg.Corner = 10
+    table.insert(uiElements, swLimitBg)
+    table.insert(espPage1Elements, swLimitBg)
+
+    local swLimitIndBorder = Drawing.new("Square")
+    swLimitIndBorder.Visible = true
+    swLimitIndBorder.Transparency = 1
+    swLimitIndBorder.Color = Color3.fromHex("#000000")
+    swLimitIndBorder.Thickness = 1
+    swLimitIndBorder.Filled = false
+    swLimitIndBorder.Size = Vector2.new(13, 13)
+    swLimitIndBorder.ZIndex = 1122
+    swLimitIndBorder.Corner = 10
+    table.insert(uiElements, swLimitIndBorder)
+    table.insert(espPage1Elements, swLimitIndBorder)
+
+    local swLimitInd = Drawing.new("Square")
+    swLimitInd.Visible = true
+    swLimitInd.Transparency = 1
+    swLimitInd.Color = Color3.fromHex("#ffffff")
+    swLimitInd.Filled = true
+    swLimitInd.Size = Vector2.new(13, 13)
+    swLimitInd.ZIndex = 1122
+    swLimitInd.Corner = 10
+    table.insert(uiElements, swLimitInd)
+    table.insert(espPage1Elements, swLimitInd)
+
+    local swLimitLabel = Drawing.new("Text")
+    swLimitLabel.Visible = true
+    swLimitLabel.Text = ""
+    swLimitLabel.Size = 1
+    swLimitLabel.Color = Color3.fromHex("#FFFFFF")
+    swLimitLabel.Outline = true
+    swLimitLabel.Font = Drawing.Fonts.UI
+    swLimitLabel.Position = swLimit.Position + Vector2.new(40, 7)
+    swLimitLabel.ZIndex = 1121
+    table.insert(uiElements, swLimitLabel)
+    table.insert(espPage1Elements, swLimitLabel)
+
+    AdvUseDistanceLimit = { Bg = swLimitBg, Ind = swLimitInd, IndBorder = swLimitIndBorder, IsChecked = Settings.useDistanceLimit }
+    if AdvUseDistanceLimit.IsChecked then
+        AdvUseDistanceLimit.IndBorder.Position = AdvUseDistanceLimit.Bg.Position + Vector2.new(16, 1)
+        AdvUseDistanceLimit.Ind.Position = AdvUseDistanceLimit.Bg.Position + Vector2.new(16, 1)
+    else
+        AdvUseDistanceLimit.IndBorder.Position = AdvUseDistanceLimit.Bg.Position + Vector2.new(1, 1)
+        AdvUseDistanceLimit.Ind.Position = AdvUseDistanceLimit.Bg.Position + Vector2.new(1, 1)
+    end
+    UpdateSwitchColor(AdvUseDistanceLimit.Bg, AdvUseDistanceLimit.IsChecked)
+
     local sliderDesc = Drawing.new("Text")
     sliderDesc.Visible = true
     sliderDesc.Transparency = 1
     sliderDesc.ZIndex = 1110
     sliderDesc.Color = Color3.fromHex("#6b7382")
-    sliderDesc.Position = s2.Position + Vector2.new(32, 62)
-    sliderDesc.Text = "Distance for ESP"
+    sliderDesc.Position = s2.Position + Vector2.new(32, 85)
+    sliderDesc.Text = "Max distance for ESP (15-5000)"
     sliderDesc.Size = 11
     sliderDesc.Center = false
     sliderDesc.Outline = true
@@ -2035,12 +2274,13 @@ local function CreateAdvancedESP()
     table.insert(uiElements, sliderDesc)
     table.insert(espPage1Elements, sliderDesc)
 
+
     local s3 = Drawing.new("Square")
     s3.Visible = true
     s3.Transparency = 1
     s3.ZIndex = 1060
     s3.Color = Color3.fromHex("#111010")
-    s3.Position = s2.Position + Vector2.new(0, 104)
+    s3.Position = s2.Position + Vector2.new(0, 124)
     s3.Size = Vector2.new(247, 90)
     s3.Filled = true
     s3.Corner = 5
@@ -2216,7 +2456,7 @@ local function CreateAdvancedESP()
         local check = Drawing.new("Square")
         check.Visible = false
         check.Transparency = 1
-        check.Color = item.checked and Color3.fromHex("#04c838") or Color3.fromHex("#3a3a3a")
+        check.Color = item.checked and Color3.fromHex("#906bff") or Color3.fromHex("#3a3a3a")
         check.Filled = true
         check.Size = Vector2.new(12, 12)
         check.Position = box.Position + Vector2.new(6, 6)
@@ -2247,6 +2487,7 @@ local function CreateAdvancedESP()
         elseif #sel == #dropdownItems then dropdownText.Text = "Keycards: all"
         else dropdownText.Text = "Keycards: " .. table.concat(sel, ", ") end
     end
+
 
     local s4 = Drawing.new("Square")
     s4.Visible = true
@@ -2370,6 +2611,7 @@ local function CreateAdvancedESP()
     itemsDesc.Font = Drawing.Fonts.UI
     table.insert(uiElements, itemsDesc)
     table.insert(espPage1Elements, itemsDesc)
+
 
     local s5 = Drawing.new("Square")
     s5.Visible = true
@@ -2578,6 +2820,7 @@ local function CreateAdvancedESP()
     table.insert(uiElements, currDesc)
     table.insert(espPage1Elements, currDesc)
 
+
     local s6 = Drawing.new("Square")
     s6.Visible = false
     s6.Transparency = 1
@@ -2701,6 +2944,7 @@ local function CreateAdvancedESP()
     table.insert(uiElements, doorsDesc)
     table.insert(espPage2Elements, doorsDesc)
 
+
     local s7 = Drawing.new("Square")
     s7.Visible = false
     s7.Transparency = 1
@@ -2811,15 +3055,21 @@ local function CreateAdvancedESP()
     end
 
     local mobItems = {
-        { name = "Angler", checked = Settings.mobsESPList.Angler },
-        { name = "Blitz", checked = Settings.mobsESPList.Blitz },
-        { name = "Pinkie", checked = Settings.mobsESPList.Pinkie },
-        { name = "Pandemonium", checked = Settings.mobsESPList.Pandemonium },
-        { name = "Froger", checked = Settings.mobsESPList.Froger },
-        { name = "Chainsmoker", checked = Settings.mobsESPList.Chainsmoker },
-        { name = "A60", checked = Settings.mobsESPList.A60 },
-        { name = "Harbinger", checked = Settings.mobsESPList.Harbinger },
-        { name = "Painter", checked = Settings.mobsESPList.Painter }
+        { name = "Angler", checked = Settings.mobsESPList.Angler, rarity = "common" },
+        { name = "Blitz", checked = Settings.mobsESPList.Blitz, rarity = "common" },
+        { name = "Pinkie", checked = Settings.mobsESPList.Pinkie, rarity = "common" },
+        { name = "Pandemonium", checked = Settings.mobsESPList.Pandemonium, rarity = "rare" },
+        { name = "Froger", checked = Settings.mobsESPList.Froger, rarity = "common" },
+        { name = "Chainsmoker", checked = Settings.mobsESPList.Chainsmoker, rarity = "common" },
+        { name = "A60", checked = Settings.mobsESPList.A60, rarity = "rare" },
+        { name = "Harbinger", checked = Settings.mobsESPList.Harbinger, rarity = "special" },
+        { name = "Painter", checked = Settings.mobsESPList.Painter, rarity = "special" },
+        { name = "Bleach", checked = Settings.mobsESPList.Bleach, rarity = "rare" },
+        { name = "NoGood", checked = Settings.mobsESPList.NoGood, rarity = "special" },
+        { name = "WitchingHour", checked = Settings.mobsESPList.WitchingHour, rarity = "special" },
+        { name = "A200", checked = Settings.mobsESPList.A200, rarity = "rare" },
+        { name = "Anglemonium", checked = Settings.mobsESPList.Anglemonium, rarity = "special" },
+        { name = "Sebastian", checked = Settings.mobsESPList.Sebastian, rarity = "special" }
     }
     local mobDropdownOpen = false
     local mobDropdownMain = Drawing.new("Square")
@@ -2859,6 +3109,7 @@ local function CreateAdvancedESP()
 
     local mobDropdownBoxes = {}
     for idx, item in ipairs(mobItems) do
+        local rarityColor = GetMobColorByRarity(item.rarity)
         local box = Drawing.new("Square")
         box.Visible = false
         box.Transparency = 1
@@ -2873,7 +3124,7 @@ local function CreateAdvancedESP()
         local check = Drawing.new("Square")
         check.Visible = false
         check.Transparency = 1
-        check.Color = item.checked and Color3.fromHex("#04c838") or Color3.fromHex("#3a3a3a")
+        check.Color = item.checked and rarityColor or Color3.fromHex("#3a3a3a")
         check.Filled = true
         check.Size = Vector2.new(12, 12)
         check.Position = box.Position + Vector2.new(6, 6)
@@ -2887,7 +3138,7 @@ local function CreateAdvancedESP()
         txt.Size = 14
         txt.Outline = true
         txt.Font = 0
-        txt.Color = Color3.fromHex("#d1d4dd")
+        txt.Color = rarityColor
         txt.Position = box.Position + Vector2.new(24, 4)
         txt.ZIndex = 1146
         table.insert(uiElements, txt)
@@ -2918,6 +3169,7 @@ local function CreateAdvancedESP()
     mobsDesc.Font = Drawing.Fonts.UI
     table.insert(uiElements, mobsDesc)
     table.insert(espPage2Elements, mobsDesc)
+
 
     local s8 = Drawing.new("Square")
     s8.Visible = false
@@ -3058,7 +3310,7 @@ local function CreateAdvancedESP()
     local chunkSliderFill = Drawing.new("Square")
     chunkSliderFill.Visible = false
     chunkSliderFill.Transparency = 1
-    chunkSliderFill.Color = Color3.fromHex("#04c838")
+    chunkSliderFill.Color = Color3.fromHex("#906bff")
     chunkSliderFill.Filled = true
     chunkSliderFill.Size = Vector2.new(200 * ((chunkVal-10)/(500-10)), 4)
     chunkSliderFill.Position = chunkSliderTrack.Position
@@ -3070,7 +3322,7 @@ local function CreateAdvancedESP()
     local chunkSliderKnob = Drawing.new("Circle")
     chunkSliderKnob.Visible = false
     chunkSliderKnob.Transparency = 1
-    chunkSliderKnob.Color = Color3.fromHex("#04c838")
+    chunkSliderKnob.Color = Color3.fromHex("#906bff")
     chunkSliderKnob.Filled = true
     chunkSliderKnob.Radius = 6
     chunkSliderKnob.NumSides = 16
@@ -3121,7 +3373,7 @@ local function CreateAdvancedESP()
     local intervalSliderFill = Drawing.new("Square")
     intervalSliderFill.Visible = false
     intervalSliderFill.Transparency = 1
-    intervalSliderFill.Color = Color3.fromHex("#04c838")
+    intervalSliderFill.Color = Color3.fromHex("#906bff")
     intervalSliderFill.Filled = true
     intervalSliderFill.Size = Vector2.new(200 * ((intervalVal-1)/(30-1)), 4)
     intervalSliderFill.Position = intervalSliderTrack.Position
@@ -3133,7 +3385,7 @@ local function CreateAdvancedESP()
     local intervalSliderKnob = Drawing.new("Circle")
     intervalSliderKnob.Visible = false
     intervalSliderKnob.Transparency = 1
-    intervalSliderKnob.Color = Color3.fromHex("#04c838")
+    intervalSliderKnob.Color = Color3.fromHex("#906bff")
     intervalSliderKnob.Filled = true
     intervalSliderKnob.Radius = 6
     intervalSliderKnob.NumSides = 16
@@ -3154,16 +3406,13 @@ local function CreateAdvancedESP()
     table.insert(uiElements, intervalValText)
     table.insert(espPage2Elements, intervalValText)
 
+
     local allElements = {
         win2, closeBtn, closeText, win, title,
         page1Btn, page1Text, page2Btn, page2Text
     }
-    for _, el in ipairs(espPage1Elements) do
-        table.insert(allElements, el)
-    end
-    for _, el in ipairs(espPage2Elements) do
-        table.insert(allElements, el)
-    end
+    for _, el in ipairs(espPage1Elements) do table.insert(allElements, el) end
+    for _, el in ipairs(espPage2Elements) do table.insert(allElements, el) end
     for _, box in ipairs(dropdownBoxes) do
         table.insert(allElements, box.Box)
         table.insert(allElements, box.Check)
@@ -3203,6 +3452,7 @@ local function CreateAdvancedESP()
         swDoors = AdvSwitchDoors,
         swMobs = AdvSwitchMobs,
         advAutoRescan = AdvAutoRescan,
+        useDistanceLimit = AdvUseDistanceLimit,
         chunkSliderTrack = chunkSliderTrack,
         chunkSliderKnob = chunkSliderKnob,
         chunkSliderFill = chunkSliderFill,
@@ -3238,6 +3488,8 @@ local function CreateAdvancedESP()
 
     ShowESPPage(1)
 end
+
+
 
 local function CreateAdvancedNotifications()
     if advancedWindowOpen then
@@ -3295,7 +3547,7 @@ local function CreateAdvancedNotifications()
     title.Visible = true
     title.Transparency = 1
     title.ZIndex = 1070
-    title.Color = Color3.fromHex("#04c838")
+    title.Color = Color3.fromHex("#906bff")
     title.Position = win2.Position + Vector2.new(16, 12)
     title.Text = "Notification Settings"
     title.Size = 17
@@ -3469,15 +3721,21 @@ local function CreateAdvancedNotifications()
     table.insert(notifPageElements, targetsTxt)
 
     local targetItems = {
-        { name = "Angler", checked = true },
-        { name = "Blitz", checked = true },
-        { name = "Froger", checked = true },
-        { name = "Pinkie", checked = true },
-        { name = "Chainsmoker", checked = true },
-        { name = "Pandemonium", checked = true },
-        { name = "A60", checked = true },
-        { name = "Harbinger", checked = true },
-        { name = "Painter", checked = false }
+        { name = "Angler", checked = Settings.notificationsEnabled.Angler, rarity = "common" },
+        { name = "Blitz", checked = Settings.notificationsEnabled.Blitz, rarity = "common" },
+        { name = "Froger", checked = Settings.notificationsEnabled.Froger, rarity = "common" },
+        { name = "Pinkie", checked = Settings.notificationsEnabled.Pinkie, rarity = "common" },
+        { name = "Chainsmoker", checked = Settings.notificationsEnabled.Chainsmoker, rarity = "common" },
+        { name = "Pandemonium", checked = Settings.notificationsEnabled.Pandemonium, rarity = "rare" },
+        { name = "A60", checked = Settings.notificationsEnabled["A60"], rarity = "rare" },
+        { name = "Harbinger", checked = Settings.notificationsEnabled.Harbinger, rarity = "special" },
+        { name = "Painter", checked = Settings.notificationsEnabled.Painter, rarity = "special" },
+        { name = "Bleach", checked = Settings.notificationsEnabled.Bleach, rarity = "rare" },
+        { name = "NoGood", checked = Settings.notificationsEnabled.NoGood, rarity = "special" },
+        { name = "WitchingHour", checked = Settings.notificationsEnabled.WitchingHour, rarity = "special" },
+        { name = "A200", checked = Settings.notificationsEnabled.A200, rarity = "rare" },
+        { name = "Anglemonium", checked = Settings.notificationsEnabled.Anglemonium, rarity = "special" },
+        { name = "Sebastian", checked = Settings.notificationsEnabled.Sebastian, rarity = "special" }
     }
     local targetOpen = false
     local targetMain = Drawing.new("Square")
@@ -3517,6 +3775,7 @@ local function CreateAdvancedNotifications()
 
     local targetBoxes = {}
     for idx, item in ipairs(targetItems) do
+        local rarityColor = GetMobColorByRarity(item.rarity)
         local box = Drawing.new("Square")
         box.Visible = false
         box.Transparency = 1
@@ -3531,7 +3790,7 @@ local function CreateAdvancedNotifications()
         local check = Drawing.new("Square")
         check.Visible = false
         check.Transparency = 1
-        check.Color = item.checked and Color3.fromHex("#04c838") or Color3.fromHex("#3a3a3a")
+        check.Color = item.checked and rarityColor or Color3.fromHex("#3a3a3a")
         check.Filled = true
         check.Size = Vector2.new(12, 12)
         check.Position = box.Position + Vector2.new(6, 6)
@@ -3545,7 +3804,7 @@ local function CreateAdvancedNotifications()
         txt.Size = 14
         txt.Outline = true
         txt.Font = 0
-        txt.Color = Color3.fromHex("#d1d4dd")
+        txt.Color = rarityColor
         txt.Position = box.Position + Vector2.new(24, 4)
         txt.ZIndex = 1146
         table.insert(uiElements, txt)
@@ -3726,15 +3985,21 @@ local function CreateAdvancedNotifications()
     table.insert(notifPageElements, wmTargetsTxt)
 
     local wmTargetItems = {
-        { name = "Angler", checked = Settings.watermarkMobsEnabled.Angler },
-        { name = "Blitz", checked = Settings.watermarkMobsEnabled.Blitz },
-        { name = "Froger", checked = Settings.watermarkMobsEnabled.Froger },
-        { name = "Pinkie", checked = Settings.watermarkMobsEnabled.Pinkie },
-        { name = "Chainsmoker", checked = Settings.watermarkMobsEnabled.Chainsmoker },
-        { name = "Pandemonium", checked = Settings.watermarkMobsEnabled.Pandemonium },
-        { name = "A60", checked = Settings.watermarkMobsEnabled["A60"] },
-        { name = "Harbinger", checked = Settings.watermarkMobsEnabled.Harbinger },
-        { name = "Painter", checked = Settings.watermarkMobsEnabled.Painter }
+        { name = "Angler", checked = Settings.watermarkMobsEnabled.Angler, rarity = "common" },
+        { name = "Blitz", checked = Settings.watermarkMobsEnabled.Blitz, rarity = "common" },
+        { name = "Froger", checked = Settings.watermarkMobsEnabled.Froger, rarity = "common" },
+        { name = "Pinkie", checked = Settings.watermarkMobsEnabled.Pinkie, rarity = "common" },
+        { name = "Chainsmoker", checked = Settings.watermarkMobsEnabled.Chainsmoker, rarity = "common" },
+        { name = "Pandemonium", checked = Settings.watermarkMobsEnabled.Pandemonium, rarity = "rare" },
+        { name = "A60", checked = Settings.watermarkMobsEnabled["A60"], rarity = "rare" },
+        { name = "Harbinger", checked = Settings.watermarkMobsEnabled.Harbinger, rarity = "special" },
+        { name = "Painter", checked = Settings.watermarkMobsEnabled.Painter, rarity = "special" },
+        { name = "Bleach", checked = Settings.watermarkMobsEnabled.Bleach, rarity = "rare" },
+        { name = "NoGood", checked = Settings.watermarkMobsEnabled.NoGood, rarity = "special" },
+        { name = "WitchingHour", checked = Settings.watermarkMobsEnabled.WitchingHour, rarity = "special" },
+        { name = "A200", checked = Settings.watermarkMobsEnabled.A200, rarity = "rare" },
+        { name = "Anglemonium", checked = Settings.watermarkMobsEnabled.Anglemonium, rarity = "special" },
+        { name = "Sebastian", checked = Settings.watermarkMobsEnabled.Sebastian, rarity = "special" }
     }
     local wmTargetOpen = false
     local wmTargetMain = Drawing.new("Square")
@@ -3774,6 +4039,7 @@ local function CreateAdvancedNotifications()
 
     local wmTargetBoxes = {}
     for idx, item in ipairs(wmTargetItems) do
+        local rarityColor = GetMobColorByRarity(item.rarity)
         local box = Drawing.new("Square")
         box.Visible = false
         box.Transparency = 1
@@ -3788,7 +4054,7 @@ local function CreateAdvancedNotifications()
         local check = Drawing.new("Square")
         check.Visible = false
         check.Transparency = 1
-        check.Color = item.checked and Color3.fromHex("#04c838") or Color3.fromHex("#3a3a3a")
+        check.Color = item.checked and rarityColor or Color3.fromHex("#3a3a3a")
         check.Filled = true
         check.Size = Vector2.new(12, 12)
         check.Position = box.Position + Vector2.new(6, 6)
@@ -3802,7 +4068,7 @@ local function CreateAdvancedNotifications()
         txt.Size = 14
         txt.Outline = true
         txt.Font = 0
-        txt.Color = Color3.fromHex("#d1d4dd")
+        txt.Color = rarityColor
         txt.Position = box.Position + Vector2.new(24, 4)
         txt.ZIndex = 1146
         table.insert(uiElements, txt)
@@ -3823,9 +4089,7 @@ local function CreateAdvancedNotifications()
     local allElements = {
         win2, closeBtn, closeText, win, title,
     }
-    for _, el in ipairs(notifPageElements) do
-        table.insert(allElements, el)
-    end
+    for _, el in ipairs(notifPageElements) do table.insert(allElements, el) end
     for _, box in ipairs(targetBoxes) do
         table.insert(allElements, box.Box)
         table.insert(allElements, box.Check)
@@ -3869,35 +4133,7 @@ local function CreateAdvancedNotifications()
     end
 end
 
-local dragging = false
-local dragStart = nil
-local startPos = nil
-local lastMouse1 = false
-local lastMouse2 = false
-local watermarkDragging = false
-local watermarkStartPos = nil
-local watermarkDragStart = nil
-local sliderDragging = false
-local chunkSliderDragging = false
-local intervalSliderDragging = false
-
-spawn(function()
-    while true do
-        updateAllESP()
-        doorScanner:scan()
-        CheckForMobs()
-
-        if Settings.autoRescanEnabled then
-            local now = tick()
-            if now - lastProgressiveScan > Settings.rescanInterval then
-                lastProgressiveScan = now
-                task.spawn(ProgressiveScan)
-            end
-        end
-
-        task.wait(0.03)
-    end
-end)
+-- It's useless loader :skull:, i idk, why i add this
 
 local MainLoader1 = Drawing.new("Square")
 MainLoader1.Visible = true
@@ -3924,7 +4160,7 @@ local LogoLoader = Drawing.new("Text")
 LogoLoader.Visible = true
 LogoLoader.Transparency = 1
 LogoLoader.ZIndex = 20
-LogoLoader.Color = Color3.fromHex("#00c950")
+LogoLoader.Color = Color3.fromHex("#906bff")
 LogoLoader.Position = MainLoader1.Position + Vector2.new(23, 16)
 LogoLoader.Text = ">_"
 LogoLoader.Size = 26
@@ -3936,7 +4172,7 @@ local Initilizing = Drawing.new("Text")
 Initilizing.Visible = true
 Initilizing.Transparency = 1
 Initilizing.ZIndex = 30
-Initilizing.Color = Color3.fromHex("#00c950")
+Initilizing.Color = Color3.fromHex("#906bff")
 Initilizing.Position = MainLoader1.Position + Vector2.new(67, 29)
 Initilizing.Text = "Initializing..."
 Initilizing.Size = 19
@@ -3950,7 +4186,7 @@ for i=1,5 do
     log.Visible = false
     log.Transparency = 1
     log.ZIndex = 40 + i
-    log.Color = Color3.fromHex("#00c950")
+    log.Color = Color3.fromHex("#906bff")
     log.Position = MainLoader1.Position + Vector2.new(23, 72 + (i-1)*22)
     log.Text = ""
     log.Size = 14
@@ -3965,7 +4201,7 @@ local AnimatingLineLoad = Drawing.new("Square")
 AnimatingLineLoad.Visible = true
 AnimatingLineLoad.Transparency = 1
 AnimatingLineLoad.ZIndex = 80
-AnimatingLineLoad.Color = Color3.fromHex("#00c950")
+AnimatingLineLoad.Color = Color3.fromHex("#906bff")
 AnimatingLineLoad.Position = MainLoader1.Position + Vector2.new(29.5, 262)
 AnimatingLineLoad.Size = Vector2.new(0, 6)
 AnimatingLineLoad.Filled = true
@@ -4029,7 +4265,7 @@ local logQueue = {}
 local function AddLog(msg, status)
     local color
     if status == "success" then
-        color = Color3.fromHex("#00c950")
+        color = Color3.fromHex("#906bff")
         msg = "[+] " .. msg
     elseif status == "fail" then
         color = Color3.fromHex("#c70000")
@@ -4122,6 +4358,20 @@ spawn(function()
     SwitchESP_Label.Visible = true
     setrobloxinput(false)
 end)
+
+
+
+local dragging = false
+local dragStart = nil
+local startPos = nil
+local lastMouse1 = false
+local lastMouse2 = false
+local watermarkDragging = false
+local watermarkStartPos = nil
+local watermarkDragStart = nil
+local sliderDragging = false
+local chunkSliderDragging = false
+local intervalSliderDragging = false
 
 while true do
     wait(0.01)
@@ -4241,7 +4491,7 @@ while true do
         for _, b in ipairs(blocks) do
             if b.visible and mPos.X >= b.block.Position.X and mPos.X <= b.block.Position.X + b.block.Size.X and
                mPos.Y >= b.block.Position.Y and mPos.Y <= b.block.Position.Y + b.block.Size.Y then
-                b.border.Color = Color3.fromHex("#00c950")
+                b.border.Color = Color3.fromHex("#906bff")
             else
                 b.border.Color = Color3.fromHex("#1b1a1b")
             end
@@ -4254,7 +4504,7 @@ while true do
                     local border = item.border
                     if block.Visible and mPos.X >= block.Position.X and mPos.X <= block.Position.X + block.Size.X and
                        mPos.Y >= block.Position.Y and mPos.Y <= block.Position.Y + block.Size.Y then
-                        border.Color = Color3.fromHex("#00c950")
+                        border.Color = Color3.fromHex("#906bff")
                     else
                         border.Color = Color3.fromHex("#1b1a1b")
                     end
@@ -4265,24 +4515,24 @@ while true do
                     if mPos.X >= page1.Position.X and mPos.X <= page1.Position.X + page1.Size.X and
                        mPos.Y >= page1.Position.Y and mPos.Y <= page1.Position.Y + page1.Size.Y then
                         if currentPage == 1 then
-                            page1.Color = Color3.fromHex("#2ae85a")
+                            page1.Color = Color3.fromHex("#b08eff")
                         else
                             page1.Color = Color3.fromHex("#3a3a3a")
                         end
                     else
-                        page1.Color = (currentPage == 1) and Color3.fromHex("#04c838") or Color3.fromHex("#1b1a1b")
+                        page1.Color = (currentPage == 1) and Color3.fromHex("#906bff") or Color3.fromHex("#1b1a1b")
                     end
                 end
                 if page2 and page2.Visible then
                     if mPos.X >= page2.Position.X and mPos.X <= page2.Position.X + page2.Size.X and
                        mPos.Y >= page2.Position.Y and mPos.Y <= page2.Position.Y + page2.Size.Y then
                         if currentPage == 2 then
-                            page2.Color = Color3.fromHex("#2ae85a")
+                            page2.Color = Color3.fromHex("#b08eff")
                         else
                             page2.Color = Color3.fromHex("#3a3a3a")
                         end
                     else
-                        page2.Color = (currentPage == 2) and Color3.fromHex("#04c838") or Color3.fromHex("#1b1a1b")
+                        page2.Color = (currentPage == 2) and Color3.fromHex("#906bff") or Color3.fromHex("#1b1a1b")
                     end
                 end
             end
@@ -4292,13 +4542,14 @@ while true do
                     local border = item.border
                     if block.Visible and mPos.X >= block.Position.X and mPos.X <= block.Position.X + block.Size.X and
                        mPos.Y >= block.Position.Y and mPos.Y <= block.Position.Y + block.Size.Y then
-                        border.Color = Color3.fromHex("#00c950")
+                        border.Color = Color3.fromHex("#906bff")
                     else
                         border.Color = Color3.fromHex("#1b1a1b")
                     end
                 end
             end
         end
+
 
         if mouse1 and not lastMouse1 then
             if TabVisuals.Visible and mPos.X >= TabVisuals.Position.X and mPos.X <= TabVisuals.Position.X + TabVisuals.Size.X and
@@ -4365,7 +4616,13 @@ while true do
                     Chainsmoker = MainSwitchNotification.IsChecked,
                     ["A60"] = MainSwitchNotification.IsChecked,
                     Harbinger = MainSwitchNotification.IsChecked,
-                    Painter = MainSwitchNotification.IsChecked
+                    Painter = MainSwitchNotification.IsChecked,
+                    Bleach = MainSwitchNotification.IsChecked,
+                    NoGood = MainSwitchNotification.IsChecked,
+                    WitchingHour = MainSwitchNotification.IsChecked,
+                    A200 = MainSwitchNotification.IsChecked,
+                    Anglemonium = MainSwitchNotification.IsChecked,
+                    Sebastian = MainSwitchNotification.IsChecked
                 }
                 if AdvSwitchNotif then
                     AdvSwitchNotif.IsChecked = MainSwitchNotification.IsChecked
@@ -4548,6 +4805,19 @@ while true do
                         Settings.mobsESPEnabled = a.swMobs.IsChecked
                         ForceRescanESP()
                     end
+                    if a.useDistanceLimit and a.useDistanceLimit.Bg and a.useDistanceLimit.Bg.Visible and mPos.X >= a.useDistanceLimit.Bg.Position.X and mPos.X <= a.useDistanceLimit.Bg.Position.X + a.useDistanceLimit.Bg.Size.X and
+                       mPos.Y >= a.useDistanceLimit.Bg.Position.Y and mPos.Y <= a.useDistanceLimit.Bg.Position.Y + a.useDistanceLimit.Bg.Size.Y then
+                        a.useDistanceLimit.IsChecked = not a.useDistanceLimit.IsChecked
+                        UpdateSwitchColor(a.useDistanceLimit.Bg, a.useDistanceLimit.IsChecked)
+                        if a.useDistanceLimit.IsChecked then
+                            a.useDistanceLimit.IndBorder.Position = a.useDistanceLimit.Bg.Position + Vector2.new(16, 1)
+                            a.useDistanceLimit.Ind.Position = a.useDistanceLimit.Bg.Position + Vector2.new(16, 1)
+                        else
+                            a.useDistanceLimit.IndBorder.Position = a.useDistanceLimit.Bg.Position + Vector2.new(1, 1)
+                            a.useDistanceLimit.Ind.Position = a.useDistanceLimit.Bg.Position + Vector2.new(1, 1)
+                        end
+                        Settings.useDistanceLimit = a.useDistanceLimit.IsChecked
+                    end
                     if a.advAutoRescan and a.advAutoRescan.Bg and a.advAutoRescan.Bg.Visible and mPos.X >= a.advAutoRescan.Bg.Position.X and mPos.X <= a.advAutoRescan.Bg.Position.X + a.advAutoRescan.Bg.Size.X and
                        mPos.Y >= a.advAutoRescan.Bg.Position.Y and mPos.Y <= a.advAutoRescan.Bg.Position.Y + a.advAutoRescan.Bg.Size.Y then
                         a.advAutoRescan.IsChecked = not a.advAutoRescan.IsChecked
@@ -4577,7 +4847,7 @@ while true do
                             if box and box.Box and box.Box.Visible and mPos.X >= box.Box.Position.X and mPos.X <= box.Box.Position.X + box.Box.Size.X and
                                mPos.Y >= box.Box.Position.Y and mPos.Y <= box.Box.Position.Y + box.Box.Size.Y then
                                 box.Data.checked = not box.Data.checked
-                                box.Check.Color = box.Data.checked and Color3.fromHex("#04c838") or Color3.fromHex("#3a3a3a")
+                                box.Check.Color = box.Data.checked and Color3.fromHex("#906bff") or Color3.fromHex("#3a3a3a")
                                 local keyType = box.Data.name:match("(%a+) keycard") or box.Data.name
                                 if keyType == "Normal" then Settings.keycardTypes.Normal = box.Data.checked
                                 elseif keyType == "Inner" then Settings.keycardTypes.Inner = box.Data.checked
@@ -4606,7 +4876,8 @@ while true do
                             if box and box.Box and box.Box.Visible and mPos.X >= box.Box.Position.X and mPos.X <= box.Box.Position.X + box.Box.Size.X and
                                mPos.Y >= box.Box.Position.Y and mPos.Y <= box.Box.Position.Y + box.Box.Size.Y then
                                 box.Data.checked = not box.Data.checked
-                                box.Check.Color = box.Data.checked and Color3.fromHex("#04c838") or Color3.fromHex("#3a3a3a")
+                                local newColor = box.Data.checked and GetMobColorByRarity(box.Data.rarity) or Color3.fromHex("#3a3a3a")
+                                box.Check.Color = newColor
                                 a.UpdateMobDropdown()
                                 local simple = box.Data.name
                                 if simple == "A60" then simple = "A60" end
@@ -4620,12 +4891,12 @@ while true do
                        mPos.Y >= a.sliderTrack.Position.Y-10 and mPos.Y <= a.sliderTrack.Position.Y+10 then
                         sliderDragging = true
                         local relX = mPos.X - a.sliderTrack.Position.X
-                        local newVal = 15 + (relX / a.sliderTrack.Size.X) * (500-15)
-                        newVal = math.max(15, math.min(500, newVal))
+                        local newVal = 15 + (relX / a.sliderTrack.Size.X) * (5000-15)
+                        newVal = math.max(15, math.min(5000, newVal))
                         Settings.espDistance = newVal
                         a.sliderValText.Text = tostring(math.floor(newVal))
-                        a.sliderFill.Size = Vector2.new(a.sliderTrack.Size.X * ((newVal-15)/(500-15)), a.sliderFill.Size.Y)
-                        a.sliderKnob.Position = a.sliderTrack.Position + Vector2.new(a.sliderTrack.Size.X * ((newVal-15)/(500-15)), 2)
+                        a.sliderFill.Size = Vector2.new(a.sliderTrack.Size.X * ((newVal-15)/(5000-15)), a.sliderFill.Size.Y)
+                        a.sliderKnob.Position = a.sliderTrack.Position + Vector2.new(a.sliderTrack.Size.X * ((newVal-15)/(5000-15)), 2)
                     end
                     if a.chunkSliderTrack and a.chunkSliderTrack.Visible and mPos.X >= a.chunkSliderTrack.Position.X and mPos.X <= a.chunkSliderTrack.Position.X + a.chunkSliderTrack.Size.X and
                        mPos.Y >= a.chunkSliderTrack.Position.Y-10 and mPos.Y <= a.chunkSliderTrack.Position.Y+10 then
@@ -4681,7 +4952,13 @@ while true do
                             Chainsmoker = a.swNotif.IsChecked,
                             ["A60"] = a.swNotif.IsChecked,
                             Harbinger = a.swNotif.IsChecked,
-                            Painter = a.swNotif.IsChecked
+                            Painter = a.swNotif.IsChecked,
+                            Bleach = a.swNotif.IsChecked,
+                            NoGood = a.swNotif.IsChecked,
+                            WitchingHour = a.swNotif.IsChecked,
+                            A200 = a.swNotif.IsChecked,
+                            Anglemonium = a.swNotif.IsChecked,
+                            Sebastian = a.swNotif.IsChecked
                         }
                     end
                     if a.swWatermark and a.swWatermark.Bg and a.swWatermark.Bg.Visible and mPos.X >= a.swWatermark.Bg.Position.X and mPos.X <= a.swWatermark.Bg.Position.X + a.swWatermark.Bg.Size.X and
@@ -4702,7 +4979,14 @@ while true do
                         TextRATHUB34.Visible = a.swWatermark.IsChecked
                         LogoRathub34.Visible = a.swWatermark.IsChecked
                         StatusWatermark.Visible = a.swWatermark.IsChecked
-                        CurrentEntity.Visible = a.swWatermark.IsChecked
+                        if not a.swWatermark.IsChecked then
+                            for _, obj in ipairs(WatermarkTexts) do
+                                pcall(function() obj.text:Remove() end)
+                            end
+                            WatermarkTexts = {}
+                        else
+                            UpdateWatermark()
+                        end
                     end
                     if a.targetMain and a.targetMain.Visible and mPos.X >= a.targetMain.Position.X and mPos.X <= a.targetMain.Position.X + a.targetMain.Size.X and
                        mPos.Y >= a.targetMain.Position.Y and mPos.Y <= a.targetMain.Position.Y + a.targetMain.Size.Y then
@@ -4720,14 +5004,12 @@ while true do
                             if box and box.Box and box.Box.Visible and mPos.X >= box.Box.Position.X and mPos.X <= box.Box.Position.X + box.Box.Size.X and
                                mPos.Y >= box.Box.Position.Y and mPos.Y <= box.Box.Position.Y + box.Box.Size.Y then
                                 box.Data.checked = not box.Data.checked
-                                box.Check.Color = box.Data.checked and Color3.fromHex("#04c838") or Color3.fromHex("#3a3a3a")
+                                local newColor = box.Data.checked and GetMobColorByRarity(box.Data.rarity) or Color3.fromHex("#3a3a3a")
+                                box.Check.Color = newColor
                                 a.UpdateTarget()
-                                for _, mob in ipairs(TrackedMobs) do
-                                    local simple = mob:gsub("Ridge","")
-                                    if simple == box.Data.name then
-                                        Settings.notificationsEnabled[simple] = box.Data.checked
-                                    end
-                                end
+                                local simple = box.Data.name
+                                if simple == "A60" then simple = "A60" end
+                                Settings.notificationsEnabled[simple] = box.Data.checked
                                 break
                             end
                         end
@@ -4748,11 +5030,15 @@ while true do
                             if box and box.Box and box.Box.Visible and mPos.X >= box.Box.Position.X and mPos.X <= box.Box.Position.X + box.Box.Size.X and
                                mPos.Y >= box.Box.Position.Y and mPos.Y <= box.Box.Position.Y + box.Box.Size.Y then
                                 box.Data.checked = not box.Data.checked
-                                box.Check.Color = box.Data.checked and Color3.fromHex("#04c838") or Color3.fromHex("#3a3a3a")
+                                local newColor = box.Data.checked and GetMobColorByRarity(box.Data.rarity) or Color3.fromHex("#3a3a3a")
+                                box.Check.Color = newColor
                                 a.UpdateWMTarget()
                                 local simple = box.Data.name
                                 if simple == "A60" then simple = "A60" end
                                 Settings.watermarkMobsEnabled[simple] = box.Data.checked
+                                if MainWatermark.Visible then
+                                    UpdateWatermark()
+                                end
                                 break
                             end
                         end
@@ -4888,19 +5174,21 @@ while true do
             TextRATHUB34.Position = MainWatermark.Position + Vector2.new(62, 12.5)
             LogoRathub34.Position = MainWatermark.Position + Vector2.new(35, 11.5)
             StatusWatermark.Position = MainWatermark.Position + Vector2.new(18, 47.5)
-            CurrentEntity.Position = MainWatermark.Position + Vector2.new(68, 47.5)
+            for i, obj in ipairs(WatermarkTexts) do
+                obj.text.Position = MainWatermark.Position + Vector2.new(18, 70 + (i-1)*20)
+            end
         end
 
         if sliderDragging and mouse1 and _G.adv_esp then
             local a = _G.adv_esp
             local relX = mPos.X - a.sliderTrack.Position.X
             relX = math.max(0, math.min(a.sliderTrack.Size.X, relX))
-            local newVal = 15 + (relX / a.sliderTrack.Size.X) * (500-15)
-            newVal = math.max(15, math.min(500, newVal))
+            local newVal = 15 + (relX / a.sliderTrack.Size.X) * (5000-15)
+            newVal = math.max(15, math.min(5000, newVal))
             Settings.espDistance = newVal
             a.sliderValText.Text = tostring(math.floor(newVal))
-            a.sliderFill.Size = Vector2.new(a.sliderTrack.Size.X * ((newVal-15)/(500-15)), a.sliderFill.Size.Y)
-            a.sliderKnob.Position = a.sliderTrack.Position + Vector2.new(a.sliderTrack.Size.X * ((newVal-15)/(500-15)), 2)
+            a.sliderFill.Size = Vector2.new(a.sliderTrack.Size.X * ((newVal-15)/(5000-15)), a.sliderFill.Size.Y)
+            a.sliderKnob.Position = a.sliderTrack.Position + Vector2.new(a.sliderTrack.Size.X * ((newVal-15)/(5000-15)), 2)
         end
 
         if chunkSliderDragging and mouse1 and _G.adv_esp then
