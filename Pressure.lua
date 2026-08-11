@@ -2,6 +2,7 @@
 
 local Players = game:GetService("Players")
 local lp = Players.LocalPlayer
+local _p = "0_"   -- UI widget id prefix (set by buildUI); declared early so all loops can read it
 
 -- ===================== SETTINGS =====================
 Settings = {
@@ -25,7 +26,9 @@ Settings = {
         Angler=true, Blitz=true, Pinkie=true, Pandemonium=true,
         Froger=true, Chainsmoker=true, A60=true, Harbinger=true,
         Painter=true, Bleach=true, NoGood=true, WitchingHour=true,
-        A200=true, Anglemonium=true, Sebastian=true
+        A200=true, Anglemonium=true, Sebastian=true,
+        Pinkimonium=true, Frogermonium=true, Blitzmonium=true, Blitzemonium=true,
+        Pandesmoker=true, DiVineRoot=true
     },
     autoRescanEnabled = true,
     rescanInterval    = 5,
@@ -44,6 +47,16 @@ Settings = {
     showDist   = false,
     showBox2d  = false,
     showBox3d  = false,
+    -- HUD options
+    hudEnabled = false,
+    hudLayout  = "Vertical",
+    hudSign    = true,
+}
+
+-- ===================== HUD LIVE DATA =====================
+HUDData = {
+    enemy=nil, enemyTier=nil,
+    items=0, currencies=0, currencyTotal=0, maxCurrency=0, neostyk=0, password=nil,
 }
 
 -- ===================== LOCALIZATION =====================
@@ -67,6 +80,14 @@ local L = {
         showKickTimer="Show locker kick timer",
         kickTimerPrefix="Kick in: ",
         lockerDist="  Locker range", lockerDistEnable="  Limit locker range",
+        hud="HUD", hudLayout="HUD layout", hudSign="Mob warning sign",
+        currentEnemy="Current Enemy", noEnemy="Here still no any enemy",
+        itemsHud="Items", itemsFound="Items found", countHud="Count",
+        assetsHud="Data-Assets", modeHud="Mode:", richHud="Rich", defaultHud="Default",
+        noRich="No rich values", currencyHud="Currency", codeHud="Code",
+        neostykHud="NEOSTYK", passHud="PASSWORDPAPER",
+        passwordCodeHud="Password Code", noPassword="No password paper",
+        tierDanger="TIER DANGER",
     },
     RU = {
         tab="Давление", stuffESP="Предметы ESP", entityESP="Сущности ESP",
@@ -87,17 +108,26 @@ local L = {
         showKickTimer="Таймер выброса из шкафа",
         kickTimerPrefix="Выброс через: ",
         lockerDist="  Радиус шкафов", lockerDistEnable="  Лимит радиуса шкафов",
+        hud="HUD", hudLayout="Раскладка HUD", hudSign="Знак предупреждения о мобах",
+        currentEnemy="Текущий враг", noEnemy="Пока врагов нет",
+        itemsHud="Предметы", itemsFound="Найдено предметов", countHud="Кол-во",
+        assetsHud="Дата-ассеты", modeHud="Режим:", richHud="Богатый", defaultHud="Обычный",
+        noRich="Богатых нет", currencyHud="Валюта", codeHud="Код",
+        neostykHud="NEOSTYK", passHud="PASSWORDPAPER",
+        passwordCodeHud="Код пароля", noPassword="Пароля нет",
+        tierDanger="УРОВЕНЬ ОПАСНОСТИ",
     },
 }
 local function T(key) return (L[Settings.lang] or L.EN)[key] or key end
 
 -- ===================== PERF INTERVALS =====================
 local PERF = {
-    Low   = { render=1/20, scan=2,   livePos=false, rescan=10 },
+    Low   = { render=1/15, scan=2,   livePos=false, rescan=10 },
     Mid   = { render=1/60, scan=1,   livePos=false, rescan=5  },
-    High  = { render=0,    scan=0,   livePos=true,  rescan=2  },
-    Ultra = { render=0,    scan=0,   livePos=true,  rescan=1  },
+    High  = { render=0,    scan=0.5, livePos=true,  rescan=2  },
+    Ultra = { render=0,    scan=0.25,livePos=true,  rescan=1  },
 }
+local PERF_NAMES = { "Low", "Mid", "High", "Ultra" }
 local function getPerfInterval()  return (PERF[Settings.perfMode] or PERF.Mid).render  end
 local function getScanInterval()  return (PERF[Settings.perfMode] or PERF.Mid).scan    end
 local function getLivePos()       return (PERF[Settings.perfMode] or PERF.Mid).livePos end
@@ -447,6 +477,12 @@ function scanRooms()
     local gf = workspace:FindFirstChild("GameplayFolder")
     local rooms = gf and gf:FindFirstChild("Rooms")
     if not rooms then return end
+    HUDData.items = 0
+    HUDData.currencies = 0
+    HUDData.currencyTotal = 0
+    HUDData.maxCurrency = 0
+    HUDData.neostyk = 0
+    HUDData.password = nil
     local all = rooms:GetDescendants()
     for _, obj in ipairs(all) do
         local okN, name = pcall(function() return obj.Name end)
@@ -454,6 +490,9 @@ function scanRooms()
 
         if KEYCARD_NAMES[name] then
             local kcType = KEYCARD_NAMES[name]
+            if kcType == "Password" and not HUDData.password then
+                HUDData.password = getPasswordCode(obj)
+            end
             if Settings.keycardESPEnabled and Settings.keycardTypes[kcType] then
                 pcall(createKeycardESP, obj, name)
             end
@@ -464,12 +503,17 @@ function scanRooms()
         end
 
         -- Currency by name pattern
-        if Settings.currencyESPEnabled and name:sub(1,8) == "Currency" then
+        if name:sub(1,8) == "Currency" then
             local okC, cls = pcall(function() return obj.ClassName end)
             if okC and cls == "Model" then
                 local amount = parseCurrencyAmount(name)
-                local rich = (not Settings.currencyRichEnabled) or (amount and amount >= 25)
-                if rich then pcall(createCurrencyESP, obj) end
+                HUDData.currencies = HUDData.currencies + 1
+                HUDData.currencyTotal = HUDData.currencyTotal + (amount or 0)
+                if amount and amount > HUDData.maxCurrency then HUDData.maxCurrency = amount end
+                if Settings.currencyESPEnabled then
+                    local rich = (not Settings.currencyRichEnabled) or (amount and amount >= 25)
+                    if rich then pcall(createCurrencyESP, obj) end
+                end
             end
         end
 
@@ -483,6 +527,11 @@ function scanRooms()
 
         local okA, attr = pcall(function() return obj:GetAttribute("InteractionType") end)
         if okA and attr then
+            if attr == "ItemBase" then
+                HUDData.items = HUDData.items + 1
+            elseif attr == "NeoStykPickup" then
+                HUDData.neostyk = HUDData.neostyk + 1
+            end
             if Settings.itemsESPEnabled and attr == "ItemBase" then
                 pcall(createGenericESP, obj, "item", name, Color3.fromRGB(135,206,250))
             elseif Settings.neostykESPEnabled and attr == "NeoStykPickup" then
@@ -550,6 +599,16 @@ function scanDoors()
     end
 end
 
+-- Maps raw instance names to readable display names (used by ESP, HUD and sign).
+-- Must be defined before scanMobs and hudMobInfo.
+local function mobDisplayName(name)
+    local simple = name:gsub("Ridge","")
+    if simple == "StatueRoot" then return "Statue" end
+    if simple == "Saboterousrusrer" then return "Sebastian" end
+    if simple == "DiVineRoot" then return "Wall Dweller" end
+    return simple
+end
+
 -- ===================== MOB SCANNER =====================
 function scanMobs()
     if not Settings.mobsESPEnabled then
@@ -586,6 +645,21 @@ function scanMobs()
                     local addr = tostring(s.Address)
                     found[addr] = true
                     if not espMobObjects[addr] then createMobESP(s, "Sebastian") end
+                end
+            end
+        end
+    end
+    -- mobs under GameplayFolder.Monsters (e.g. DiVineRoot / Wall Dweller)
+    local gfMon = workspace:FindFirstChild("GameplayFolder")
+    local monsters = gfMon and gfMon:FindFirstChild("Monsters")
+    if monsters then
+        for _, obj in ipairs(monsters:GetChildren()) do
+            local ok, name = pcall(function() return obj.Name end)
+            if ok and name and Settings.mobsESPList[name] then
+                local addr = tostring(obj.Address)
+                found[addr] = true
+                if not espMobObjects[addr] then
+                    createMobESP(obj, mobDisplayName(name))
                 end
             end
         end
@@ -662,33 +736,11 @@ local function updatePositions()
     if interval > 0 and (now - _lastRender) < interval then return end
     _lastRender = now
 
-    if AutoHideSystem.isHiding then
-        -- hide everything while autohide active
-        for _, d in pairs(espObjects)      do
-            if d.text  then d.text.Visible  = false end
-            if d.dot   then d.dot.Visible   = false end
-            if d.box2d then d.box2d.Visible = false end
-            updateBox3d(d.box3d, nil, nil, nil, false)
-        end
-        for _, d in pairs(espDoorObjects)  do
-            if d.text then d.text.Visible = false end
-            if d.dot  then d.dot.Visible  = false end
-        end
-        for _, d in pairs(espFakeDoorObjs) do
-            if d.text then d.text.Visible = false end
-            if d.dot  then d.dot.Visible  = false end
-        end
-        for _, d in pairs(espMobObjects)   do
-            if d.text then d.text.Visible = false end
-            if d.dot  then d.dot.Visible  = false end
-        end
-        return
-    end
-
     local hrp = lp.Character and lp.Character:FindFirstChild("HumanoidRootPart")
     local playerPos = hrp and hrp.Position
 
     local function inRange(pos)
+        if AutoHideSystem.isHiding then return true end
         if not Settings.useDistanceLimit or not playerPos or not pos then return true end
         local d = (pos - playerPos).Magnitude
         return d >= Settings.distanceFrom and d <= Settings.distanceTo
@@ -886,15 +938,403 @@ function checkMobNotifications()
     end
 end
 
+-- ===================== HUD =====================
+local HUD_RICH_THRESHOLD = 25
+
+local HUD_RANK_ORDER = { ["S+"]=0, S=1, A=2, B=3, C=4, D=5 }
+local HUD_RANK_RGB = {
+    D    = Color3.fromRGB(107,114,128),
+    C    = Color3.fromRGB(34,197,94),
+    B    = Color3.fromRGB(59,130,246),
+    A    = Color3.fromRGB(168,85,247),
+    S    = Color3.fromRGB(8,145,178),
+    ["S+"] = Color3.fromRGB(6,182,212),
+}
+local HUD_MOB_TIERS = {
+    Angler="D", Statue="D",
+    Froger="C", Blitz="C", NoGood="C",
+    Pinkie="B", Chainsmoker="B",
+    A60="A", A200="A", Bleach="A", DiVineRoot="A",
+    Pandemonium="S", Anglemonium="S",
+    Pinkimonium="S", Frogermonium="S", Blitzmonium="S", Blitzemonium="S", Pandesmoker="S",
+    Harbinger="S+",
+}
+
+-- Only these names can ever be shown as "current enemy" / sign target
+local HUD_MOB_NAMES = {}
+for n in pairs(HUD_MOB_TIERS) do
+    HUD_MOB_NAMES[n] = true
+    HUD_MOB_NAMES["Ridge"..n] = true
+end
+HUD_MOB_NAMES["StatueRoot"] = true
+HUD_MOB_NAMES["Saboterousrusrer"] = true
+HUD_MOB_NAMES["DiVineRoot"] = true
+HUD_MOB_NAMES["Painter"] = true
+
+local HUD_COLORS = {
+    bg      = Color3.fromRGB(5,  15,  28),
+    panel   = Color3.fromRGB(5,  9,   18),
+    accent  = Color3.fromRGB(8,  145, 178),
+    accentL = Color3.fromRGB(34, 211, 238),
+    muted   = Color3.fromRGB(74, 122, 133),
+    dim     = Color3.fromRGB(30, 58,  69),
+    text    = Color3.fromRGB(207,250,254),
+    green   = Color3.fromRGB(163,230,53),
+    purple  = Color3.fromRGB(129,140,248),
+    yellow  = Color3.fromRGB(250,204,21),
+    cyan    = Color3.fromRGB(103,232,249),
+}
+
+local function hudMobInfo(name)
+    local simple = name:gsub("Ridge","")
+    return mobDisplayName(name), HUD_MOB_TIERS[simple] or "?"
+end
+
+local function updateHUDData()
+    local hrp = lp.Character and lp.Character:FindFirstChild("HumanoidRootPart")
+    local ppos = hrp and hrp.Position
+    local bestName, bestTier, bestOrd, bestDist = nil, nil, 99, math.huge
+
+    local function consider(obj)
+        local ok, name = pcall(function() return obj.Name end)
+        if not (ok and name) then return end
+        local displayName, tier = hudMobInfo(name)
+        if not HUD_MOB_NAMES[name] and not HUD_MOB_NAMES[displayName] then return end
+        local ord = HUD_RANK_ORDER[tier] or 99
+        local pos = getPosition(obj)
+        local dist = ppos and pos and (pos - ppos).Magnitude or 0
+        if ord < bestOrd or (ord == bestOrd and dist < bestDist) then
+            bestOrd, bestDist, bestName, bestTier = ord, dist, displayName, tier
+        end
+    end
+
+    for _, obj in ipairs(workspace:GetChildren()) do consider(obj) end
+    local gf = workspace:FindFirstChild("GameplayFolder")
+    if gf then
+        local monsters = gf:FindFirstChild("Monsters")
+        if monsters then
+            for _, obj in ipairs(monsters:GetChildren()) do consider(obj) end
+        end
+        local rooms = gf:FindFirstChild("Rooms")
+        if rooms then
+            for _, room in ipairs(rooms:GetChildren()) do
+                local p = room:FindFirstChild("Painter")
+                if p then consider(p) end
+                local s = room:FindFirstChild("Saboterousrusrer")
+                if s then consider(s) end
+            end
+        end
+    end
+    HUDData.enemy     = bestName
+    HUDData.enemyTier = bestTier
+end
+
+-- ---- HUD rendering ----
+local hudObjects = {}
+local hudTexts   = {}
+local hudRecolor = {}
+local hudSignObjs    = {}
+local hudSignVisible = false
+local hudSignEnemy   = nil
+local hudSignUntil   = 0
+
+local function hudObj(t)
+    local o = Drawing.new(t)
+    table.insert(hudObjects, o)
+    return o
+end
+
+local function hudDestroy()
+    for _, o in ipairs(hudObjects) do
+        pcall(function() o:Remove() end)
+    end
+    hudObjects = {}
+    hudTexts   = {}
+    hudRecolor = {}
+    hudSignObjs    = {}
+    hudSignVisible = false
+    hudSignEnemy   = nil
+end
+
+local function hudPanel(x, y, w, h)
+    local bg = hudObj("Square"); bg.Filled = true; bg.Color = HUD_COLORS.panel
+    bg.Position = Vector2.new(x,y); bg.Size = Vector2.new(w,h)
+    bg.Visible = true; bg.ZIndex = 20
+
+    local fr = hudObj("Square"); fr.Filled = false; fr.Color = HUD_COLORS.accent
+    fr.Transparency = 0.75; fr.Thickness = 1
+    fr.Position = Vector2.new(x,y); fr.Size = Vector2.new(w,h)
+    fr.Visible = true; fr.ZIndex = 21
+end
+
+local function hudAccentLine(x, y, w, col)
+    local l = hudObj("Line"); l.From = Vector2.new(x,y); l.To = Vector2.new(x+w,y)
+    l.Color = col or HUD_COLORS.accent; l.Thickness = 2; l.Visible = true; l.ZIndex = 22
+end
+
+local function hudDivider(x, y, w)
+    local l = hudObj("Line"); l.From = Vector2.new(x,y); l.To = Vector2.new(x+w,y)
+    l.Color = Color3.fromRGB(255,255,255); l.Transparency = 0.91; l.Thickness = 1
+    l.Visible = true; l.ZIndex = 22
+end
+
+local function hudLabel(str, x, y, sz, col, center, font, z)
+    local t = hudObj("Text"); t.Text = str; t.Color = col or HUD_COLORS.text; t.Size = sz or 12
+    t.Font = font or Drawing.Fonts.SystemBold; t.Position = Vector2.new(x,y)
+    t.Center = center or false; t.Outline = true; t.Visible = true; t.ZIndex = z or 25
+    return t
+end
+
+local function hudSectionLbl(str, x, y)
+    return hudLabel(str, x, y, 9, HUD_COLORS.muted, false, Drawing.Fonts.System, 25)
+end
+
+local function hudSet(id, str, col)
+    local t = hudTexts[id]
+    if not t then return end
+    if str ~= nil then t.Text = str end
+    if col ~= nil then t.Color = col end
+end
+
+local function hudBuildSign(SWx, SHy)
+    local function so(t)
+        local o = hudObj(t)
+        table.insert(hudSignObjs, o)
+        return o
+    end
+    local SGN_W, SGN_H = 200, 170
+    local SGN_X, SGN_Y = SWx - SGN_W - 16, 50
+
+    local bg = so("Square"); bg.Filled = true; bg.Color = HUD_COLORS.panel
+    bg.Position = Vector2.new(SGN_X,SGN_Y); bg.Size = Vector2.new(SGN_W,SGN_H)
+    bg.Visible = true; bg.ZIndex = 20
+
+    local brd = so("Square"); brd.Filled = false; brd.Color = HUD_COLORS.accent; brd.Thickness = 2
+    brd.Position = Vector2.new(SGN_X,SGN_Y); brd.Size = Vector2.new(SGN_W,SGN_H)
+    brd.Visible = true; brd.ZIndex = 21
+    table.insert(hudRecolor, brd)
+
+    for _, y in ipairs({SGN_Y, SGN_Y+SGN_H-3}) do
+        local bar = so("Square"); bar.Filled = true; bar.Color = HUD_COLORS.accent
+        bar.Position = Vector2.new(SGN_X,y); bar.Size = Vector2.new(SGN_W,3)
+        bar.Visible = true; bar.ZIndex = 22
+        table.insert(hudRecolor, bar)
+    end
+
+    local cx = SGN_X + SGN_W/2
+    local tip, base, half = SGN_Y+15, SGN_Y+82, 42
+    for _, pts in ipairs({
+        {Vector2.new(cx,tip),       Vector2.new(cx-half,base)},
+        {Vector2.new(cx,tip),       Vector2.new(cx+half,base)},
+        {Vector2.new(cx-half,base), Vector2.new(cx+half,base)},
+    }) do
+        local l = so("Line"); l.From = pts[1]; l.To = pts[2]
+        l.Color = HUD_COLORS.accent; l.Thickness = 2; l.Visible = true; l.ZIndex = 23
+        table.insert(hudRecolor, l)
+    end
+
+    local excl = so("Text"); excl.Text = "!"; excl.Color = HUD_COLORS.accent; excl.Size = 28
+    excl.Font = Drawing.Fonts.SystemBold; excl.Center = true; excl.Outline = false
+    excl.Position = Vector2.new(cx,tip+19); excl.Visible = true; excl.ZIndex = 24
+    table.insert(hudRecolor, excl)
+
+    local d1 = so("Line"); d1.From = Vector2.new(SGN_X+14,SGN_Y+90)
+    d1.To = Vector2.new(SGN_X+SGN_W-14,SGN_Y+90)
+    d1.Color = HUD_COLORS.accent; d1.Thickness = 1; d1.Transparency = 0.6
+    d1.Visible = true; d1.ZIndex = 22
+    table.insert(hudRecolor, d1)
+
+    local nm = so("Text"); nm.Text = ""; nm.Color = HUD_COLORS.text; nm.Size = 16
+    nm.Font = Drawing.Fonts.SystemBold; nm.Center = true; nm.Outline = true
+    nm.Position = Vector2.new(cx,SGN_Y+98); nm.Visible = true; nm.ZIndex = 24
+    hudTexts["signName"] = nm
+
+    local d2 = so("Line"); d2.From = Vector2.new(SGN_X+14,SGN_Y+124)
+    d2.To = Vector2.new(SGN_X+SGN_W-14,SGN_Y+124)
+    d2.Color = HUD_COLORS.accent; d2.Thickness = 1; d2.Transparency = 0.75
+    d2.Visible = true; d2.ZIndex = 22
+    table.insert(hudRecolor, d2)
+
+    local lbl = so("Text"); lbl.Text = T("tierDanger"); lbl.Color = HUD_COLORS.muted; lbl.Size = 10
+    lbl.Font = Drawing.Fonts.System; lbl.Center = false; lbl.Outline = false
+    lbl.Position = Vector2.new(SGN_X+12,SGN_Y+135); lbl.Visible = true; lbl.ZIndex = 24
+
+    local rnk = so("Text"); rnk.Text = ""; rnk.Color = HUD_COLORS.accent; rnk.Size = 22
+    rnk.Font = Drawing.Fonts.SystemBold; rnk.Center = false; rnk.Outline = true
+    rnk.Position = Vector2.new(SGN_X+SGN_W-26,SGN_Y+130); rnk.Visible = true; rnk.ZIndex = 24
+    hudTexts["signRank"] = rnk
+    table.insert(hudRecolor, rnk)
+end
+
+local function hudBuildVertical()
+    local HX, HY, HW = 16, 50, 250
+    local H_ENEMY, H_ITEMS, H_ASSETS, H_NEO, H_PASS = 38, 32, 56, 32, 38
+    local TOTAL_H = H_ENEMY + H_ITEMS + H_ASSETS + H_NEO + H_PASS
+    hudPanel(HX, HY, HW, TOTAL_H)
+
+    local RX = HX + HW - 56
+    local cy = HY
+
+    hudAccentLine(HX, cy, HW, HUD_COLORS.accent)
+    hudSectionLbl(T("currentEnemy"), HX+10, cy+6)
+    hudTexts["vEnemy"] = hudLabel("", HX+18, cy+20, 14, HUD_COLORS.accentL, false)
+    cy = cy + H_ENEMY; hudDivider(HX+6, cy, HW-12)
+
+    hudSectionLbl(T("itemsHud"), HX+10, cy+6)
+    hudLabel(T("itemsFound"), HX+10, cy+18, 11, HUD_COLORS.muted, false, Drawing.Fonts.System)
+    hudTexts["vItems"] = hudLabel("", RX, cy+17, 13, HUD_COLORS.green, false, Drawing.Fonts.Monospace)
+    cy = cy + H_ITEMS; hudDivider(HX+6, cy, HW-12)
+
+    hudSectionLbl(T("assetsHud"), HX+10, cy+6)
+    hudLabel(T("modeHud"), HX+10, cy+20, 9, HUD_COLORS.dim, false, Drawing.Fonts.System)
+    hudTexts["vMode"] = hudLabel("", HX+56, cy+20, 9, HUD_COLORS.muted, false, Drawing.Fonts.System)
+    hudTexts["vAsset"] = hudLabel("", RX, cy+36, 13, HUD_COLORS.muted, false, Drawing.Fonts.Monospace)
+    cy = cy + H_ASSETS; hudDivider(HX+6, cy, HW-12)
+
+    hudSectionLbl(T("neostykHud"), HX+10, cy+6)
+    hudLabel(T("countHud"), HX+10, cy+18, 11, HUD_COLORS.muted, false, Drawing.Fonts.System)
+    hudTexts["vNeo"] = hudLabel("", RX, cy+17, 13, HUD_COLORS.purple, false, Drawing.Fonts.Monospace)
+    cy = cy + H_NEO; hudDivider(HX+6, cy, HW-12)
+
+    hudAccentLine(HX, cy, HW, HUD_COLORS.accentL)
+    hudSectionLbl(T("passHud"), HX+10, cy+6)
+    hudTexts["vPass"] = hudLabel("", HX+18, cy+16, 15, HUD_COLORS.cyan, false, Drawing.Fonts.Monospace)
+end
+
+local function hudBuildHorizontal()
+    local HX, HY = 16, 50
+    local CELL_H, INNER_PAD = 72, 8
+    local W = { enemy=140, items=100, assets=150, neo=100, pass=130 }
+    local totalW = W.enemy + W.items + W.assets + W.neo + W.pass
+
+    hudPanel(HX, HY, totalW, CELL_H)
+    hudAccentLine(HX, HY, totalW, HUD_COLORS.accent)
+    local cx = HX
+
+    hudSectionLbl(T("currentEnemy"), cx+8, HY+INNER_PAD)
+    hudTexts["hEnemy"] = hudLabel("", cx+14, HY+22, 13, HUD_COLORS.accentL, false)
+    local vl1 = hudObj("Line"); vl1.From = Vector2.new(cx+W.enemy,HY+8)
+    vl1.To = Vector2.new(cx+W.enemy,HY+CELL_H-8)
+    vl1.Color = HUD_COLORS.accent; vl1.Transparency = 0.75; vl1.Thickness = 1
+    vl1.Visible = true; vl1.ZIndex = 22
+    cx = cx + W.enemy
+
+    hudSectionLbl(T("itemsHud"), cx+8, HY+INNER_PAD)
+    hudLabel(T("itemsFound"), cx+8, HY+24, 9, HUD_COLORS.muted, false, Drawing.Fonts.System)
+    hudTexts["hItems"] = hudLabel("", cx+8, HY+34, 22, HUD_COLORS.green, false, Drawing.Fonts.Monospace)
+    local vl2 = hudObj("Line"); vl2.From = Vector2.new(cx+W.items,HY+8)
+    vl2.To = Vector2.new(cx+W.items,HY+CELL_H-8)
+    vl2.Color = HUD_COLORS.accent; vl2.Transparency = 0.75; vl2.Thickness = 1
+    vl2.Visible = true; vl2.ZIndex = 22
+    cx = cx + W.items
+
+    hudSectionLbl(T("assetsHud"), cx+8, HY+INNER_PAD)
+    hudTexts["hMode"] = hudLabel("", cx+8, HY+22, 9, HUD_COLORS.muted, false, Drawing.Fonts.System)
+    hudTexts["hAsset"] = hudLabel("", cx+8, HY+36, 11, HUD_COLORS.muted, false, Drawing.Fonts.Monospace)
+    local vl3 = hudObj("Line"); vl3.From = Vector2.new(cx+W.assets,HY+8)
+    vl3.To = Vector2.new(cx+W.assets,HY+CELL_H-8)
+    vl3.Color = HUD_COLORS.accent; vl3.Transparency = 0.75; vl3.Thickness = 1
+    vl3.Visible = true; vl3.ZIndex = 22
+    cx = cx + W.assets
+
+    hudSectionLbl(T("neostykHud"), cx+8, HY+INNER_PAD)
+    hudLabel(T("countHud"), cx+8, HY+24, 9, HUD_COLORS.muted, false, Drawing.Fonts.System)
+    hudTexts["hNeo"] = hudLabel("", cx+8, HY+34, 22, HUD_COLORS.purple, false, Drawing.Fonts.Monospace)
+    local vl4 = hudObj("Line"); vl4.From = Vector2.new(cx+W.neo,HY+8)
+    vl4.To = Vector2.new(cx+W.neo,HY+CELL_H-8)
+    vl4.Color = HUD_COLORS.accent; vl4.Transparency = 0.75; vl4.Thickness = 1
+    vl4.Visible = true; vl4.ZIndex = 22
+    cx = cx + W.neo
+
+    hudAccentLine(cx, HY, W.pass, HUD_COLORS.accentL)
+    hudSectionLbl(T("passHud"), cx+8, HY+INNER_PAD)
+    hudTexts["hPass"] = hudLabel("", cx+8, HY+28, 15, HUD_COLORS.cyan, false, Drawing.Fonts.Monospace)
+end
+
+local function hudSync()
+    updateHUDData()
+
+    local e = HUDData.enemy
+    local eName = e or T("noEnemy")
+    local eCol  = e and (HUD_RANK_RGB[HUDData.enemyTier] or HUD_COLORS.accentL) or HUD_COLORS.text
+    hudSet("vEnemy", eName, eCol)
+    hudSet("hEnemy", eName, eCol)
+
+    -- warning sign: triggers once per new mob, shows 3 seconds, stays off
+    -- while the same mob is still present
+    local now = os.clock()
+    if e then
+        if e ~= hudSignEnemy then
+            hudSignEnemy   = e
+            hudSignVisible = true
+            hudSignUntil   = now + 3
+        end
+    else
+        hudSignEnemy   = nil
+        hudSignVisible = false
+    end
+    if hudSignVisible and now > hudSignUntil then
+        hudSignVisible = false
+    end
+    hudSet("signName", hudSignVisible and e or "")
+    for _, o in ipairs(hudSignObjs) do o.Visible = hudSignVisible end
+    if hudSignVisible then
+        local signCol = HUD_RANK_RGB[HUDData.enemyTier] or HUD_COLORS.accent
+        for _, o in ipairs(hudRecolor) do o.Color = signCol end
+        hudSet("signRank", tostring(HUDData.enemyTier))
+    end
+
+    local rich = Settings.currencyRichEnabled
+    local modeStr = rich and T("richHud") or T("defaultHud")
+    local modeCol = rich and HUD_COLORS.yellow or HUD_COLORS.muted
+    local hasRich = HUDData.maxCurrency >= HUD_RICH_THRESHOLD
+    local valCol  = hasRich and HUD_COLORS.yellow or HUD_COLORS.green
+    local passTxt = HUDData.password or T("noPassword")
+
+    hudSet("vItems", tostring(HUDData.items), HUD_COLORS.green)
+    hudSet("hItems", tostring(HUDData.items), HUD_COLORS.green)
+    hudSet("vMode", modeStr, modeCol)
+    hudSet("hMode", modeStr, modeCol)
+    hudSet("vAsset", tostring(HUDData.currencyTotal), valCol)
+    hudSet("hAsset", tostring(HUDData.currencyTotal), valCol)
+    hudSet("vNeo", tostring(HUDData.neostyk), HUD_COLORS.purple)
+    hudSet("hNeo", tostring(HUDData.neostyk), HUD_COLORS.purple)
+    hudSet("vPass", passTxt, HUD_COLORS.cyan)
+    hudSet("hPass", passTxt, HUD_COLORS.cyan)
+end
+
+local function hudBuild(layout, showSign, size)
+    if showSign then hudBuildSign(size.X, size.Y) end
+    if layout == "Horizontal" then hudBuildHorizontal() else hudBuildVertical() end
+end
+
+spawn(function()
+    local lastKey = ""
+    while true do
+        wait(0.1)
+        local cam = workspace.CurrentCamera
+        local size = cam and cam.ViewportSize
+        local want = Settings.hudEnabled
+        local key = ""
+        if want then
+            key = string.format("%s|%s|%d|%d",
+                Settings.hudLayout, tostring(Settings.hudSign),
+                size and size.X or 0, size and size.Y or 0)
+        end
+        if key ~= lastKey then
+            hudDestroy()
+            if want then hudBuild(Settings.hudLayout, Settings.hudSign, size) end
+            lastKey = key
+        end
+        if want then hudSync() end
+    end
+end)
+
 -- ===================== AUTOHIDE =====================
 AutoHideSystem = {
     enabled=Settings.autoHideEnabled,
     isHiding=false,
     originalPosition=nil,
-    holdLoop=false,
-    lastCheck=0,
-    mobGoneAt=nil,
-    UNHIDE_DELAY=2.0,
 }
 
 local function getHRP()
@@ -903,41 +1343,22 @@ local function getHRP()
     return p.Character:FindFirstChild("HumanoidRootPart")
 end
 
--- generation counter prevents two concurrent forceTeleport calls fighting each other
-local _tpGen = 0
-local function forceTeleport(pos)
-    _tpGen = _tpGen + 1
-    local myGen = _tpGen
-    for i = 1, 6 do
-        if _tpGen ~= myGen then return end
-        local h = getHRP()
-        if h then
-            h.AssemblyLinearVelocity = Vector3.new(0,0,0)
-            h.Position = pos
-        end
-        wait()
-    end
-end
-
 local AUTO_HIDE_MOBS = {
     Angler=true, Blitz=true, Pinkie=true, Pandemonium=true, Froger=true, Chainsmoker=true,
     RidgeAngler=true, RidgeBlitz=true, RidgePinkie=true, RidgePandemonium=true,
     RidgeFroger=true, RidgeChainsmoker=true, A60=true, Harbinger=true,
     Bleach=true, Anglemonium=true,
 }
+for _, n in ipairs({"Anglemonium","Pinkimonium","Frogermonium","Blitzmonium","Blitzemonium","Pandesmoker"}) do
+    AUTO_HIDE_MOBS[n] = true
+    AUTO_HIDE_MOBS["Ridge"..n] = true
+end
 
 local function autoHideMobPresent()
-    -- check workspace top-level and one level deep (GameplayFolder etc.)
-    local function checkChildren(parent)
-        for _, obj in ipairs(parent:GetChildren()) do
-            local ok, name = pcall(function() return obj.Name end)
-            if ok and AUTO_HIDE_MOBS[name] then return true end
-        end
-        return false
+    for _, obj in ipairs(workspace:GetChildren()) do
+        local ok, name = pcall(function() return obj.Name end)
+        if ok and AUTO_HIDE_MOBS[name] then return true end
     end
-    if checkChildren(workspace) then return true end
-    local gf = workspace:FindFirstChild("GameplayFolder")
-    if gf and checkChildren(gf) then return true end
     return false
 end
 
@@ -947,29 +1368,20 @@ function AutoHideSystem:hide()
     if not h then return end
     self.originalPosition = h.Position
     self.isHiding = true
-    self.holdLoop = true
-    self.mobGoneAt = nil
-    local hidePos = self.originalPosition + Vector3.new(0, 1000, 0)
-    spawn(function() forceTeleport(hidePos) end)
-    spawn(function()
-        while self.holdLoop do
-            local hr = getHRP()
-            if hr then hr.AssemblyLinearVelocity = Vector3.new(0,0,0) end
-            wait()
-        end
-    end)
+    h.AssemblyLinearVelocity = Vector3.new(0,0,0)
+    h.Position = self.originalPosition + Vector3.new(0, 1000, 0)
 end
 
 function AutoHideSystem:unhide()
     if not self.isHiding then return end
-    self.holdLoop = false
-    self.mobGoneAt = nil
     local sp = self.originalPosition
     self.originalPosition = nil
-    spawn(function()
-        if sp then forceTeleport(sp) end
-        self.isHiding = false  -- mark done only after teleport finishes
-    end)
+    self.isHiding = false
+    local h = getHRP()
+    if sp and h then
+        h.AssemblyLinearVelocity = Vector3.new(0,0,0)
+        h.Position = sp
+    end
 end
 
 function AutoHideSystem:update()
@@ -977,25 +1389,24 @@ function AutoHideSystem:update()
         if self.isHiding then self:unhide() end
         return
     end
-    local now = os.clock()
-    if now - self.lastCheck < 0.05 then return end
-    self.lastCheck = now
     if autoHideMobPresent() then
-        self.mobGoneAt = nil  -- mob present, reset gone timer
         if not self.isHiding then self:hide() end
     else
-        if self.isHiding then
-            if not self.mobGoneAt then
-                self.mobGoneAt = now
-            elseif now - self.mobGoneAt >= self.UNHIDE_DELAY then
-                self:unhide()
-            end
-        end
+        if self.isHiding then self:unhide() end
     end
 end
 
 spawn(function()
-    while true do AutoHideSystem:update(); wait() end
+    while true do
+        -- keep AutoHide in sync with the GUI switch even if a click is dropped
+        local ok, st = pcall(function() return UI.GetValue(_p .. "autohide") == true end)
+        if ok and type(st) == "boolean" then
+            Settings.autoHideEnabled = st
+            AutoHideSystem.enabled   = st
+        end
+        AutoHideSystem:update()
+        wait()
+    end
 end)
 
 -- ===================== MAIN LOOP =====================
@@ -1050,7 +1461,6 @@ local function saveConfig()
         distTo       = Settings.distanceTo,
         autoHide     = Settings.autoHideEnabled,
         perfMode     = Settings.perfMode,
-        lang         = Settings.lang,
         espLimitOn   = Settings.espLimitEnabled,
         espLimit     = Settings.espLimit,
         showKickTimer= Settings.showKickTimer,
@@ -1059,6 +1469,9 @@ local function saveConfig()
         showDist     = Settings.showDist,
         showBox2d    = Settings.showBox2d,
         showBox3d    = Settings.showBox3d,
+        hudOn        = Settings.hudEnabled,
+        hudLayout    = Settings.hudLayout,
+        hudSign      = Settings.hudSign,
     }
     local ok, err = pcall(writefile, CONFIG_FILE, HttpService:JSONEncode(cfg))
     notify(ok and "Config saved" or ("Save failed: "..tostring(err)), "RATHUB", 3)
@@ -1091,7 +1504,6 @@ local function autoLoadConfig()
     ap("distFrom",    "distanceFrom")
     ap("distTo",      "distanceTo")
     ap("perfMode",    "perfMode")
-    ap("lang",        "lang")
     ap("espLimitOn",  "espLimitEnabled")
     ap("espLimit",    "espLimit")
     ap("showKickTimer","showKickTimer")
@@ -1100,6 +1512,9 @@ local function autoLoadConfig()
     ap("showDist",    "showDist")
     ap("showBox2d",   "showBox2d")
     ap("showBox3d",   "showBox3d")
+    ap("hudOn",       "hudEnabled")
+    ap("hudLayout",   "hudLayout")
+    ap("hudSign",     "hudSign")
     if data.autoHide ~= nil then
         Settings.autoHideEnabled  = data.autoHide
         AutoHideSystem.enabled    = data.autoHide
@@ -1112,18 +1527,35 @@ autoLoadConfig()
 
 -- ===================== UI =====================
 local _tabName = "Pressure"
+local toggleRegistry = {}
+
+-- Combo callbacks may deliver either the 0-based index or the item text.
+-- Resolve both cases to the actual selected item text.
+local function comboText(items, v)
+    if type(v) == "number" then
+        return items[math.floor(v) + 1]
+    elseif type(v) == "string" then
+        for _, it in ipairs(items) do
+            if it == v then return v end
+        end
+    end
+    return nil
+end
 
 local function buildUI()
     UI.RemoveTab(_tabName)
-    local _p = tostring(math.floor(tick()) % 99991) .. "_"
+    _p = tostring(math.floor(tick()) % 99991) .. "_"
+    toggleRegistry = {}
     UI.AddTab(_tabName, function(tab)
 
-    -- Matcha Toggle always sends v=true on every click. Flip state manually.
+    -- Source of truth is the widget itself: mirror its value into Settings.
     local function tog(section, id, label, key, action)
-        section:Toggle(id, label, Settings[key], function(v)
-            Settings[key] = not Settings[key]
-            if action then action(Settings[key]) end
+        section:Toggle(id, label, Settings[key] or false, function()
+            local st = UI.GetValue(id) == true
+            Settings[key] = st
+            if action then action(st) end
         end)
+        toggleRegistry[key] = id
     end
 
     local stuff = tab:Section(T("stuffESP"), "Left")
@@ -1195,13 +1627,13 @@ local function buildUI()
     tog(disp, _p.."show_box2d", T("show2dBox"), "showBox2d", nil)
     tog(disp, _p.."show_box3d", T("show3dBox"), "showBox3d", nil)
     disp:Spacing()
-    disp:Combo("perf", T("perfMode"), {"Low","Mid","High","Ultra"}, Settings.perfMode, function(v)
-        Settings.perfMode = v
-    end)
-    disp:Combo("lang", T("language"), {"EN","RU"}, Settings.lang, function(v)
-        if v == Settings.lang then return end
-        Settings.lang = v
-        task.spawn(buildUI)
+    local perfIdx = 1
+    for i, pn in ipairs(PERF_NAMES) do
+        if pn == Settings.perfMode then perfIdx = i - 1 end
+    end
+    disp:Combo(_p.."perf", T("perfMode"), PERF_NAMES, perfIdx, function()
+        local ok, t = pcall(function() return comboText(PERF_NAMES, UI.GetValue(_p.."perf")) end)
+        if ok and t then Settings.perfMode = t end
     end)
 
     -- Entity ESP
@@ -1218,12 +1650,21 @@ local function buildUI()
         if not v and AutoHideSystem.isHiding then AutoHideSystem:unhide() end
     end)
 
+    -- HUD
+    local hudSec = tab:Section(T("hud"), "Right")
+    tog(hudSec, _p.."hud_on", T("hud"), "hudEnabled", nil)
+    hudSec:Combo(_p.."hud_layout", T("hudLayout"), {"Vertical","Horizontal"}, Settings.hudLayout == "Horizontal" and 1 or 0, function()
+        local ok, t = pcall(function() return comboText({"Vertical","Horizontal"}, UI.GetValue(_p.."hud_layout")) end)
+        if ok and t then Settings.hudLayout = t end
+    end)
+    tog(hudSec, _p.."hud_sign", T("hudSign"), "hudSign", nil)
+
     -- Misc
     local misc = tab:Section(T("misc"), "Right")
     tog(misc, _p.."kick_timer", T("showKickTimer"), "showKickTimer", nil)
 
     -- Config
-    local cfg = tab:Section(T("cnfig"), "Right")
+    local cfg = tab:Section(T("config"), "Right")
     cfg:Button(T("saveConfig"), function()
         saveConfig()
     end)
@@ -1235,4 +1676,21 @@ local function buildUI()
 end
 
 buildUI()
+
+-- Periodically mirror every toggle widget into Settings so switches can
+-- never desync from the actual functionality.
+spawn(function()
+    while true do
+        wait(0.25)
+        for key, id in pairs(toggleRegistry) do
+            local ok, st = pcall(function() return UI.GetValue(id) == true end)
+            if ok and type(st) == "boolean" then
+                Settings[key] = st
+                if key == "autoHideEnabled" then
+                    AutoHideSystem.enabled = st
+                end
+            end
+        end
+    end
+end)
 
